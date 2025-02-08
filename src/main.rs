@@ -1,62 +1,43 @@
-use std::marker::PhantomData;
-
 use bevy::{
-    ecs::system::{StaticSystemInput, StaticSystemParam, SystemParam},
+    ecs::system::{StaticSystemParam, SystemParam},
     prelude::*,
 };
 
-trait SideEffect {
-    type MutParam<'w, 's>: SystemParam;
+trait Effect {
+    type MutParam: SystemParam;
 
-    fn affect(self, param: <Self::MutParam<'_, '_> as SystemParam>::Item<'_, '_>);
+    fn affect(self, param: <Self::MutParam as SystemParam>::Item<'_, '_>);
 }
 
-struct SetRes<R>(R)
+struct UpdateRes<R>(R)
 where
     R: Resource;
 
-impl<R> SideEffect for SetRes<R>
+impl<R> Effect for UpdateRes<R>
 where
     R: Resource,
 {
-    type MutParam<'w, 's> = ResMut<'w, R>;
+    type MutParam = ResMut<'static, R>;
 
-    fn affect(self, mut param: <Self::MutParam<'_, '_> as SystemParam>::Item<'_, '_>) {
+    fn affect(self, mut param: <Self::MutParam as SystemParam>::Item<'_, '_>) {
         *param = self.0;
     }
 }
 
-fn affect_system<'w, 's, S>(In(effect): In<S>, param: StaticSystemParam<S::MutParam<'w, 's>>)
+fn affect<S>(In(effect): In<S>, param: StaticSystemParam<S::MutParam>)
 where
-    S: SideEffect + 'w,
+    S: Effect,
 {
     effect.affect(param.into_inner())
 }
 
-fn pipe_side_effect<'w, 's, F, FMarker>(
-    mut f: F,
-) -> impl FnMut(
-    StaticSystemInput<F::In>,
-    ParamSet<
-        'w,
-        's,
-        (
-            F::Param,
-            StaticSystemParam<'w, 's, <F::Out as SideEffect>::MutParam<'w, 's>>,
-        ),
-    >,
-)
-where
-    F: SystemParamFunction<FMarker>,
-    F::Out: SideEffect + 'w,
-{
-    move |StaticSystemInput(input), mut params| {
-        let side_effect = f.run(input, params.p0());
-
-        affect_system.run(side_effect, (params.p1(),));
-    }
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_systems(Update, sample_system_with_effect.pipe(affect))
+        .run();
 }
 
-fn main() {
-    App::new().add_plugins(DefaultPlugins).run();
+fn sample_system_with_effect(current: Res<ClearColor>) -> UpdateRes<ClearColor> {
+    UpdateRes(ClearColor(current.0.rotate_hue(1.)))
 }
