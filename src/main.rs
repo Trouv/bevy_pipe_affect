@@ -41,11 +41,20 @@ macro_rules! impl_effect {
 
 all_tuples!(impl_effect, 1, 8, E, e, p);
 
-fn affect<S>(In(effect): In<S>, param: StaticSystemParam<S::MutParam>)
+struct EffectOut<E, O>(E, O)
 where
-    S: Effect,
+    E: Effect;
+
+fn affect<E, O>(
+    In(EffectOut(effect, out)): In<EffectOut<E, O>>,
+    param: StaticSystemParam<E::MutParam>,
+) -> O
+where
+    E: Effect,
 {
-    effect.affect(param.into_inner())
+    effect.affect(&mut param.into_inner());
+
+    out
 }
 
 fn main() {
