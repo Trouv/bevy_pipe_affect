@@ -1,6 +1,7 @@
 use bevy::{
     ecs::system::{StaticSystemParam, SystemParam},
     prelude::*,
+    utils::all_tuples,
 };
 
 trait Effect {
@@ -23,6 +24,22 @@ where
         **param = self.0;
     }
 }
+
+macro_rules! impl_effect {
+    ($(($E:ident, $e:ident, $p:ident)),*) => {
+        impl<$($E),*> Effect for ($($E,)*)
+        where $($E: Effect,)* {
+            type MutParam = ParamSet<'static, 'static, ($(<$E as Effect>::MutParam,)*)>;
+
+            fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+                let ($($e,)*) = self;
+                $($e.affect(&mut param.$p());)*
+            }
+        }
+    };
+}
+
+all_tuples!(impl_effect, 1, 8, E, e, p);
 
 fn affect<S>(In(effect): In<S>, param: StaticSystemParam<S::MutParam>)
 where
