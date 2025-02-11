@@ -2,11 +2,11 @@ use bevy::{ecs::system::SystemParam, prelude::*};
 
 use crate::effect::Effect;
 
-pub struct UpdateRes<R>(pub R)
+pub struct ResPut<R>(pub R)
 where
     R: Resource;
 
-impl<R> Effect for UpdateRes<R>
+impl<R> Effect for ResPut<R>
 where
     R: Resource,
 {
