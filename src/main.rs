@@ -6,7 +6,7 @@ use bevy::{
 trait Effect {
     type MutParam: SystemParam;
 
-    fn affect(self, param: <Self::MutParam as SystemParam>::Item<'_, '_>);
+    fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>);
 }
 
 struct UpdateRes<R>(R)
@@ -19,8 +19,8 @@ where
 {
     type MutParam = ResMut<'static, R>;
 
-    fn affect(self, mut param: <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        *param = self.0;
+    fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+        **param = self.0;
     }
 }
 
