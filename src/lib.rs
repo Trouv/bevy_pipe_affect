@@ -1,25 +1,8 @@
-use bevy::{
-    ecs::system::{StaticSystemParam, SystemParam},
-    prelude::*,
-};
+use bevy::{ecs::system::StaticSystemParam, prelude::*};
 use effect::{Effect, EffectOut};
 
 pub mod effect;
-
-pub struct UpdateRes<R>(pub R)
-where
-    R: Resource;
-
-impl<R> Effect for UpdateRes<R>
-where
-    R: Resource,
-{
-    type MutParam = ResMut<'static, R>;
-
-    fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        **param = self.0;
-    }
-}
+pub mod resource_effects;
 
 pub fn affect<E, O>(
     In(EffectOut(effect, out)): In<EffectOut<E, O>>,
