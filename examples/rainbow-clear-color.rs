@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use bevy_pipe_affect::{affect, and_compose, effect::EffectOut, resource_effects::UpdateRes};
+use bevy_pipe_affect::{
+    effect::EffectOut,
+    resource_effects::UpdateRes,
+    system_combinators::{affect, and_compose},
+};
 
 fn main() {
     App::new()
