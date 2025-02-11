@@ -878,6 +878,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_pipe_affect"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_ptr"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -995,13 +1002,6 @@ dependencies = [
  "derive_more",
  "serde",
  "uuid",
-]
-
-[[package]]
-name = "bevy_side_effects"
-version = "0.1.0"
-dependencies = [
- "bevy",
 ]
 
 [[package]]

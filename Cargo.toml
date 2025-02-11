@@ -1,5 +1,5 @@
 [package]
-name = "bevy_side_effects"
+name = "bevy_pipe_affect"
 version = "0.1.0"
 edition = "2021"
 
