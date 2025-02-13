@@ -25,3 +25,12 @@ all_tuples!(impl_effect, 1, 8, E, e, p);
 pub struct EffectOut<E, O>(pub E, pub O)
 where
     E: Effect;
+
+impl<E> From<E> for EffectOut<E, ()>
+where
+    E: Effect,
+{
+    fn from(effect: E) -> Self {
+        EffectOut(effect, ())
+    }
+}
