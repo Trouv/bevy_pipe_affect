@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_pipe_affect::{
-    effect::EffectOut,
-    resource_effects::ResPut,
+    effect::{EffectOut, ResPut},
     system_combinators::{affect, and_compose},
 };
 
