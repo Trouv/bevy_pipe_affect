@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_pipe_affect::{
-    effect::{EffectOut, ResPut},
+    effect::{Effect, EffectOut, ResPut},
     system_combinators::{affect, and_compose},
 };
 
@@ -23,8 +23,8 @@ fn main() {
 fn sample_system_with_effect_and_input(
     In(theta): In<f32>,
     current: Res<ClearColor>,
-) -> EffectOut<ResPut<ClearColor>, ()> {
-    EffectOut(ResPut(ClearColor(current.0.rotate_hue(theta))), ())
+) -> impl Effect {
+    ResPut(ClearColor(current.0.rotate_hue(theta)))
 }
 
 #[derive(Resource, Default)]
