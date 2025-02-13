@@ -16,3 +16,33 @@ where
         **param = self.0;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::system_combinators::affect;
+
+    use super::*;
+    use proptest::prelude::*;
+    use proptest_derive::Arbitrary;
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
+    struct NumberResource(i32);
+
+    proptest! {
+        #[test]
+        fn res_put_overwrites_initial_state(initial: NumberResource, put: NumberResource) {
+            let mut app = App::new();
+
+            prop_assume!(initial != put);
+
+            app.insert_resource(initial).add_systems(Update, (move || ResPut(put)).pipe(affect));
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
+
+            app.update();
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &put);
+
+        }
+    }
+}
