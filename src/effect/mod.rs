@@ -1,3 +1,5 @@
+//! [`Effect`], its implementors, and related types.
+
 mod effect;
 pub use effect::{Effect, EffectOut};
 
