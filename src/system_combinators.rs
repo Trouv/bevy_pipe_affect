@@ -1,7 +1,27 @@
+//! `bevy` systems and higher-order system constructors related to effects piping and composition.
+
 use bevy::{ecs::system::StaticSystemParam, prelude::*};
 
 use crate::effect::{Effect, EffectOut};
 
+/// `bevy` system that accepts [`Effect`]s as pipe input and performs their state transition.
+///
+/// Technically, this actually accepts [`I: Into<EffectOut<E, O>>`] as pipe-input, and performs the
+/// conversion implicitly. Returns the output `O` of the [`EffectOut`], so piping can continue.
+///
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy::ecs::system::assert_is_system;
+/// # use bevy_pipe_affect::system_combinators::affect;
+/// # use bevy_pipe_affect::effect::{Effect, ResPut};
+/// fn system_with_effects() -> impl Effect {
+///     ResPut(ClearColor(Color::BLACK))
+/// }
+///
+/// assert_is_system(system_with_effects.pipe(affect))
+/// ```
+///
+/// [`I: Into<EffectOut<E, O>>`]: EffectOut
 pub fn affect<I, E, O>(In(into_effect_out): In<I>, param: StaticSystemParam<E::MutParam>) -> O
 where
     I: Into<EffectOut<E, O>>,
@@ -13,6 +33,39 @@ where
     out
 }
 
+/// Higher-order `bevy` system constructor for composing two systems with effects via piping.
+///
+/// Accepts a system with effects and an effect composition function and returns a system that
+/// composes their effects.
+///
+/// Normal pipe input can be passed into `S` by returning [`EffectOut<E, O>`] in the source system
+/// instead of a plain [`Effect`]. The output `O` will be passed into `S`.
+///
+/// Similarly, normal pipe output can be passed out of the resulting system if `S` returns
+/// [`EffectOut<E, O>`].
+///
+/// In this example, the effect composition just ignores the effect of the original system:
+/// ```
+/// # use bevy::prelude::*;
+/// # use bevy::ecs::system::assert_is_system;
+/// # use bevy_pipe_affect::system_combinators::{affect, and_compose};
+/// # use bevy_pipe_affect::effect::{Effect, ResPut};
+/// fn system_with_effects() -> impl Effect {
+///     ResPut(ClearColor(Color::BLACK))
+/// }
+///
+/// fn another_system_with_effects() -> impl Effect {
+///     ResPut(UiScale(2.0))
+/// }
+///
+/// assert_is_system(
+///     system_with_effects
+///         .pipe(and_compose(another_system_with_effects, |_, e| e))
+///         .pipe(affect)
+/// )
+/// ```
+///
+/// [`EffectOut<E, O>`]: EffectOut
 pub fn and_compose<I1, E1, O1, System, Marker, I2, E2, O2, E3>(
     mut s: System,
     compose_fn: impl Fn(E1, E2) -> E3,
