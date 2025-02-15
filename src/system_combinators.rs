@@ -1,6 +1,7 @@
 //! `bevy` systems and higher-order system constructors related to effects piping and composition.
 
-use bevy::{ecs::system::StaticSystemParam, prelude::*};
+use bevy::ecs::system::StaticSystemParam;
+use bevy::prelude::*;
 
 use crate::effect::{Effect, EffectOut};
 

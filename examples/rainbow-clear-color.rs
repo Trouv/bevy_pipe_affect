@@ -1,8 +1,6 @@
 use bevy::prelude::*;
-use bevy_pipe_affect::{
-    effect::{Effect, EffectOut, ResPut},
-    system_combinators::{affect, and_compose},
-};
+use bevy_pipe_affect::effect::{Effect, EffectOut, ResPut};
+use bevy_pipe_affect::system_combinators::{affect, and_compose};
 
 fn main() {
     App::new()

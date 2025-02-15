@@ -1,4 +1,5 @@
-use bevy::{ecs::system::SystemParam, prelude::*};
+use bevy::ecs::system::SystemParam;
+use bevy::prelude::*;
 
 use crate::effect::Effect;
 
@@ -20,11 +21,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::system_combinators::affect;
-
-    use super::*;
     use proptest::prelude::*;
     use proptest_derive::Arbitrary;
+
+    use super::*;
+    use crate::system_combinators::affect;
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
     struct NumberResource(i32);
