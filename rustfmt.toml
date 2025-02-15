@@ -1,0 +1,7 @@
+use_field_init_shorthand = true
+newline_style = "Unix"
+
+# nightly options
+imports_granularity = "Module"
+imports_layout = "HorizontalVertical"
+group_imports = "StdExternalCrate"
