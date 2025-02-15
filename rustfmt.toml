@@ -5,3 +5,4 @@ newline_style = "Unix"
 imports_granularity = "Module"
 imports_layout = "HorizontalVertical"
 group_imports = "StdExternalCrate"
+format_code_in_doc_comments = true

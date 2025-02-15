@@ -62,7 +62,7 @@ where
 /// assert_is_system(
 ///     system_with_effects
 ///         .pipe(and_compose(another_system_with_effects, |_, e| e))
-///         .pipe(affect)
+///         .pipe(affect),
 /// )
 /// ```
 ///
