@@ -1,4 +1,4 @@
-# `bevy_pipe_affect`: Write systems as pure functions
+# `bevy_pipe_affect`<br>Write systems as pure functions
 Normally, `bevy` systems perform some state changes as side effects.
 This crate enables you to instead return `Effect`s as system output.
 
