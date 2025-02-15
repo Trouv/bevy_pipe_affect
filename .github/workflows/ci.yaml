@@ -97,5 +97,5 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - name: Run cargo doc
         run: |
-          cargo doc --no-deps 2>&1 | tee cargo-out
-          grep "(warning|error)" cargo-out
+          cargo doc --no-deps 2>&1 | tee cargo-doc-out
+          ! grep -e ^warning -e ^error cargo-doc-out
