@@ -73,3 +73,29 @@ jobs:
           components: rustfmt
       - name: Run cargo fmt
         run: cargo +nightly fmt --all -- --check
+
+  doc_check:
+    name: Doc
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-doc-${{ hashFiles('**/Cargo.toml') }}
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install Dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+      - name: Run cargo doc
+        run: |
+          cargo doc --no-deps 2>&1 | tee cargo-out
+          grep "(warning|error)" cargo-out
