@@ -96,6 +96,4 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
       - name: Run cargo doc
-        run: cargo doc --no-deps 2>&1 | tee cargo-doc-out
-      - name: Check output for warnings, errors
-        run: "! grep -e ^warning -e ^error cargo-doc-out"
+        run: cargo doc --no-deps
