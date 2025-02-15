@@ -13,8 +13,8 @@ use crate::{Effect, EffectOut};
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy::ecs::system::assert_is_system;
-/// # use bevy_pipe_affect::system_combinators::affect;
-/// # use bevy_pipe_affect::{Effect, effects::ResPut};
+/// use bevy_pipe_affect::prelude::*;
+///
 /// fn system_with_effects() -> impl Effect {
 ///     ResPut(ClearColor(Color::BLACK))
 /// }
@@ -49,8 +49,8 @@ where
 /// ```
 /// # use bevy::prelude::*;
 /// # use bevy::ecs::system::assert_is_system;
-/// # use bevy_pipe_affect::system_combinators::{affect, and_compose};
-/// # use bevy_pipe_affect::{Effect, effects::ResPut};
+/// use bevy_pipe_affect::prelude::*;
+///
 /// fn system_with_effects() -> impl Effect {
 ///     ResPut(ClearColor(Color::BLACK))
 /// }
