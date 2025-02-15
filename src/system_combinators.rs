@@ -3,7 +3,7 @@
 use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::*;
 
-use crate::effect::{Effect, EffectOut};
+use crate::{Effect, EffectOut};
 
 /// `bevy` system that accepts [`Effect`]s as pipe input and performs their state transition.
 ///
@@ -14,7 +14,7 @@ use crate::effect::{Effect, EffectOut};
 /// # use bevy::prelude::*;
 /// # use bevy::ecs::system::assert_is_system;
 /// # use bevy_pipe_affect::system_combinators::affect;
-/// # use bevy_pipe_affect::effect::{Effect, ResPut};
+/// # use bevy_pipe_affect::{Effect, effects::ResPut};
 /// fn system_with_effects() -> impl Effect {
 ///     ResPut(ClearColor(Color::BLACK))
 /// }
@@ -50,7 +50,7 @@ where
 /// # use bevy::prelude::*;
 /// # use bevy::ecs::system::assert_is_system;
 /// # use bevy_pipe_affect::system_combinators::{affect, and_compose};
-/// # use bevy_pipe_affect::effect::{Effect, ResPut};
+/// # use bevy_pipe_affect::{Effect, effects::ResPut};
 /// fn system_with_effects() -> impl Effect {
 ///     ResPut(ClearColor(Color::BLACK))
 /// }
