@@ -1,4 +1,6 @@
-//! [`Effect`], its implementors, and related types.
+//! [`Effect`] implementors.
+//!
+//! [`Effect`]: crate::Effect
 
 mod resource;
 pub use resource::ResPut;
