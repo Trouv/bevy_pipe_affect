@@ -22,6 +22,7 @@ where
 }
 
 /// [`Effect`] that transforms a `Resource` with the provided function.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ResWith<F, R>
 where
     F: FnOnce(R) -> R,
