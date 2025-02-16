@@ -11,9 +11,9 @@
 # Event Effects
 - [x] `EventSend`
 
-# Query Effects
-- [ ] `QueryPut`
-- [ ] `QueryWith`
+# Components Effects
+- [x] `ComponentsPut`
+- [x] `ComponentsWith`
 
 # QueryEntity Effects
 - [ ] `QueryEntityPut`
