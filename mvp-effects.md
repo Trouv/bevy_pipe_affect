@@ -15,9 +15,9 @@
 - [x] `ComponentsPut`
 - [x] `ComponentsWith`
 
-# QueryEntity Effects
-- [ ] `QueryEntityPut`
-- [ ] `QueryEntityWith`
+# EntityComponents Effects
+- [ ] `EntityComponentsPut`
+- [ ] `EntityComponentsWith`
 
 # Command Effects
 - [ ] `InsertResource`
