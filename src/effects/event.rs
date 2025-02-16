@@ -1,4 +1,4 @@
-use bevy::ecs::event::{Event, EventWriter};
+use bevy::prelude::*;
 
 use crate::Effect;
 
