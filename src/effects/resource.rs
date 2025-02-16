@@ -60,6 +60,10 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::hash::Hash;
+
+    use blake2::digest::consts::{U32, U4};
+    use blake2::{Blake2b, Digest};
     use proptest::prelude::*;
     use proptest_derive::Arbitrary;
 
@@ -68,6 +72,21 @@ mod tests {
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
     struct NumberResource(i32);
+
+    fn one_way_number_fn_fn(salt: Vec<u8>) -> impl FnOnce(NumberResource) -> NumberResource {
+        move |NumberResource(input)| {
+            let data = salt
+                .into_iter()
+                .chain(input.to_be_bytes())
+                .collect::<Vec<_>>();
+
+            let mut hasher = Blake2b::<U4>::new();
+            hasher.update(data);
+            let res = hasher.finalize();
+
+            NumberResource(i32::from_be_bytes(res.into()))
+        }
+    }
 
     proptest! {
         #[test]
@@ -84,6 +103,23 @@ mod tests {
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &put);
 
+        }
+
+        #[test]
+        fn res_with_correctly_executes_one_way_function(initial: NumberResource, salt: Vec<u8>) {
+            let mut app = App::new();
+
+            let expected = one_way_number_fn_fn(salt.clone())(initial);
+
+            app.insert_resource(initial.clone()).add_systems(Update, (move || {
+            ResWith::new(one_way_number_fn_fn(salt.clone()))
+            }).pipe(affect));
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
+
+            app.update();
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &expected);
         }
     }
 }
