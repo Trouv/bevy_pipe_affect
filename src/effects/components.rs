@@ -89,3 +89,27 @@ where
         }
     }
 }
+
+macro_rules! impl_effect_for_components_with {
+    ($(($C:ident, $c:ident, $r:ident)),*) => {
+        impl<F, $($C,)* Data, Filter> Effect for ComponentsWith<F, ($($C,)*), Data, Filter>
+        where
+            F: for<'a> FnMut(($($C,)*), <Data as WorldQuery>::Item<'a>) -> ($($C,)*),
+            $($C: Component + Clone),*,
+            Data: ReadOnlyQueryData + 'static,
+            Filter: QueryFilter + 'static,
+        {
+            type MutParam = Query<'static, 'static, (($(&'static mut $C,)*), Data), Filter>;
+
+            fn affect(mut self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+                param.iter_mut().for_each(|(($(mut $r,)*), data)| {
+                    let cloned = ($($r.clone(),)*);
+                    let ($($c,)*) = (self.f)(cloned, data);
+                    $(*$r = $c;)*
+                });
+            }
+        }
+    }
+}
+
+all_tuples!(impl_effect_for_components_with, 2, 2, C, c, r);
