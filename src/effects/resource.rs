@@ -21,23 +21,23 @@ where
     }
 }
 
-pub struct ResWith<R, F>
+pub struct ResWith<F, R>
 where
-    F: FnMut(R) -> R,
+    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
     f: F,
     phantom: PhantomData<R>,
 }
 
-impl<R, F> Effect for ResWith<R, F>
+impl<F, R> Effect for ResWith<F, R>
 where
-    F: FnMut(R) -> R,
+    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
     type MutParam = ResMut<'static, R>;
 
-    fn affect(mut self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+    fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
         **param = (self.f)(param.clone());
     }
 }
