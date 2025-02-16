@@ -21,6 +21,7 @@ where
     }
 }
 
+/// [`Effect`] that transforms a `Resource` with the provided function.
 pub struct ResWith<F, R>
 where
     F: FnOnce(R) -> R,
