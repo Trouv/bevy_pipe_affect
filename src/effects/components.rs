@@ -112,4 +112,4 @@ macro_rules! impl_effect_for_components_with {
     }
 }
 
-all_tuples!(impl_effect_for_components_with, 2, 2, C, c, r);
+all_tuples!(impl_effect_for_components_with, 1, 15, C, c, r);
