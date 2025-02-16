@@ -71,7 +71,9 @@ mod tests {
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
     struct NumberResource(i32);
 
-    fn one_way_number_fn_fn(salt: Vec<u8>) -> impl FnOnce(NumberResource) -> NumberResource {
+    fn number_resource_one_way_fn_fn(
+        salt: Vec<u8>,
+    ) -> impl FnOnce(NumberResource) -> NumberResource + Clone {
         move |NumberResource(input)| {
             let data = salt
                 .into_iter()
@@ -105,14 +107,14 @@ mod tests {
 
         #[test]
         fn res_with_correctly_executes_one_way_function(initial: NumberResource, salt: Vec<u8>) {
+            let f = number_resource_one_way_fn_fn(salt);
+
+            let expected = f.clone()(initial);
+
             let mut app = App::new();
 
-            let expected = one_way_number_fn_fn(salt.clone())(initial);
-
-            app.insert_resource(initial.clone()).add_systems(
-                Update,
-                (move || ResWith::new(one_way_number_fn_fn(salt.clone()))).pipe(affect),
-            );
+            app.insert_resource(initial.clone())
+                .add_systems(Update, (move || ResWith::new(f.clone())).pipe(affect));
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
