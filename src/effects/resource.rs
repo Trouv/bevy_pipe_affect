@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use crate::effect::Effect;
 
 /// [`Effect`] that sets a `Resource` to the provided value.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ResPut<R>(pub R)
 where
     R: Resource;
