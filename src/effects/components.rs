@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
+use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData, WorldQuery};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use bevy::utils::all_tuples;
@@ -61,7 +61,7 @@ all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 pub struct ComponentsWith<F, C, Data = (), Filter = ()>
 where
-    F: FnMut(C, Data) -> C,
+    F: for<'a> FnMut(C, <Data as WorldQuery>::Item<'a>) -> C,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -74,7 +74,7 @@ where
 
 impl<F, C, Data, Filter> ComponentsWith<F, C, Data, Filter>
 where
-    F: FnMut(C, Data) -> C,
+    F: for<'a> FnMut(C, <Data as WorldQuery>::Item<'a>) -> C,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
