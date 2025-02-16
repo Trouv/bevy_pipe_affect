@@ -45,7 +45,7 @@ macro_rules! impl_effect_for_components_put {
             fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
                 let ($($c,)*) = self.components;
                 param.iter_mut().for_each(|($(mut $r,)*)| {
-                    $(*$r = $c.clone());*
+                    $(*$r = $c.clone();)*
                 });
             }
         }
