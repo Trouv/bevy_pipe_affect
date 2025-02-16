@@ -1,6 +1,6 @@
 # Resource Effects
 - [x] `ResPut`
-- [ ] `ResWith`
+- [x] `ResWith`
 
 # Local?
 - [ ] `LocalPut`?
