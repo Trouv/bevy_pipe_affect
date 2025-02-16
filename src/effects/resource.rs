@@ -61,7 +61,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use blake2::digest::consts::U4;
+    use blake2::digest::consts::U16;
     use blake2::{Blake2b, Digest};
     use proptest::prelude::*;
     use proptest_derive::Arbitrary;
@@ -70,7 +70,7 @@ mod tests {
     use crate::system_combinators::affect;
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
-    struct NumberResource(i32);
+    struct NumberResource(u128);
 
     fn number_resource_one_way_fn_fn(
         salt: Vec<u8>,
@@ -81,11 +81,11 @@ mod tests {
                 .chain(input.to_be_bytes())
                 .collect::<Vec<_>>();
 
-            let mut hasher = Blake2b::<U4>::new();
+            let mut hasher = Blake2b::<U16>::new();
             hasher.update(data);
             let res = hasher.finalize();
 
-            NumberResource(i32::from_be_bytes(res.into()))
+            NumberResource(u128::from_be_bytes(res.into()))
         }
     }
 
