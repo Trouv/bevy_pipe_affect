@@ -10,19 +10,19 @@ use crate::Effect;
 /// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
-pub struct ComponentsPut<C, F = ()>
+pub struct ComponentsPut<C, Filter = ()>
 where
     C: Clone,
-    F: QueryFilter,
+    Filter: QueryFilter,
 {
     components: C,
-    filter: PhantomData<F>,
+    filter: PhantomData<Filter>,
 }
 
-impl<C, F> ComponentsPut<C, F>
+impl<C, Filter> ComponentsPut<C, Filter>
 where
     C: Clone,
-    F: QueryFilter,
+    Filter: QueryFilter,
 {
     /// Construct a new [`ComponentsPut`].
     pub fn new(components: C) -> Self {
@@ -35,12 +35,12 @@ where
 
 macro_rules! impl_effect_for_components_put {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<$($C,)* F> Effect for ComponentsPut<($($C,)*), F>
+        impl<$($C,)* Filter> Effect for ComponentsPut<($($C,)*), Filter>
         where
             $($C: Component + Clone),*,
-            F: QueryFilter + 'static,
+            Filter: QueryFilter + 'static,
         {
-            type MutParam = Query<'static, 'static, ($(&'static mut $C,)*), F>;
+            type MutParam = Query<'static, 'static, ($(&'static mut $C,)*), Filter>;
 
             fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
                 let ($($c,)*) = self.components;
