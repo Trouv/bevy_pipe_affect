@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::ecs::query::QueryFilter;
+use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use bevy::utils::all_tuples;
@@ -53,3 +53,39 @@ macro_rules! impl_effect_for_components_put {
 }
 
 all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
+
+/// [`Effect`] that transforms `Component`s of all entities in a query with the provided function.
+///
+/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+///
+/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+pub struct ComponentsWith<F, C, Data = (), Filter = ()>
+where
+    F: FnMut(C, Data) -> C,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    Filter: QueryFilter,
+{
+    f: F,
+    components: PhantomData<C>,
+    data: PhantomData<Data>,
+    filter: PhantomData<Filter>,
+}
+
+impl<F, C, Data, Filter> ComponentsWith<F, C, Data, Filter>
+where
+    F: FnMut(C, Data) -> C,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    Filter: QueryFilter,
+{
+    /// Construct a new [`ComponentsWith`].
+    pub fn new(f: F) -> Self {
+        ComponentsWith {
+            f,
+            components: PhantomData,
+            data: PhantomData,
+            filter: PhantomData,
+        }
+    }
+}
