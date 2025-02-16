@@ -32,6 +32,20 @@ where
     phantom: PhantomData<R>,
 }
 
+impl<F, R> ResWith<F, R>
+where
+    F: FnOnce(R) -> R,
+    R: Resource + Clone,
+{
+    /// Construct a new [`ResWith`].
+    pub fn new(f: F) -> Self {
+        ResWith {
+            f,
+            phantom: PhantomData,
+        }
+    }
+}
+
 impl<F, R> Effect for ResWith<F, R>
 where
     F: FnOnce(R) -> R,
