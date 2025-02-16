@@ -60,9 +60,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::hash::Hash;
-
-    use blake2::digest::consts::{U32, U4};
+    use blake2::digest::consts::U4;
     use blake2::{Blake2b, Digest};
     use proptest::prelude::*;
     use proptest_derive::Arbitrary;
