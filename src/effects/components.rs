@@ -7,6 +7,9 @@ use bevy::utils::all_tuples;
 
 use crate::Effect;
 
+/// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
+///
+/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 pub struct ComponentsPut<C, F = ()>
 where
     C: Clone,
