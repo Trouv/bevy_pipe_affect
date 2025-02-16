@@ -93,14 +93,14 @@ mod tests {
 
             prop_assume!(initial != put);
 
-            app.insert_resource(initial).add_systems(Update, (move || ResPut(put)).pipe(affect));
+            app.insert_resource(initial)
+                .add_systems(Update, (move || ResPut(put)).pipe(affect));
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
             app.update();
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &put);
-
         }
 
         #[test]
@@ -109,9 +109,10 @@ mod tests {
 
             let expected = one_way_number_fn_fn(salt.clone())(initial);
 
-            app.insert_resource(initial.clone()).add_systems(Update, (move || {
-            ResWith::new(one_way_number_fn_fn(salt.clone()))
-            }).pipe(affect));
+            app.insert_resource(initial.clone()).add_systems(
+                Update,
+                (move || ResWith::new(one_way_number_fn_fn(salt.clone()))).pipe(affect),
+            );
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
