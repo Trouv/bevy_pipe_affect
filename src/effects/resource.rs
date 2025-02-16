@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 
@@ -16,6 +18,27 @@ where
 
     fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
         **param = self.0;
+    }
+}
+
+pub struct ResWith<R, F>
+where
+    F: FnMut(R) -> R,
+    R: Resource + Clone,
+{
+    f: F,
+    phantom: PhantomData<R>,
+}
+
+impl<R, F> Effect for ResWith<R, F>
+where
+    F: FnMut(R) -> R,
+    R: Resource + Clone,
+{
+    type MutParam = ResMut<'static, R>;
+
+    fn affect(mut self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+        **param = (self.f)(param.clone());
     }
 }
 
