@@ -61,33 +61,15 @@ where
 
 #[cfg(test)]
 mod tests {
-    use blake2::digest::consts::U16;
-    use blake2::{Blake2b, Digest};
     use proptest::prelude::*;
     use proptest_derive::Arbitrary;
 
     use super::*;
+    use crate::effects::one_way_fn::OneWayFn;
     use crate::system_combinators::affect;
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
     struct NumberResource(u128);
-
-    fn number_resource_one_way_fn_fn(
-        salt: Vec<u8>,
-    ) -> impl FnOnce(NumberResource) -> NumberResource + Clone {
-        move |NumberResource(input)| {
-            let data = salt
-                .into_iter()
-                .chain(input.to_be_bytes())
-                .collect::<Vec<_>>();
-
-            let mut hasher = Blake2b::<U16>::new();
-            hasher.update(data);
-            let res = hasher.finalize();
-
-            NumberResource(u128::from_be_bytes(res.into()))
-        }
-    }
 
     proptest! {
         #[test]
@@ -107,15 +89,15 @@ mod tests {
         }
 
         #[test]
-        fn res_with_correctly_executes_one_way_function(initial: NumberResource, salt: Vec<u8>) {
-            let f = number_resource_one_way_fn_fn(salt);
-
-            let expected = f.clone()(initial);
+        fn res_with_correctly_executes_one_way_function(initial: NumberResource, f: OneWayFn) {
+            let expected = NumberResource(f.call(initial.0));
 
             let mut app = App::new();
 
-            app.insert_resource(initial.clone())
-                .add_systems(Update, (move || ResWith::new(f.clone())).pipe(affect));
+            app.insert_resource(initial.clone()).add_systems(
+                Update,
+                (move || ResWith::new(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
+            );
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
