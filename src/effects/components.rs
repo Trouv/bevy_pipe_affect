@@ -44,7 +44,7 @@ macro_rules! impl_effect_for_components_put {
 
             fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
                 let ($($c,)*) = self.components;
-                param.iter_mut().for_each(|($(mut $r,)*)| {
+                param.par_iter_mut().for_each(|($(mut $r,)*)| {
                     $(*$r = $c.clone();)*
                 });
             }
@@ -61,7 +61,7 @@ all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 pub struct ComponentsWith<F, C, Data = (), Filter = ()>
 where
-    F: for<'a> FnMut(C, <Data as WorldQuery>::Item<'a>) -> C,
+    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -74,7 +74,7 @@ where
 
 impl<F, C, Data, Filter> ComponentsWith<F, C, Data, Filter>
 where
-    F: for<'a> FnMut(C, <Data as WorldQuery>::Item<'a>) -> C,
+    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -94,15 +94,15 @@ macro_rules! impl_effect_for_components_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data, Filter> Effect for ComponentsWith<F, ($($C,)*), Data, Filter>
         where
-            F: for<'a> FnMut(($($C,)*), <Data as WorldQuery>::Item<'a>) -> ($($C,)*),
+            F: for<'a> Fn(($($C,)*), <Data as WorldQuery>::Item<'a>) -> ($($C,)*) + Send + Sync,
             $($C: Component + Clone),*,
             Data: ReadOnlyQueryData + 'static,
             Filter: QueryFilter + 'static,
         {
             type MutParam = Query<'static, 'static, (($(&'static mut $C,)*), Data), Filter>;
 
-            fn affect(mut self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-                param.iter_mut().for_each(|(($(mut $r,)*), data)| {
+            fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+                param.par_iter_mut().for_each(|(($(mut $r,)*), data)| {
                     let cloned = ($($r.clone(),)*);
                     let ($($c,)*) = (self.f)(cloned, data);
                     $(*$r = $c;)*
