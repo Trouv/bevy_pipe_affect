@@ -245,5 +245,39 @@ mod tests {
                 prop_assert_eq!(actual1, &expected1);
             }
         }
+
+        #[test]
+        fn components_with_can_use_read_only_data(components_to_copy in proptest::collection::vec(any::<NumberComponent::<0>>(), 0..16)) {
+            let mut app = App::new();
+
+            let entities = components_to_copy
+                .iter()
+                .map(|component_to_copy| {
+                    app.world_mut()
+                        .spawn((*component_to_copy, NumberComponent::<1>(0)))
+                        .id()
+                })
+                .collect::<Vec<_>>();
+
+            app.add_systems(
+                Update,
+                (move || {
+                    ComponentsWith::<_, _, &NumberComponent<0>, ()>::new(
+                        move |_, NumberComponent(to_copy)| (NumberComponent::<1>(*to_copy),),
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for (expected, entity) in components_to_copy.into_iter().zip(entities) {
+                let actual_copied_from = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual_copied_to = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                prop_assert_eq!(actual_copied_from, &expected);
+                prop_assert_eq!(actual_copied_to.0, expected.0);
+            }
+        }
     }
 }
