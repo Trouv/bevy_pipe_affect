@@ -120,6 +120,7 @@ mod tests {
     use proptest_derive::Arbitrary;
 
     use super::*;
+    use crate::effects::one_way_fn::OneWayFn;
     use crate::system_combinators::affect;
 
     #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, Component, Arbitrary)]
@@ -183,6 +184,62 @@ mod tests {
                 let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
                 let (expected0, expected1) = if to_be_marked { put } else { initial };
+
+                prop_assert_eq!(actual0, &expected0);
+                prop_assert_eq!(actual1, &expected1);
+            }
+        }
+
+        #[test]
+        fn components_with_correctly_executes_one_way_function(
+            test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            f0: OneWayFn,
+            f1: OneWayFn
+        ) {
+            let mut app = App::new();
+
+            let entities = test_bundles
+                .iter()
+                .copied()
+                .map(|bundle| spawn_bundle_and_mark(app.world_mut(), bundle))
+                .collect::<Vec<_>>();
+
+            app.add_systems(
+                Update,
+                (move || {
+                    ComponentsWith::<_, _, (), With<MarkerComponent>>::new(
+                        move |(NumberComponent(n0), NumberComponent(n1)), _| {
+                            (
+                                NumberComponent::<0>(f0.call(n0)),
+                                NumberComponent::<1>(f1.call(n1)),
+                            )
+                        },
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for (
+                BundleToBeMarked {
+                    initial: (NumberComponent(initial0), NumberComponent(initial1)),
+                    to_be_marked,
+                },
+                entity,
+            ) in test_bundles.into_iter().zip(entities)
+            {
+                let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                let (expected0, expected1) = if to_be_marked {
+                    (
+                        NumberComponent(f0.call(initial0)),
+                        NumberComponent(f1.call(initial1)),
+                    )
+                } else {
+                    (NumberComponent(initial0), NumberComponent(initial1))
+                };
 
                 prop_assert_eq!(actual0, &expected0);
                 prop_assert_eq!(actual1, &expected1);
