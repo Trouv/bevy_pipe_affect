@@ -11,13 +11,13 @@
 # Event Effects
 - [x] `EventSend`
 
-# Query Effects
-- [ ] `QueryPut`
-- [ ] `QueryWith`
+# Components Effects
+- [x] `ComponentsPut`
+- [x] `ComponentsWith`
 
-# QueryEntity Effects
-- [ ] `QueryEntityPut`
-- [ ] `QueryEntityWith`
+# EntityComponents Effects
+- [ ] `EntityComponentsPut`
+- [ ] `EntityComponentsWith`
 
 # Command Effects
 - [ ] `InsertResource`
