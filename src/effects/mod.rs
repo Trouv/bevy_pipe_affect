@@ -11,6 +11,8 @@ pub use event::EventSend;
 mod components;
 pub use components::{ComponentsPut, ComponentsWith};
 
+mod entity_components;
+
 #[cfg(test)]
 mod one_way_fn;
 
