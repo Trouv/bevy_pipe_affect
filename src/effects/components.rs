@@ -247,23 +247,23 @@ mod tests {
         }
 
         #[test]
-        fn components_with_can_use_read_only_data(components_to_copy in proptest::collection::vec(any::<NumberComponent::<0>>(), 0..16)) {
+        fn read_only_query_data_paramaterizes_components_with_function(
+            initial_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            f: OneWayFn,
+        ) {
             let mut app = App::new();
 
-            let entities = components_to_copy
+            let entities = initial_bundles
                 .iter()
-                .map(|component_to_copy| {
-                    app.world_mut()
-                        .spawn((*component_to_copy, NumberComponent::<1>(0)))
-                        .id()
-                })
+                .copied()
+                .map(|bundle| spawn_bundle_and_mark(app.world_mut(), bundle))
                 .collect::<Vec<_>>();
 
             app.add_systems(
                 Update,
                 (move || {
-                    ComponentsWith::<_, _, &NumberComponent<0>, ()>::new(
-                        move |_, NumberComponent(to_copy)| (NumberComponent::<1>(*to_copy),),
+                    ComponentsWith::<_, _, &NumberComponent<0>, With<MarkerComponent>>::new(
+                        move |_, NumberComponent(to_read)| (NumberComponent::<1>(f.call(*to_read)),),
                     )
                 })
                 .pipe(affect),
@@ -271,12 +271,25 @@ mod tests {
 
             app.update();
 
-            for (expected, entity) in components_to_copy.into_iter().zip(entities) {
-                let actual_copied_from = app.world().get::<NumberComponent<0>>(entity).unwrap();
-                let actual_copied_to = app.world().get::<NumberComponent<1>>(entity).unwrap();
+            for (
+                BundleToBeMarked {
+                    initial: (expected_read_component, NumberComponent(initial_written_component)),
+                    to_be_marked,
+                },
+                entity,
+            ) in initial_bundles.into_iter().zip(entities)
+            {
+                let actual_read_component = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual_written_component = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
-                prop_assert_eq!(actual_copied_from, &expected);
-                prop_assert_eq!(actual_copied_to.0, expected.0);
+                let expected_written_component = if to_be_marked {
+                    NumberComponent(f.call(expected_read_component.0))
+                } else {
+                    NumberComponent(initial_written_component)
+                };
+
+                prop_assert_eq!(actual_read_component, &expected_read_component);
+                prop_assert_eq!(actual_written_component, &expected_written_component);
             }
         }
     }
