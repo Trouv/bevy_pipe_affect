@@ -16,8 +16,8 @@
 - [x] `ComponentsWith`
 
 # EntityComponents Effects
-- [ ] `EntityComponentsPut`
-- [ ] `EntityComponentsWith`
+- [x] `EntityComponentsPut`
+- [x] `EntityComponentsWith`
 
 # Command Effects
 - [ ] `InsertResource`
