@@ -120,11 +120,9 @@ mod tests {
     use proptest_derive::Arbitrary;
 
     use super::*;
+    use crate::effects::number_data::NumberComponent;
     use crate::effects::one_way_fn::OneWayFn;
     use crate::system_combinators::affect;
-
-    #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, Component, Arbitrary)]
-    struct NumberComponent<const MARKER: usize>(u128);
 
     #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, Component)]
     struct MarkerComponent;

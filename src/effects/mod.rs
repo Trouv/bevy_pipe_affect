@@ -13,3 +13,6 @@ pub use components::{ComponentsPut, ComponentsWith};
 
 #[cfg(test)]
 mod one_way_fn;
+
+#[cfg(test)]
+mod number_data;

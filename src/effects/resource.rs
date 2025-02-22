@@ -62,14 +62,11 @@ where
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
-    use proptest_derive::Arbitrary;
 
     use super::*;
+    use crate::effects::number_data::NumberResource;
     use crate::effects::one_way_fn::OneWayFn;
     use crate::system_combinators::affect;
-
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
-    struct NumberResource(u128);
 
     proptest! {
         #[test]
