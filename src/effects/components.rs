@@ -152,7 +152,10 @@ mod tests {
 
     proptest! {
         #[test]
-        fn components_put_overwrites_initial_state(test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16), put: (NumberComponent<0>, NumberComponent<1>)) {
+        fn components_put_overwrites_initial_state(
+            test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            put: (NumberComponent<0>, NumberComponent<1>)
+        ) {
             let mut app = App::new();
 
             let entities = test_bundles
