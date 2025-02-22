@@ -22,13 +22,10 @@ where
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
-    use proptest_derive::Arbitrary;
 
     use super::*;
+    use crate::effects::number_data::NumberEvent;
     use crate::prelude::affect;
-
-    #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Event, Arbitrary)]
-    struct NumberEvent(u128);
 
     proptest! {
         #[test]
