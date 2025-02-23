@@ -135,13 +135,15 @@ mod tests {
 
     proptest! {
         #[test]
-        fn entity_components_put_overwrites_initial_state_of_single_entity((initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..16), put: (NumberComponent<0>, NumberComponent<1>)) {
+        fn entity_components_put_overwrites_initial_state_of_single_entity(
+            (initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..16),
+            put: (NumberComponent<0>, NumberComponent<1>)
+        ) {
             let mut app = App::new();
 
-            let entities = initial_bundles
-                .iter()
-                .copied()
-                .map(|bundle| app.world_mut().spawn(bundle).id())
+            let entities = app
+                .world_mut()
+                .spawn_batch(initial_bundles.clone())
                 .collect::<Vec<_>>();
 
             let entity_to_put = entities[index_to_put];
@@ -153,18 +155,18 @@ mod tests {
 
             app.update();
 
-            for ((initial0, initial1), entity) in initial_bundles.into_iter().zip(entities) {
+            for (initial, entity) in initial_bundles.into_iter().zip(entities) {
                 let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
                 let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
-                if entity == entity_to_put {
-                    let (put0, put1) = put;
-                    prop_assert_eq!(actual0, &put0);
-                    prop_assert_eq!(actual1, &put1);
+                let (expected0, expected1) = if entity == entity_to_put {
+                    put
                 } else {
-                    prop_assert_eq!(actual0, &initial0);
-                    prop_assert_eq!(actual1, &initial1);
-                }
+                    initial
+                };
+
+                prop_assert_eq!(actual0, &expected0);
+                prop_assert_eq!(actual1, &expected1);
             }
         }
     }
