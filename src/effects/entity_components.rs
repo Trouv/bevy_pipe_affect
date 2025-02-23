@@ -118,7 +118,11 @@ mod tests {
     use proptest::sample::SizeRange;
 
     use super::*;
-    use crate::effects::number_data::NumberComponent;
+    use crate::effects::number_data::{
+        two_number_components_one_way_transform,
+        two_number_components_one_way_transform_with_void_query_data,
+        NumberComponent,
+    };
     use crate::effects::one_way_fn::OneWayFn;
     use crate::prelude::affect;
 
@@ -191,12 +195,7 @@ mod tests {
                 (move || {
                     EntityComponentsWith::<_, _, ()>::new(
                         entity_to_transform,
-                        move |(NumberComponent(n0), NumberComponent(n1)), _| {
-                            (
-                                NumberComponent::<0>(f0.call(n0)),
-                                NumberComponent::<1>(f1.call(n1)),
-                            )
-                        },
+                        two_number_components_one_way_transform_with_void_query_data(f0, f1)
                     )
                 })
                 .pipe(affect),
@@ -204,19 +203,16 @@ mod tests {
 
             app.update();
 
-            for ((NumberComponent(initial0), NumberComponent(initial1)), entity) in
+            for (initial, entity) in
                 initial_bundles.into_iter().zip(entities)
             {
                 let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
                 let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
                 let (expected0, expected1) = if entity == entity_to_transform {
-                    (
-                        NumberComponent(f0.call(initial0)),
-                        NumberComponent(f1.call(initial1)),
-                    )
+                    two_number_components_one_way_transform(f0, f1)(initial)
                 } else {
-                    (NumberComponent(initial0), NumberComponent(initial1))
+                    initial
                 };
 
                 prop_assert_eq!(actual0, &expected0);
