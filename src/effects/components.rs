@@ -120,7 +120,13 @@ mod tests {
     use proptest_derive::Arbitrary;
 
     use super::*;
-    use crate::effects::number_data::NumberComponent;
+    use crate::effects::number_data::{
+        n0_query_data_to_n1_through_one_way_function,
+        n0_to_n1_through_one_way_function,
+        two_number_components_one_way_transform,
+        two_number_components_one_way_transform_with_void_query_data,
+        NumberComponent,
+    };
     use crate::effects::one_way_fn::OneWayFn;
     use crate::system_combinators::affect;
 
@@ -206,12 +212,7 @@ mod tests {
                 Update,
                 (move || {
                     ComponentsWith::<_, _, (), With<MarkerComponent>>::new(
-                        move |(NumberComponent(n0), NumberComponent(n1)), _| {
-                            (
-                                NumberComponent::<0>(f0.call(n0)),
-                                NumberComponent::<1>(f1.call(n1)),
-                            )
-                        },
+                        two_number_components_one_way_transform_with_void_query_data(f0, f1)
                     )
                 })
                 .pipe(affect),
@@ -221,7 +222,7 @@ mod tests {
 
             for (
                 BundleToBeMarked {
-                    initial: (NumberComponent(initial0), NumberComponent(initial1)),
+                    initial,
                     to_be_marked,
                 },
                 entity,
@@ -231,12 +232,9 @@ mod tests {
                 let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
                 let (expected0, expected1) = if to_be_marked {
-                    (
-                        NumberComponent(f0.call(initial0)),
-                        NumberComponent(f1.call(initial1)),
-                    )
+                    two_number_components_one_way_transform(f0, f1)(initial)
                 } else {
-                    (NumberComponent(initial0), NumberComponent(initial1))
+                    initial
                 };
 
                 prop_assert_eq!(actual0, &expected0);
@@ -261,7 +259,7 @@ mod tests {
                 Update,
                 (move || {
                     ComponentsWith::<_, _, &NumberComponent<0>, With<MarkerComponent>>::new(
-                        move |_, NumberComponent(to_read)| (NumberComponent::<1>(f.call(*to_read)),),
+                        n0_query_data_to_n1_through_one_way_function(f)
                     )
                 })
                 .pipe(affect),
@@ -271,7 +269,7 @@ mod tests {
 
             for (
                 BundleToBeMarked {
-                    initial: (expected_read_component, NumberComponent(initial_written_component)),
+                    initial: (expected_read_component, initial_written_component),
                     to_be_marked,
                 },
                 entity,
@@ -281,9 +279,9 @@ mod tests {
                 let actual_written_component = app.world().get::<NumberComponent<1>>(entity).unwrap();
 
                 let expected_written_component = if to_be_marked {
-                    NumberComponent(f.call(expected_read_component.0))
+                    n0_to_n1_through_one_way_function(f)(expected_read_component)
                 } else {
-                    NumberComponent(initial_written_component)
+                    initial_written_component
                 };
 
                 prop_assert_eq!(actual_read_component, &expected_read_component);
