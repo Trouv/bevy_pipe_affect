@@ -10,6 +10,7 @@ use crate::Effect;
 /// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsPut<C, Filter = ()>
 where
     C: Clone,
@@ -59,6 +60,7 @@ all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsWith<F, C, Data = (), Filter = ()>
 where
     F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
