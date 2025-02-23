@@ -119,6 +119,7 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::NumberComponent;
+    use crate::effects::one_way_fn::OneWayFn;
     use crate::prelude::affect;
 
     fn vec_and_index<T, R>(element: T, range: R) -> impl Strategy<Value = (Vec<T::Value>, usize)>
@@ -163,6 +164,59 @@ mod tests {
                     put
                 } else {
                     initial
+                };
+
+                prop_assert_eq!(actual0, &expected0);
+                prop_assert_eq!(actual1, &expected1);
+            }
+        }
+
+        #[test]
+        fn entity_components_with_correctly_executes_one_way_function(
+            (initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..4),
+            f0: OneWayFn,
+            f1: OneWayFn,
+        ) {
+            let mut app = App::new();
+
+            let entities = app
+                .world_mut()
+                .spawn_batch(initial_bundles.clone())
+                .collect::<Vec<_>>();
+
+            let entity_to_transform = entities[index_to_put];
+
+            app.add_systems(
+                Update,
+                (move || {
+                    EntityComponentsWith::<_, _, ()>::new(
+                        entity_to_transform,
+                        move |(NumberComponent(n0), NumberComponent(n1)), _| {
+                            (
+                                NumberComponent::<0>(f0.call(n0)),
+                                NumberComponent::<1>(f1.call(n1)),
+                            )
+                        },
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for ((NumberComponent(initial0), NumberComponent(initial1)), entity) in
+                initial_bundles.into_iter().zip(entities)
+            {
+                let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                let (expected0, expected1) = if entity == entity_to_transform {
+                    (
+                        NumberComponent(f0.call(initial0)),
+                        NumberComponent(f1.call(initial1)),
+                    )
+                } else {
+                    (NumberComponent(initial0), NumberComponent(initial1))
                 };
 
                 prop_assert_eq!(actual0, &expected0);
