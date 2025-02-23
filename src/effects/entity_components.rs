@@ -111,3 +111,61 @@ macro_rules! impl_effect_for_entity_components_with {
 }
 
 all_tuples!(impl_effect_for_entity_components_with, 1, 15, C, c, r);
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+    use proptest::sample::SizeRange;
+
+    use super::*;
+    use crate::effects::number_data::NumberComponent;
+    use crate::prelude::affect;
+
+    fn vec_and_index<T, R>(element: T, range: R) -> impl Strategy<Value = (Vec<T::Value>, usize)>
+    where
+        T: Strategy,
+        <T as Strategy>::Value: Clone,
+        R: Into<SizeRange>,
+    {
+        proptest::collection::vec(element, range).prop_flat_map(|v| {
+            let len = v.len();
+            (Just(v), 0..len)
+        })
+    }
+
+    proptest! {
+        #[test]
+        fn entity_components_put_overwrites_initial_state_of_single_entity((initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..16), put: (NumberComponent<0>, NumberComponent<1>)) {
+            let mut app = App::new();
+
+            let entities = initial_bundles
+                .iter()
+                .copied()
+                .map(|bundle| app.world_mut().spawn(bundle).id())
+                .collect::<Vec<_>>();
+
+            let entity_to_put = entities[index_to_put];
+
+            app.add_systems(
+                Update,
+                (move || EntityComponentsPut::new(entity_to_put, put)).pipe(affect),
+            );
+
+            app.update();
+
+            for ((initial0, initial1), entity) in initial_bundles.into_iter().zip(entities) {
+                let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                if entity == entity_to_put {
+                    let (put0, put1) = put;
+                    prop_assert_eq!(actual0, &put0);
+                    prop_assert_eq!(actual1, &put1);
+                } else {
+                    prop_assert_eq!(actual0, &initial0);
+                    prop_assert_eq!(actual1, &initial1);
+                }
+            }
+        }
+    }
+}
