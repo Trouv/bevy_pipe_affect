@@ -119,6 +119,8 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::{
+        n0_query_data_to_n1_through_one_way_function,
+        n0_to_n1_through_one_way_function,
         two_number_components_one_way_transform,
         two_number_components_one_way_transform_with_void_query_data,
         NumberComponent,
@@ -217,6 +219,50 @@ mod tests {
 
                 prop_assert_eq!(actual0, &expected0);
                 prop_assert_eq!(actual1, &expected1);
+            }
+        }
+
+        #[test]
+        fn read_only_query_data_paramaterizes_entity_components_with_function(
+            (initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..4),
+            f: OneWayFn,
+        ) {
+            let mut app = App::new();
+
+            let entities = app
+                .world_mut()
+                .spawn_batch(initial_bundles.clone())
+                .collect::<Vec<_>>();
+
+            let entity_to_transform = entities[index_to_put];
+
+            app.add_systems(
+                Update,
+                (move || {
+                    EntityComponentsWith::<_, _, &NumberComponent<0>>::new(
+                        entity_to_transform,
+                        n0_query_data_to_n1_through_one_way_function(f),
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for ((expected_read_component, initial_written_component), entity) in
+                initial_bundles.into_iter().zip(entities)
+            {
+                let actual_read_component = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual_written_component = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                let expected_written_component = if entity == entity_to_transform {
+                    n0_to_n1_through_one_way_function(f)(expected_read_component)
+                } else {
+                    initial_written_component
+                };
+
+                prop_assert_eq!(actual_read_component, &expected_read_component);
+                prop_assert_eq!(actual_written_component, &expected_written_component);
             }
         }
     }
