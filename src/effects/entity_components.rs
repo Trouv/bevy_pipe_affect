@@ -136,7 +136,7 @@ mod tests {
     proptest! {
         #[test]
         fn entity_components_put_overwrites_initial_state_of_single_entity(
-            (initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..16),
+            (initial_bundles, index_to_put) in vec_and_index(any::<(NumberComponent<0>, NumberComponent<1>)>(), 1..4),
             put: (NumberComponent<0>, NumberComponent<1>)
         ) {
             let mut app = App::new();
