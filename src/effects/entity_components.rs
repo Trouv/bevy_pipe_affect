@@ -10,6 +10,7 @@ use crate::Effect;
 /// [`Effect`] that sets the `Component`s of the provided entity to the provided `Component` tuple.
 ///
 /// If an entity with these components cannot be found, logs an error.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsPut<C> {
     entity: Entity,
     components: C,
@@ -54,6 +55,7 @@ all_tuples!(impl_effect_for_entity_components_put, 1, 15, C, c, r);
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
 /// If an entity with these components cannot be found, logs an error.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsWith<F, C, Data = ()>
 where
     F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
