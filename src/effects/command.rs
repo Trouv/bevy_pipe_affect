@@ -4,6 +4,8 @@ use bevy::prelude::*;
 
 use crate::Effect;
 
+/// [`Effect`] that pushes a generic command to the command queue.
+#[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandQueue<C>(pub C)
 where
@@ -20,6 +22,8 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for inserting the provided `Resource` in the `World`.
+#[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandInsertResource<R>(pub R)
 where
@@ -36,6 +40,8 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for removing a `Resource` from the `World`.
+#[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandRemoveResource<R>
 where
@@ -67,6 +73,9 @@ where
     }
 }
 
+/// [`Effect`] that reserves a new empty `Entity` to be spawned, and inputs it to the provided
+/// function to cause another effect.
+#[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandSpawnEmptyAnd<F, E>(pub F)
 where
