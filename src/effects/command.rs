@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::Effect;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandQueue<C>(C)
+pub struct CommandQueue<C>(pub C)
 where
     C: Command;
 
@@ -21,7 +21,7 @@ where
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandInsertResource<R>(R)
+pub struct CommandInsertResource<R>(pub R)
 where
     R: Resource;
 
@@ -48,7 +48,8 @@ impl<R> CommandRemoveResource<R>
 where
     R: Resource,
 {
-    fn new() -> Self {
+    /// Construct a new [`CommandRemoveResource`]
+    pub fn new() -> Self {
         CommandRemoveResource {
             resource: PhantomData,
         }
@@ -67,7 +68,7 @@ where
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandSpawnEmptyAnd<F, E>(F)
+pub struct CommandSpawnEmptyAnd<F, E>(pub F)
 where
     F: FnOnce(Entity) -> E,
     E: Effect;
