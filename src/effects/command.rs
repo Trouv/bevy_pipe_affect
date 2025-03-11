@@ -72,25 +72,3 @@ where
         param.remove_resource::<R>();
     }
 }
-
-/// [`Effect`] that reserves a new empty `Entity` to be spawned, and inputs it to the provided
-/// function to cause another effect.
-#[doc = include_str!("defer_command_note.md")]
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandSpawnEmptyAnd<F, E>(pub F)
-where
-    F: FnOnce(Entity) -> E,
-    E: Effect;
-
-impl<F, E> Effect for CommandSpawnEmptyAnd<F, E>
-where
-    F: FnOnce(Entity) -> E,
-    E: Effect,
-{
-    type MutParam = ParamSet<'static, 'static, (Commands<'static, 'static>, E::MutParam)>;
-
-    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        let entity = param.p0().spawn_empty().id();
-        (self.0)(entity).affect(&mut param.p1());
-    }
-}
