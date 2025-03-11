@@ -23,9 +23,9 @@
 - [x] `CommandQueue<C>`
 - [x] `CommandInsertResource`
 - [x] `CommandRemoveResource`
-- [x] `CommandSpawnEmptyAnd`
 
 # Entity command effects:
+- [ ] `CommandSpawnEmptyAnd`
 - [ ] `CommandEntityInsert`
 - [ ] `CommandEntityRemove`
 - [ ] `CommandEntityDespawnRecursive`
