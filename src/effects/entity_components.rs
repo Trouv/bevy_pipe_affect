@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
-use bevy::ecs::query::{ReadOnlyQueryData, WorldQuery};
+use bevy::ecs::component::Mutable;
+use bevy::ecs::query::{QueryData, ReadOnlyQueryData};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy::utils::all_tuples;
+use variadics_please::all_tuples;
 
 use crate::Effect;
 
@@ -27,7 +28,7 @@ macro_rules! impl_effect_for_entity_components_put {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<$($C),*> Effect for EntityComponentsPut<($($C,)*)>
         where
-            $($C: Component,)*
+            $($C: Component<Mutability = Mutable>,)*
         {
             type MutParam = Query<'static, 'static, ($(&'static mut $C,)*)>;
 
@@ -58,7 +59,7 @@ all_tuples!(impl_effect_for_entity_components_put, 1, 15, C, c, r);
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsWith<F, C, Data = ()>
 where
-    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
+    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
@@ -70,7 +71,7 @@ where
 
 impl<F, C, Data> EntityComponentsWith<F, C, Data>
 where
-    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
+    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
@@ -89,8 +90,8 @@ macro_rules! impl_effect_for_entity_components_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data> Effect for EntityComponentsWith<F, ($($C,)*), Data>
         where
-            F: for<'a> Fn(($($C,)*), <Data as WorldQuery>::Item<'a>) -> ($($C,)*) + Send + Sync,
-            $($C: Component + Clone,)*
+            F: for<'a> Fn(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
+            $($C: Component<Mutability = Mutable> + Clone,)*
             Data: ReadOnlyQueryData + 'static,
         {
             type MutParam = Query<'static, 'static, (($(&'static mut $C,)*), Data)>;

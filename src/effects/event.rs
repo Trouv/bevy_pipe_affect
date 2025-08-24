@@ -15,7 +15,7 @@ where
     type MutParam = EventWriter<'static, E>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.send(self.0);
+        param.write(self.0);
     }
 }
 
