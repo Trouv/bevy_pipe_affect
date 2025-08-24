@@ -9,7 +9,7 @@
 *Need to research.. Could lead to confusing experience about which system the parameter is local to.*
 
 # Event Effects
-- [x] `EventSend`
+- [x] `EventWrite`
 
 # Components Effects
 - [x] `ComponentsPut`

@@ -6,7 +6,7 @@ mod resource;
 pub use resource::{ResPut, ResWith};
 
 mod event;
-pub use event::EventSend;
+pub use event::EventWrite;
 
 mod components;
 pub use components::{ComponentsPut, ComponentsWith};
