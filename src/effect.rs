@@ -1,6 +1,6 @@
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy::utils::all_tuples;
+use variadics_please::all_tuples;
 
 /// Define a state transition in `bevy`'s ECS.
 ///

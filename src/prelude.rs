@@ -5,7 +5,7 @@ pub use crate::effects::{
     ComponentsWith,
     EntityComponentsPut,
     EntityComponentsWith,
-    EventSend,
+    EventWrite,
     ResPut,
     ResWith,
 };

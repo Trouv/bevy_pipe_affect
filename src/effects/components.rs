@@ -1,9 +1,10 @@
 use std::marker::PhantomData;
 
-use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData, WorldQuery};
+use bevy::ecs::component::Mutable;
+use bevy::ecs::query::{QueryData, QueryFilter, ReadOnlyQueryData};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy::utils::all_tuples;
+use variadics_please::all_tuples;
 
 use crate::Effect;
 
@@ -38,7 +39,7 @@ macro_rules! impl_effect_for_components_put {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<$($C,)* Filter> Effect for ComponentsPut<($($C,)*), Filter>
         where
-            $($C: Component + Clone),*,
+            $($C: Component<Mutability = Mutable> + Clone),*,
             Filter: QueryFilter + 'static,
         {
             type MutParam = Query<'static, 'static, ($(&'static mut $C,)*), Filter>;
@@ -63,7 +64,7 @@ all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsWith<F, C, Data = (), Filter = ()>
 where
-    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
+    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -76,7 +77,7 @@ where
 
 impl<F, C, Data, Filter> ComponentsWith<F, C, Data, Filter>
 where
-    F: for<'a> Fn(C, <Data as WorldQuery>::Item<'a>) -> C + Send + Sync,
+    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -96,8 +97,8 @@ macro_rules! impl_effect_for_components_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data, Filter> Effect for ComponentsWith<F, ($($C,)*), Data, Filter>
         where
-            F: for<'a> Fn(($($C,)*), <Data as WorldQuery>::Item<'a>) -> ($($C,)*) + Send + Sync,
-            $($C: Component + Clone),*,
+            F: for<'a> Fn(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
+            $($C: Component<Mutability = Mutable> + Clone),*,
             Data: ReadOnlyQueryData + 'static,
             Filter: QueryFilter + 'static,
         {
