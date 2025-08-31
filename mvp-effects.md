@@ -21,16 +21,49 @@
 
 # Command Effects
 - [x] `CommandQueue<C>`
+
 - [x] `CommandInsertResource`
 - [x] `CommandRemoveResource`
 
-# Entity command effects:
-- [ ] `CommandSpawnEmptyAnd`
-- [ ] `CommandEntityInsert`
-- [ ] `CommandEntityRemove`
-- [ ] `CommandEntityDespawnRecursive`
+- [ ] `CommandSpawnAnd`
 
-*For MVP, `CommandEffect<C>` enables hierarchy commands*
+## Nice to have
+- [ ] `CommandSpawnBatch`
+- [ ] `CommandInsertBatch`
+
+- [ ] `CommandRunSystem`
+- [ ] `CommandRunSystemWith`
+- [ ] `CommandRegisterSystemAnd`
+- [ ] `CommandUnregisterSystemAnd`
+
+- [ ] `CommandTrigger`
+- [ ] `CommandTriggerTargets`
+- [ ] `CommandAddObserverAnd`
+
+- [ ] `CommandRunSchedule`
+
+# Entity command effects:
+- [ ] `EntityCommandQueue<C>`
+
+- [ ] `EntityCommandInsert`
+- [ ] `EntityCommandRemove`
+- [ ] `EntityCommandDespawn`
+
+## Nice to have
+- [ ] `EntityCommandRetain`
+- [ ] `EntityCommandClear`
+
+- [ ] `EntityCommandObserve`
+- [ ] `EntityCommandTrigger`
+
+- [ ] `EntityCommandSetParentInPlace`
+- [ ] `EntityCommandRemoveParentInPlace`
+
+- [ ] `EntityCommandInsertRecursive`
+- [ ] `EntityCommandRemoveRecursive`
+
+*Most relationship/target commands have feature parity with plain insertions
+and removals on the relationship entity, so they don't have effects for mvp*
 
 # Tuple effects
 - [x] `(E0, E1, ... En)`
@@ -39,7 +72,8 @@
 - [ ] `IterEffect`
 - [ ] `Vec<E>`
 - [ ] `Option<E>`
+- [ ] `Either<E0, E1>`
 
 # Result Effects
-- [ ] `OrLog(Result<E, Error>, LogLevel)`
-- [ ] `Result<E, Error> = OrLog(..., LogLevel::Error)`
+- [ ] `ResultWithHandler(Result<E, Er>, Fn(BevyError, ErrorContext))`
+- [ ] `Result<E, Er>` *uses global error handler, or panics if unavailable, just like vanilla bevy*
