@@ -78,7 +78,7 @@ mod tests {
     use proptest::prelude::*;
 
     use super::*;
-    use crate::effects::number_data::NumberComponent;
+    use crate::effects::number_data::{NumberComponent, NumberResource};
     use crate::prelude::affect;
 
     proptest! {
@@ -115,6 +115,34 @@ mod tests {
             let component_count = app.world_mut().query_filtered::<(), With<NumberComponent<0>>>().iter(app.world()).count();
 
             assert_eq!(component_count, 2);
+        }
+
+        #[test]
+        fn resource_commands_correctly_insert_and_remove(resource in any::<NumberResource>()) {
+            let mut app = App::new();
+
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+            struct InsertSystem;
+
+            app.add_systems(
+                Update,
+                (move || CommandInsertResource(resource)).pipe(affect).in_set(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().get_resource::<NumberResource>(), Some(&resource));
+
+            app.add_systems(
+                Update,
+                (move || CommandRemoveResource::<NumberResource>::new()).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert!(app.world().get_resource::<NumberResource>().is_none());
         }
     }
 }
