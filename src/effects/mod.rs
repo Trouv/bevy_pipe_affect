@@ -14,6 +14,9 @@ pub use components::{ComponentsPut, ComponentsWith};
 mod entity_components;
 pub use entity_components::{EntityComponentsPut, EntityComponentsWith};
 
+mod command;
+pub use command::CommandQueue;
+
 #[cfg(test)]
 mod one_way_fn;
 

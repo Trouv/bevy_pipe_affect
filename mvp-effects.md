@@ -20,15 +20,15 @@
 - [x] `EntityComponentsWith`
 
 # Command Effects
-- [ ] `InsertResource`
-- [ ] `RemoveResource`
-- [ ] `CommandEffect<C>`
+- [x] `CommandQueue<C>`
+- [ ] `CommandInsertResource`
+- [ ] `CommandRemoveResource`
 
 # Entity command effects:
-- [ ] `SpawnThen`
-- [ ] `EntityInsert`
-- [ ] `EntityRemove`
-- [ ] `EntityDespawn`
+- [ ] `CommandSpawnEmptyAnd`
+- [ ] `CommandEntityInsert`
+- [ ] `CommandEntityRemove`
+- [ ] `CommandEntityDespawnRecursive`
 
 *For MVP, `CommandEffect<C>` enables hierarchy commands*
 
