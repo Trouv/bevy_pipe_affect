@@ -1,9 +1,7 @@
 //! `use bevy_pipe_affect::prelude::*;` to import common items.
 
 pub use crate::effects::{
-    CommandInsertResource,
     CommandQueue,
-    CommandRemoveResource,
     ComponentsPut,
     ComponentsWith,
     EntityComponentsPut,
