@@ -4,6 +4,7 @@ pub use crate::effects::{
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
+    CommandSpawnAnd,
     ComponentsPut,
     ComponentsWith,
     EntityCommandInsert,

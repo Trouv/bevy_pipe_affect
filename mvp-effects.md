@@ -25,7 +25,7 @@
 - [x] `CommandInsertResource`
 - [x] `CommandRemoveResource`
 
-- [ ] `CommandSpawnAnd`
+- [x] `CommandSpawnAnd`
 
 ## Nice to have
 - [ ] `CommandSpawnBatch`

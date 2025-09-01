@@ -15,7 +15,7 @@ mod entity_components;
 pub use entity_components::{EntityComponentsPut, EntityComponentsWith};
 
 mod command;
-pub use command::{CommandInsertResource, CommandQueue, CommandRemoveResource};
+pub use command::{CommandInsertResource, CommandQueue, CommandRemoveResource, CommandSpawnAnd};
 
 mod entity_command;
 pub use entity_command::{EntityCommandInsert, EntityCommandQueue, EntityCommandRemove};
