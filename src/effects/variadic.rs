@@ -21,3 +21,9 @@ macro_rules! impl_effect {
 }
 
 all_tuples!(impl_effect, 1, 8, E, e, p);
+
+impl Effect for () {
+    type MutParam = ();
+
+    fn affect(self, _: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {}
+}

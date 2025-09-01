@@ -65,8 +65,9 @@
 *Most relationship/target commands have feature parity with plain insertions
 and removals on the relationship entity, so they don't have effects for mvp*
 
-# Tuple effects
+# Variadic effects
 - [x] `(E0, E1, ... En)`
+- [x] `()`
 
 # Iterator Effects
 - [ ] `IterEffect`
