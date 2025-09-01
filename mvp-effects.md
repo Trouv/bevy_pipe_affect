@@ -43,7 +43,7 @@
 - [ ] `CommandRunSchedule`
 
 # Entity command effects:
-- [ ] `EntityCommandQueue<C>`
+- [x] `EntityCommandQueue<C>`
 
 - [ ] `EntityCommandInsert`
 - [ ] `EntityCommandRemove`

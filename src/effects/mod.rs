@@ -17,6 +17,9 @@ pub use entity_components::{EntityComponentsPut, EntityComponentsWith};
 mod command;
 pub use command::{CommandInsertResource, CommandQueue, CommandRemoveResource};
 
+mod entity_command;
+pub use entity_command::EntityCommandQueue;
+
 mod variadic;
 
 #[cfg(test)]
