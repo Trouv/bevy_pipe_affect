@@ -73,6 +73,31 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for spawning an entity with the provided `Bundle`, then
+/// supplies the entity id to the provided effect-producing function to cause another effect.
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct CommandSpawnAnd<B, F, E>(pub B, pub F)
+where
+    B: Bundle,
+    F: FnOnce(Entity) -> E,
+    E: Effect;
+
+impl<B, F, E> Effect for CommandSpawnAnd<B, F, E>
+where
+    B: Bundle,
+    F: FnOnce(Entity) -> E,
+    E: Effect,
+{
+    type MutParam = (Commands<'static, 'static>, E::MutParam);
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        let entity = param.0.spawn(self.0).id();
+
+        self.1(entity).affect(&mut param.1);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
@@ -144,5 +169,62 @@ mod tests {
 
             assert!(app.world().get_resource::<NumberResource>().is_none());
         }
+    }
+
+    #[test]
+    fn command_spawn_effect_can_create_parent_child_relationship() {
+        let mut app = App::new();
+
+        let children_count = app
+            .world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .count();
+
+        assert_eq!(children_count, 0);
+
+        #[derive(Resource)]
+        struct ParentEntity(Entity);
+
+        app.add_systems(
+            Update,
+            (move || {
+                CommandSpawnAnd((), move |parent| {
+                    (
+                        CommandSpawnAnd(ChildOf(parent), |_| ()),
+                        CommandInsertResource(ParentEntity(parent)),
+                    )
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+
+        let children_count = app
+            .world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .count();
+
+        assert_eq!(children_count, 1);
+
+        let parent_entity = app.world().resource::<ParentEntity>().0;
+
+        app.world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .for_each(|child_of| {
+                assert_eq!(child_of.0, parent_entity);
+            });
+
+        let children_of_parent_count = app
+            .world()
+            .entity(parent_entity)
+            .get::<Children>()
+            .iter()
+            .count();
+
+        assert_eq!(children_of_parent_count, 1);
     }
 }
