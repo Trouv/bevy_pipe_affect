@@ -18,7 +18,7 @@ mod command;
 pub use command::{CommandInsertResource, CommandQueue, CommandRemoveResource};
 
 mod entity_command;
-pub use entity_command::EntityCommandQueue;
+pub use entity_command::{EntityCommandInsert, EntityCommandQueue, EntityCommandRemove};
 
 mod variadic;
 
