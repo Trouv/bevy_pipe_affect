@@ -45,8 +45,8 @@
 # Entity command effects:
 - [x] `EntityCommandQueue<C>`
 
-- [ ] `EntityCommandInsert`
-- [ ] `EntityCommandRemove`
+- [x] `EntityCommandInsert`
+- [x] `EntityCommandRemove`
 - [ ] `EntityCommandDespawn`
 
 ## Nice to have
