@@ -68,7 +68,7 @@ and removals on the relationship entity, so they don't have effects for mvp*
 # Algebra effects
 - [x] `(E0, E1, ... En)`
 - [x] `()`
-- [ ] `Either<E0, E1>`
+- [x] `Either<E0, E1>`
 
 # Iterator Effects
 - [ ] `IterEffect`
