@@ -16,6 +16,7 @@ pub use crate::effects::{
     EntityComponentsPut,
     EntityComponentsWith,
     EventWrite,
+    IterEffect,
     ResPut,
     ResWith,
 };

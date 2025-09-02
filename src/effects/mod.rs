@@ -27,6 +27,9 @@ pub use entity_command::{
 
 mod algebra;
 
+mod iter;
+pub use iter::IterEffect;
+
 #[cfg(test)]
 mod one_way_fn;
 
