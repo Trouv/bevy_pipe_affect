@@ -1,5 +1,7 @@
 //! `use bevy_pipe_affect::prelude::*;` to import common items.
 
+pub use either::Either;
+
 pub use crate::effects::{
     CommandInsertResource,
     CommandQueue,

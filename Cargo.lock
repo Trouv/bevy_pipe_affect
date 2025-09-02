@@ -905,6 +905,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "blake2",
+ "either",
  "proptest",
  "proptest-derive",
  "variadics_please",
