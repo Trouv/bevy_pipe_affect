@@ -47,7 +47,7 @@
 
 - [x] `EntityCommandInsert`
 - [x] `EntityCommandRemove`
-- [ ] `EntityCommandDespawn`
+- [x] `EntityCommandDespawn`
 
 ## Nice to have
 - [ ] `EntityCommandRetain`

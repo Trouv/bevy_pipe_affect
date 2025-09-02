@@ -7,6 +7,7 @@ pub use crate::effects::{
     CommandSpawnAnd,
     ComponentsPut,
     ComponentsWith,
+    EntityCommandDespawn,
     EntityCommandInsert,
     EntityCommandQueue,
     EntityCommandRemove,

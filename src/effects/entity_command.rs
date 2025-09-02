@@ -97,12 +97,26 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for despawning an `Entity`.
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct EntityCommandDespawn(pub Entity);
+
+impl Effect for EntityCommandDespawn {
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param.entity(self.0).despawn();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
 
     use super::*;
     use crate::effects::number_data::NumberComponent;
+    use crate::effects::{CommandInsertResource, CommandSpawnAnd};
     use crate::prelude::affect;
 
     proptest! {
@@ -190,5 +204,36 @@ mod tests {
             assert!(actual_component_0.is_none());
             assert!(actual_component_1.is_none());
         }
+    }
+
+    #[test]
+    fn commands_can_spawn_and_despawn_entities() {
+        #[derive(Resource, Clone)]
+        struct EntityHolder(Entity);
+
+        let mut app = App::new();
+
+        app.add_systems(
+            Update,
+            (move || CommandSpawnAnd((), |entity| CommandInsertResource(EntityHolder(entity))))
+                .pipe(affect)
+                .run_if(not(resource_exists::<EntityHolder>)),
+        );
+
+        app.update();
+
+        let EntityHolder(entity) = app.world().resource::<EntityHolder>().clone();
+
+        assert!(app.world().get_entity(entity).is_ok());
+
+        app.add_systems(
+            Update,
+            (move |entity_holder: Res<EntityHolder>| EntityCommandDespawn(entity_holder.0))
+                .pipe(affect),
+        );
+
+        app.update();
+
+        assert!(app.world().get_entity(entity).is_err());
     }
 }
