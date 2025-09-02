@@ -25,7 +25,7 @@ pub use entity_command::{
     EntityCommandRemove,
 };
 
-mod variadic;
+mod algebra;
 
 #[cfg(test)]
 mod one_way_fn;

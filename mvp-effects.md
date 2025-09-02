@@ -65,15 +65,15 @@
 *Most relationship/target commands have feature parity with plain insertions
 and removals on the relationship entity, so they don't have effects for mvp*
 
-# Variadic effects
+# Algebra effects
 - [x] `(E0, E1, ... En)`
 - [x] `()`
+- [ ] `Either<E0, E1>`
 
 # Iterator Effects
 - [ ] `IterEffect`
 - [ ] `Vec<E>`
 - [ ] `Option<E>`
-- [ ] `Either<E0, E1>`
 
 # Result Effects
 - [ ] `ResultWithHandler(Result<E, Er>, Fn(BevyError, ErrorContext))`
