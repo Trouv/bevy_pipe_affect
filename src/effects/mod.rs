@@ -30,6 +30,9 @@ mod algebra;
 mod iter;
 pub use iter::IterEffect;
 
+mod error;
+pub use error::AffectOrHandle;
+
 #[cfg(test)]
 mod one_way_fn;
 

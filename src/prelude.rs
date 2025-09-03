@@ -3,6 +3,7 @@
 pub use either::Either;
 
 pub use crate::effects::{
+    AffectOrHandle,
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
