@@ -76,5 +76,5 @@ and removals on the relationship entity, so they don't have effects for mvp*
 - [x] `Option<E>`
 
 # Result Effects
-- [ ] `ResultWithHandler(Result<E, Er>, Fn(BevyError, ErrorContext))`
-- [ ] `Result<E, Er>` *uses global error handler, or panics if unavailable, just like vanilla bevy*
+- [x] `AffectOrHandle(Result<E, Er>, Fn(BevyError, ErrorContext))`
+- [x] `Result<E, Er>` *uses global error handler, or panics if unavailable, just like vanilla bevy*
