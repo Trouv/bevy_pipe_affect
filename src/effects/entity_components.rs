@@ -12,21 +12,21 @@ use crate::Effect;
 ///
 /// If an entity with these components cannot be found, logs an error.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityComponentsPut<C> {
+pub struct EntityComponentsSet<C> {
     entity: Entity,
     components: C,
 }
 
-impl<C> EntityComponentsPut<C> {
-    /// Construct a new [`EntityComponentsPut`].
+impl<C> EntityComponentsSet<C> {
+    /// Construct a new [`EntityComponentsSet`].
     pub fn new(entity: Entity, components: C) -> Self {
-        EntityComponentsPut { entity, components }
+        EntityComponentsSet { entity, components }
     }
 }
 
-macro_rules! impl_effect_for_entity_components_put {
+macro_rules! impl_effect_for_entity_components_set {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<$($C),*> Effect for EntityComponentsPut<($($C,)*)>
+        impl<$($C),*> Effect for EntityComponentsSet<($($C,)*)>
         where
             $($C: Component<Mutability = Mutable>,)*
         {
@@ -36,7 +36,7 @@ macro_rules! impl_effect_for_entity_components_put {
                 let ($(mut $r,)*) = match param.get_mut(self.entity) {
                     Ok(r) => r,
                     Err(e) => {
-                        error!("unable to query entity in EntityComponentsPut: {e}");
+                        error!("unable to query entity in EntityComponentsSet: {e}");
                         return ();
                     }
                 };
@@ -49,7 +49,7 @@ macro_rules! impl_effect_for_entity_components_put {
     }
 }
 
-all_tuples!(impl_effect_for_entity_components_put, 1, 15, C, c, r);
+all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
 ///
@@ -57,7 +57,7 @@ all_tuples!(impl_effect_for_entity_components_put, 1, 15, C, c, r);
 ///
 /// If an entity with these components cannot be found, logs an error.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityComponentsWith<F, C, Data = ()>
+pub struct EntityComponentsSetWith<F, C, Data = ()>
 where
     F: for<'a> FnOnce(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
@@ -69,15 +69,15 @@ where
     data: PhantomData<Data>,
 }
 
-impl<F, C, Data> EntityComponentsWith<F, C, Data>
+impl<F, C, Data> EntityComponentsSetWith<F, C, Data>
 where
     F: for<'a> FnOnce(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    /// Construct a new [`EntityComponentsWith`].
+    /// Construct a new [`EntityComponentsSetWith`].
     pub fn new(entity: Entity, f: F) -> Self {
-        EntityComponentsWith {
+        EntityComponentsSetWith {
             entity,
             f,
             components: PhantomData,
@@ -86,9 +86,9 @@ where
     }
 }
 
-macro_rules! impl_effect_for_entity_components_with {
+macro_rules! impl_effect_for_entity_components_set_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Data> Effect for EntityComponentsWith<F, ($($C,)*), Data>
+        impl<F, $($C,)* Data> Effect for EntityComponentsSetWith<F, ($($C,)*), Data>
         where
             F: for<'a> FnOnce(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone,)*
@@ -100,7 +100,7 @@ macro_rules! impl_effect_for_entity_components_with {
                 let (($(mut $r,)*), data) = match param.get_mut(self.entity) {
                     Ok(r) => r,
                     Err(e) => {
-                        error!("unable to query entity in EntityComponentsWith: {e}");
+                        error!("unable to query entity in EntityComponentsSetWith: {e}");
                         return ();
                     }
                 };
@@ -113,7 +113,7 @@ macro_rules! impl_effect_for_entity_components_with {
     };
 }
 
-all_tuples!(impl_effect_for_entity_components_with, 1, 15, C, c, r);
+all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
 
 #[cfg(test)]
 mod tests {
@@ -160,7 +160,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityComponentsPut::new(entity_to_put, put)).pipe(affect),
+                (move || EntityComponentsSet::new(entity_to_put, put)).pipe(affect),
             );
 
             app.update();
@@ -198,7 +198,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    EntityComponentsWith::<_, _, ()>::new(
+                    EntityComponentsSetWith::<_, _, ()>::new(
                         entity_to_transform,
                         two_number_components_one_way_transform_with_void_query_data(f0, f1)
                     )
@@ -242,7 +242,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    EntityComponentsWith::<_, _, &NumberComponent<0>>::new(
+                    EntityComponentsSetWith::<_, _, &NumberComponent<0>>::new(
                         entity_to_transform,
                         n0_query_data_to_n1_through_one_way_function(f),
                     )

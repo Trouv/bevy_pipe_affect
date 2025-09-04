@@ -52,7 +52,7 @@ mod tests {
     use proptest::prelude::*;
 
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{CommandSpawnAnd, EventWrite, ResPut};
+    use crate::effects::{CommandSpawnAnd, EventWrite, ResSet};
     use crate::prelude::affect;
 
     proptest! {
@@ -90,7 +90,7 @@ mod tests {
                 Update,
                 (|num_updates: Res<NumUpdates>| {
                     (
-                        ResPut(NumUpdates(num_updates.0 + 1)),
+                        ResSet(NumUpdates(num_updates.0 + 1)),
                         (num_updates.0 % 2 == 0).then_some(EventWrite(UpdateIsEven)),
                     )
                 })
