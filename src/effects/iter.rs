@@ -1,13 +1,15 @@
 use crate::Effect;
 
-/// [`Effect`] that causes an effect for each item in the iterator.
+/// [`Effect`] that causes all effects in the provided iterator.
+///
+/// Using a plain `Vec` or `Option` as an effect works too.
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
-pub struct IterEffect<I>(pub I)
+pub struct AffectMany<I>(pub I)
 where
     I: IntoIterator,
     I::Item: Effect;
 
-impl<I> Effect for IterEffect<I>
+impl<I> Effect for AffectMany<I>
 where
     I: IntoIterator,
     I::Item: Effect,
@@ -28,7 +30,7 @@ where
     type MutParam = E::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        IterEffect(self).affect(param);
+        AffectMany(self).affect(param);
     }
 }
 
@@ -39,7 +41,7 @@ where
     type MutParam = E::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        IterEffect(self).affect(param);
+        AffectMany(self).affect(param);
     }
 }
 

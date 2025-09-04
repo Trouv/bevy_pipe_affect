@@ -71,7 +71,7 @@ and removals on the relationship entity, so they don't have effects for mvp*
 - [x] `Either<E0, E1>`
 
 # Iterator Effects
-- [x] `IterEffect`
+- [x] `AffectMany`
 - [x] `Vec<E>`
 - [x] `Option<E>`
 

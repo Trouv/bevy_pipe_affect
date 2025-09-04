@@ -3,6 +3,7 @@
 pub use either::Either;
 
 pub use crate::effects::{
+    AffectMany,
     AffectOrHandle,
     CommandInsertResource,
     CommandQueue,
@@ -17,7 +18,6 @@ pub use crate::effects::{
     EntityComponentsPut,
     EntityComponentsWith,
     EventWrite,
-    IterEffect,
     ResPut,
     ResWith,
 };
