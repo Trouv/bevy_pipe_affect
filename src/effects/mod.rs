@@ -28,7 +28,7 @@ pub use entity_command::{
 mod algebra;
 
 mod iter;
-pub use iter::IterEffect;
+pub use iter::AffectMany;
 
 mod error;
 pub use error::AffectOrHandle;
