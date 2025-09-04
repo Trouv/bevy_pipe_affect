@@ -1,10 +1,10 @@
 # Resource Effects
-- [x] `ResPut`
-- [x] `ResWith`
+- [x] `ResSet`
+- [x] `ResSetWith`
 
 # Local?
-- [ ] `LocalPut`?
-- [ ] `LocalWith`?
+- [ ] `LocalSet`?
+- [ ] `LocalSetWith`?
 
 *Need to research.. Could lead to confusing experience about which system the parameter is local to.*
 
@@ -12,12 +12,12 @@
 - [x] `EventWrite`
 
 # Components Effects
-- [x] `ComponentsPut`
-- [x] `ComponentsWith`
+- [x] `ComponentsSet`
+- [x] `ComponentsSetWith`
 
 # EntityComponents Effects
-- [x] `EntityComponentsPut`
-- [x] `EntityComponentsWith`
+- [x] `EntityComponentsSet`
+- [x] `EntityComponentsSetWith`
 
 # Command Effects
 - [x] `CommandQueue<C>`

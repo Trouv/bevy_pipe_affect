@@ -3,16 +3,16 @@
 //! [`Effect`]: crate::Effect
 
 mod resource;
-pub use resource::{ResPut, ResWith};
+pub use resource::{ResSet, ResSetWith};
 
 mod event;
 pub use event::EventWrite;
 
 mod components;
-pub use components::{ComponentsPut, ComponentsWith};
+pub use components::{ComponentsSet, ComponentsSetWith};
 
 mod entity_components;
-pub use entity_components::{EntityComponentsPut, EntityComponentsWith};
+pub use entity_components::{EntityComponentsSet, EntityComponentsSetWith};
 
 mod command;
 pub use command::{CommandInsertResource, CommandQueue, CommandRemoveResource, CommandSpawnAnd};

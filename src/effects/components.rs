@@ -12,7 +12,7 @@ use crate::Effect;
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsPut<C, Filter = ()>
+pub struct ComponentsSet<C, Filter = ()>
 where
     C: Clone,
     Filter: QueryFilter,
@@ -21,23 +21,23 @@ where
     filter: PhantomData<Filter>,
 }
 
-impl<C, Filter> ComponentsPut<C, Filter>
+impl<C, Filter> ComponentsSet<C, Filter>
 where
     C: Clone,
     Filter: QueryFilter,
 {
-    /// Construct a new [`ComponentsPut`].
+    /// Construct a new [`ComponentsSet`].
     pub fn new(components: C) -> Self {
-        ComponentsPut {
+        ComponentsSet {
             components,
             filter: PhantomData,
         }
     }
 }
 
-macro_rules! impl_effect_for_components_put {
+macro_rules! impl_effect_for_components_set {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<$($C,)* Filter> Effect for ComponentsPut<($($C,)*), Filter>
+        impl<$($C,)* Filter> Effect for ComponentsSet<($($C,)*), Filter>
         where
             $($C: Component<Mutability = Mutable> + Clone),*,
             Filter: QueryFilter + 'static,
@@ -54,7 +54,7 @@ macro_rules! impl_effect_for_components_put {
     }
 }
 
-all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
+all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms `Component`s of all entities in a query with the provided function.
 ///
@@ -62,7 +62,7 @@ all_tuples!(impl_effect_for_components_put, 1, 15, C, c, r);
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsWith<F, C, Data = (), Filter = ()>
+pub struct ComponentsSetWith<F, C, Data = (), Filter = ()>
 where
     F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
@@ -75,16 +75,16 @@ where
     filter: PhantomData<Filter>,
 }
 
-impl<F, C, Data, Filter> ComponentsWith<F, C, Data, Filter>
+impl<F, C, Data, Filter> ComponentsSetWith<F, C, Data, Filter>
 where
     F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
 {
-    /// Construct a new [`ComponentsWith`].
+    /// Construct a new [`ComponentsSetWith`].
     pub fn new(f: F) -> Self {
-        ComponentsWith {
+        ComponentsSetWith {
             f,
             components: PhantomData,
             data: PhantomData,
@@ -93,9 +93,9 @@ where
     }
 }
 
-macro_rules! impl_effect_for_components_with {
+macro_rules! impl_effect_for_components_set_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Data, Filter> Effect for ComponentsWith<F, ($($C,)*), Data, Filter>
+        impl<F, $($C,)* Data, Filter> Effect for ComponentsSetWith<F, ($($C,)*), Data, Filter>
         where
             F: for<'a> Fn(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone),*,
@@ -115,7 +115,7 @@ macro_rules! impl_effect_for_components_with {
     }
 }
 
-all_tuples!(impl_effect_for_components_with, 1, 15, C, c, r);
+all_tuples!(impl_effect_for_components_set_with, 1, 15, C, c, r);
 
 #[cfg(test)]
 mod tests {
@@ -174,7 +174,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || ComponentsPut::<_, With<MarkerComponent>>::new(put)).pipe(affect),
+                (move || ComponentsSet::<_, With<MarkerComponent>>::new(put)).pipe(affect),
             );
 
             app.update();
@@ -214,7 +214,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    ComponentsWith::<_, _, (), With<MarkerComponent>>::new(
+                    ComponentsSetWith::<_, _, (), With<MarkerComponent>>::new(
                         two_number_components_one_way_transform_with_void_query_data(f0, f1)
                     )
                 })
@@ -261,7 +261,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    ComponentsWith::<_, _, &NumberComponent<0>, With<MarkerComponent>>::new(
+                    ComponentsSetWith::<_, _, &NumberComponent<0>, With<MarkerComponent>>::new(
                         n0_query_data_to_n1_through_one_way_function(f)
                     )
                 })

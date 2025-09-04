@@ -7,11 +7,11 @@ use crate::effect::Effect;
 
 /// [`Effect`] that sets a `Resource` to the provided value.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ResPut<R>(pub R)
+pub struct ResSet<R>(pub R)
 where
     R: Resource;
 
-impl<R> Effect for ResPut<R>
+impl<R> Effect for ResSet<R>
 where
     R: Resource,
 {
@@ -24,7 +24,7 @@ where
 
 /// [`Effect`] that transforms a `Resource` with the provided function.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ResWith<F, R>
+pub struct ResSetWith<F, R>
 where
     F: FnOnce(R) -> R,
     R: Resource + Clone,
@@ -33,21 +33,21 @@ where
     phantom: PhantomData<R>,
 }
 
-impl<F, R> ResWith<F, R>
+impl<F, R> ResSetWith<F, R>
 where
     F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
-    /// Construct a new [`ResWith`].
+    /// Construct a new [`ResSetWith`].
     pub fn new(f: F) -> Self {
-        ResWith {
+        ResSetWith {
             f,
             phantom: PhantomData,
         }
     }
 }
 
-impl<F, R> Effect for ResWith<F, R>
+impl<F, R> Effect for ResSetWith<F, R>
 where
     F: FnOnce(R) -> R,
     R: Resource + Clone,
@@ -76,7 +76,7 @@ mod tests {
             prop_assume!(initial != put);
 
             app.insert_resource(initial)
-                .add_systems(Update, (move || ResPut(put)).pipe(affect));
+                .add_systems(Update, (move || ResSet(put)).pipe(affect));
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
@@ -93,7 +93,7 @@ mod tests {
 
             app.insert_resource(initial.clone()).add_systems(
                 Update,
-                (move || ResWith::new(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
+                (move || ResSetWith::new(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
             );
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);

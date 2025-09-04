@@ -18,7 +18,7 @@ use crate::Effect;
 ///     let result = match clear_color.0 {
 ///         Color::Srgba(srgba) => {
 ///             let color = Color::Srgba(Srgba { red: 0., ..srgba });
-///             Ok(ResPut(ClearColor(color)))
+///             Ok(ResSet(ClearColor(color)))
 ///         }
 ///         _ => Err("color is not srgba"),
 ///     };

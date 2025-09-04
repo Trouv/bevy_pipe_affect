@@ -9,17 +9,17 @@ pub use crate::effects::{
     CommandQueue,
     CommandRemoveResource,
     CommandSpawnAnd,
-    ComponentsPut,
-    ComponentsWith,
+    ComponentsSet,
+    ComponentsSetWith,
     EntityCommandDespawn,
     EntityCommandInsert,
     EntityCommandQueue,
     EntityCommandRemove,
-    EntityComponentsPut,
-    EntityComponentsWith,
+    EntityComponentsSet,
+    EntityComponentsSetWith,
     EventWrite,
-    ResPut,
-    ResWith,
+    ResSet,
+    ResSetWith,
 };
 pub use crate::system_combinators::{affect, and_compose};
 pub use crate::{Effect, EffectOut};
