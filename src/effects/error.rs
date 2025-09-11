@@ -18,12 +18,17 @@ use crate::Effect;
 ///     let result = match clear_color.0 {
 ///         Color::Srgba(srgba) => {
 ///             let color = Color::Srgba(Srgba { red: 0., ..srgba });
-///             Ok(ResSet(ClearColor(color)))
+///             Ok(ResSet {
+///                 value: ClearColor(color),
+///             })
 ///         }
 ///         _ => Err("color is not srgba"),
 ///     };
 ///
-///     AffectOrHandle(result, bevy::ecs::error::warn)
+///     AffectOrHandle {
+///         result,
+///         handler: bevy::ecs::error::warn,
+///     }
 /// }
 ///
 /// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
