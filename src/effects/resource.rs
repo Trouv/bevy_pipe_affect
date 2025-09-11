@@ -7,9 +7,13 @@ use crate::effect::Effect;
 
 /// [`Effect`] that sets a `Resource` to the provided value.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ResSet<R>(pub R)
+pub struct ResSet<R>
 where
-    R: Resource;
+    R: Resource,
+{
+    /// The value that the resource will be set to.
+    pub value: R,
+}
 
 impl<R> Effect for ResSet<R>
 where
@@ -18,7 +22,7 @@ where
     type MutParam = ResMut<'static, R>;
 
     fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        **param = self.0;
+        **param = self.value;
     }
 }
 
@@ -76,7 +80,7 @@ mod tests {
             prop_assume!(initial != put);
 
             app.insert_resource(initial)
-                .add_systems(Update, (move || ResSet(put)).pipe(affect));
+                .add_systems(Update, (move || ResSet { value: put }).pipe(affect));
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 

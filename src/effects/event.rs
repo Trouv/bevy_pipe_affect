@@ -4,9 +4,13 @@ use crate::Effect;
 
 /// [`Effect`] that sends an event `E` to the corresponding `EventWriter`.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct EventWrite<E>(pub E)
+pub struct EventWrite<E>
 where
-    E: Event;
+    E: Event,
+{
+    /// The event data that will be written to the `EventWriter`.
+    pub event: E,
+}
 
 impl<E> Effect for EventWrite<E>
 where
@@ -15,7 +19,7 @@ where
     type MutParam = EventWriter<'static, E>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.write(self.0);
+        param.write(self.event);
     }
 }
 
@@ -34,7 +38,7 @@ mod tests {
 
             let mut events_clone = events.clone();
             app.add_event::<NumberEvent>()
-                .add_systems(Update, (move || EventWrite(events_clone.remove(0))).pipe(affect));
+                .add_systems(Update, (move || EventWrite { event: events_clone.remove(0) }).pipe(affect));
 
             for expected in events {
                 app.update();

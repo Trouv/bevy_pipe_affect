@@ -61,9 +61,9 @@ mod tests {
             app.insert_resource(NumberResource(current_value)).add_systems(
                 Update,
                 (|num: Res<NumberResource>| if num.0 % 2 == 0 {
-                    Either::Left(ResSet(NumberResource(num.0 / 2)))
+                    Either::Left(ResSet { value: NumberResource(num.0 / 2)})
                 } else {
-                    Either::Right(ResSet(NumberResource(3 * num.0 + 1)))
+                    Either::Right(ResSet { value: NumberResource(3 * num.0 + 1) })
                 })
                 .pipe(affect),
             );
