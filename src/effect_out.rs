@@ -8,7 +8,9 @@ pub struct EffectOut<E, O>
 where
     E: Effect,
 {
+    /// The effect to produce.
     pub effect: E,
+    /// The normal pipe output.
     pub out: O,
 }
 
