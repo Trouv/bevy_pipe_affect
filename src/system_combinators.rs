@@ -16,7 +16,9 @@ use crate::{Effect, EffectOut};
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
-///     ResSet(ClearColor(Color::BLACK))
+///     ResSet {
+///         value: ClearColor(Color::BLACK),
+///     }
 /// }
 ///
 /// assert_is_system(system_with_effects.pipe(affect))
@@ -28,7 +30,7 @@ where
     I: Into<EffectOut<E, O>>,
     E: Effect,
 {
-    let EffectOut(effect, out) = into_effect_out.into();
+    let EffectOut { effect, out } = into_effect_out.into();
     effect.affect(&mut param.into_inner());
 
     out
@@ -52,11 +54,15 @@ where
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
-///     ResSet(ClearColor(Color::BLACK))
+///     ResSet {
+///         value: ClearColor(Color::BLACK),
+///     }
 /// }
 ///
 /// fn another_system_with_effects() -> impl Effect {
-///     ResSet(UiScale(2.0))
+///     ResSet {
+///         value: UiScale(2.0),
+///     }
 /// }
 ///
 /// assert_is_system(
@@ -81,9 +87,15 @@ where
     for<'a> System::In: SystemInput<Inner<'a> = O1>,
 {
     move |In(into_effect_out), params| {
-        let EffectOut(e1, input) = into_effect_out.into();
-        let EffectOut(e2, out) = s.run(input, params.into_inner()).into();
+        let EffectOut {
+            effect: e1,
+            out: input,
+        } = into_effect_out.into();
+        let EffectOut { effect: e2, out } = s.run(input, params.into_inner()).into();
 
-        EffectOut(compose_fn(e1, e2), out)
+        EffectOut {
+            effect: compose_fn(e1, e2),
+            out,
+        }
     }
 }

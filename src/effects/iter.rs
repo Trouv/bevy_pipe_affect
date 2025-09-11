@@ -4,10 +4,14 @@ use crate::Effect;
 ///
 /// Using a plain `Vec` or `Option` as an effect works too.
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
-pub struct AffectMany<I>(pub I)
+pub struct AffectMany<I>
 where
     I: IntoIterator,
-    I::Item: Effect;
+    I::Item: Effect,
+{
+    /// The iterator of effects to affect.
+    pub iter: I,
+}
 
 impl<I> Effect for AffectMany<I>
 where
@@ -17,7 +21,7 @@ where
     type MutParam = <I::Item as Effect>::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        self.0.into_iter().for_each(|e| {
+        self.iter.into_iter().for_each(|e| {
             e.affect(param);
         });
     }
@@ -30,7 +34,7 @@ where
     type MutParam = E::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        AffectMany(self).affect(param);
+        AffectMany { iter: self }.affect(param);
     }
 }
 
@@ -41,7 +45,7 @@ where
     type MutParam = E::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        AffectMany(self).affect(param);
+        AffectMany { iter: self }.affect(param);
     }
 }
 
@@ -61,7 +65,7 @@ mod tests {
             let mut app = App::new();
 
             let components_clone = components.clone();
-            app.add_systems(Update, (move || components_clone.clone().into_iter().map(|c| CommandSpawnAnd(c, |_| ())).collect::<Vec<_>>()).pipe(affect));
+            app.add_systems(Update, (move || components_clone.clone().into_iter().map(|c| CommandSpawnAnd { bundle: c, f: |_| () }).collect::<Vec<_>>()).pipe(affect));
 
             app.update();
 
@@ -90,8 +94,12 @@ mod tests {
                 Update,
                 (|num_updates: Res<NumUpdates>| {
                     (
-                        ResSet(NumUpdates(num_updates.0 + 1)),
-                        (num_updates.0 % 2 == 0).then_some(EventWrite(UpdateIsEven)),
+                        ResSet {
+                            value: NumUpdates(num_updates.0 + 1),
+                        },
+                        (num_updates.0 % 2 == 0).then_some(EventWrite {
+                            event: UpdateIsEven,
+                        }),
                     )
                 })
                 .pipe(affect),

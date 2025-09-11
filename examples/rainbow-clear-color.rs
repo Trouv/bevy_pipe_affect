@@ -21,7 +21,9 @@ fn sample_system_with_effect_and_input(
     In(theta): In<f32>,
     current: Res<ClearColor>,
 ) -> impl Effect {
-    ResSet(ClearColor(current.0.rotate_hue(theta)))
+    ResSet {
+        value: ClearColor(current.0.rotate_hue(theta)),
+    }
 }
 
 #[derive(Resource, Default)]
@@ -30,8 +32,10 @@ struct NumUpdates(u32);
 fn sample_system_with_effect_and_output(
     num_updates: Res<NumUpdates>,
 ) -> EffectOut<ResSet<NumUpdates>, f32> {
-    EffectOut(
-        ResSet(NumUpdates(num_updates.0 + 1)),
-        (num_updates.0 % 10) as f32 / 10.,
-    )
+    EffectOut {
+        effect: ResSet {
+            value: NumUpdates(num_updates.0 + 1),
+        },
+        out: (num_updates.0 % 10) as f32 / 10.,
+    }
 }

@@ -47,9 +47,15 @@ where
 /// [`Effect`] that queues a command for inserting the provided `Bundle` onto the `Entity`.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityCommandInsert<B>(pub Entity, pub B)
+pub struct EntityCommandInsert<B>
 where
-    B: Bundle;
+    B: Bundle,
+{
+    /// The entity to insert to.
+    pub entity: Entity,
+    /// The bundle to insert.
+    pub bundle: B,
+}
 
 impl<B> Effect for EntityCommandInsert<B>
 where
@@ -58,7 +64,7 @@ where
     type MutParam = Commands<'static, 'static>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.entity(self.0).insert(self.1);
+        param.entity(self.entity).insert(self.bundle);
     }
 }
 
@@ -100,13 +106,16 @@ where
 /// [`Effect`] that queues a command for despawning an `Entity`.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityCommandDespawn(pub Entity);
+pub struct EntityCommandDespawn {
+    /// The entity to despawn.
+    pub entity: Entity,
+}
 
 impl Effect for EntityCommandDespawn {
     type MutParam = Commands<'static, 'static>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.entity(self.0).despawn();
+        param.entity(self.entity).despawn();
     }
 }
 
@@ -167,7 +176,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandInsert(entity, (component_0, component_1))).pipe(affect).in_set(InsertSystem),
+                (move || EntityCommandInsert { entity, bundle: (component_0, component_1) }).pipe(affect).in_set(InsertSystem),
             );
 
             app.update();
@@ -215,9 +224,14 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move || CommandSpawnAnd((), |entity| CommandInsertResource(EntityHolder(entity))))
-                .pipe(affect)
-                .run_if(not(resource_exists::<EntityHolder>)),
+            (move || CommandSpawnAnd {
+                bundle: (),
+                f: |entity| CommandInsertResource {
+                    resource: EntityHolder(entity),
+                },
+            })
+            .pipe(affect)
+            .run_if(not(resource_exists::<EntityHolder>)),
         );
 
         app.update();
@@ -228,8 +242,10 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move |entity_holder: Res<EntityHolder>| EntityCommandDespawn(entity_holder.0))
-                .pipe(affect),
+            (move |entity_holder: Res<EntityHolder>| EntityCommandDespawn {
+                entity: entity_holder.0,
+            })
+            .pipe(affect),
         );
 
         app.update();

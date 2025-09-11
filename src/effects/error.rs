@@ -18,12 +18,17 @@ use crate::Effect;
 ///     let result = match clear_color.0 {
 ///         Color::Srgba(srgba) => {
 ///             let color = Color::Srgba(Srgba { red: 0., ..srgba });
-///             Ok(ResSet(ClearColor(color)))
+///             Ok(ResSet {
+///                 value: ClearColor(color),
+///             })
 ///         }
 ///         _ => Err("color is not srgba"),
 ///     };
 ///
-///     AffectOrHandle(result, bevy::ecs::error::warn)
+///     AffectOrHandle {
+///         result,
+///         handler: bevy::ecs::error::warn,
+///     }
 /// }
 ///
 /// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
@@ -31,11 +36,17 @@ use crate::Effect;
 ///
 /// Using a plain `Result` as an effect works too, but uses `bevy`'s `default_error_handler()`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct AffectOrHandle<Ef, Er, Handler>(pub Result<Ef, Er>, pub Handler)
+pub struct AffectOrHandle<Ef, Er, Handler>
 where
     Ef: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext);
+    Handler: FnOnce(BevyError, ErrorContext),
+{
+    /// The result to be affected or handled.
+    pub result: Result<Ef, Er>,
+    /// The handler to use in the `Err` case.
+    pub handler: Handler,
+}
 
 impl<Ef, Er, Handler> Effect for AffectOrHandle<Ef, Er, Handler>
 where
@@ -46,9 +57,9 @@ where
     type MutParam = (Ef::MutParam, SystemName<'static>, SystemChangeTick);
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        match self.0 {
+        match self.result {
             Ok(ef) => ef.affect(&mut param.0),
-            Err(er) => self.1(
+            Err(er) => (self.handler)(
                 er.into(),
                 ErrorContext::System {
                     name: Cow::Owned(param.1.name().to_string()),
@@ -67,7 +78,11 @@ where
     type MutParam = (Ef::MutParam, SystemName<'static>, SystemChangeTick);
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        AffectOrHandle(self, default_error_handler()).affect(param);
+        AffectOrHandle {
+            result: self,
+            handler: default_error_handler(),
+        }
+        .affect(param);
     }
 }
 
@@ -90,9 +105,10 @@ mod tests {
     fn spawn_blueprint_component(
         processed_blueprints: Query<(), Or<(With<Blueprint>, With<ProcessedBlueprint>)>>,
     ) -> impl Effect {
-        processed_blueprints
-            .is_empty()
-            .then_some(CommandSpawnAnd(Blueprint, |_| ()))
+        processed_blueprints.is_empty().then_some(CommandSpawnAnd {
+            bundle: Blueprint,
+            f: |_| (),
+        })
     }
 
     fn process_blueprint_component<F>(
@@ -110,16 +126,17 @@ mod tests {
     where
         F: Fn(BevyError, ErrorContext) + Clone,
     {
-        move |blueprints| {
-            AffectOrHandle(
-                blueprints.single().map(|entity| {
-                    (
-                        EntityCommandRemove::<Blueprint>::new(entity),
-                        EntityCommandInsert(entity, ProcessedBlueprint),
-                    )
-                }),
-                error_handler.clone(),
-            )
+        move |blueprints| AffectOrHandle {
+            result: blueprints.single().map(|entity| {
+                (
+                    EntityCommandRemove::<Blueprint>::new(entity),
+                    EntityCommandInsert {
+                        entity,
+                        bundle: ProcessedBlueprint,
+                    },
+                )
+            }),
+            handler: error_handler.clone(),
         }
     }
 

@@ -7,9 +7,13 @@ use crate::Effect;
 /// [`Effect`] that pushes a generic command to the command queue.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandQueue<C>(pub C)
+pub struct CommandQueue<C>
 where
-    C: Command;
+    C: Command,
+{
+    /// The command to push onto the queue.
+    pub command: C,
+}
 
 impl<C> Effect for CommandQueue<C>
 where
@@ -18,16 +22,20 @@ where
     type MutParam = Commands<'static, 'static>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.queue(self.0)
+        param.queue(self.command)
     }
 }
 
 /// [`Effect`] that queues a command for inserting the provided `Resource` in the `World`.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct CommandInsertResource<R>(pub R)
+pub struct CommandInsertResource<R>
 where
-    R: Resource;
+    R: Resource,
+{
+    /// The initial value of the inserted resource.
+    pub resource: R,
+}
 
 impl<R> Effect for CommandInsertResource<R>
 where
@@ -36,7 +44,7 @@ where
     type MutParam = Commands<'static, 'static>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.insert_resource(self.0);
+        param.insert_resource(self.resource);
     }
 }
 
@@ -77,11 +85,17 @@ where
 /// supplies the entity id to the provided effect-producing function to cause another effect.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct CommandSpawnAnd<B, F, E>(pub B, pub F)
+pub struct CommandSpawnAnd<B, F, E>
 where
     B: Bundle,
     F: FnOnce(Entity) -> E,
-    E: Effect;
+    E: Effect,
+{
+    /// The bundle to spawn.
+    pub bundle: B,
+    /// The `Entity -> Effect` function that may cause another effect.
+    pub f: F,
+}
 
 impl<B, F, E> Effect for CommandSpawnAnd<B, F, E>
 where
@@ -92,9 +106,9 @@ where
     type MutParam = (Commands<'static, 'static>, E::MutParam);
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        let entity = param.0.spawn(self.0).id();
+        let entity = param.0.spawn(self.bundle).id();
 
-        self.1(entity).affect(&mut param.1);
+        (self.f)(entity).affect(&mut param.1);
     }
 }
 
@@ -116,9 +130,9 @@ mod tests {
             assert_eq!(component_count, 0);
 
             let spawn_component_system = move || {
-                CommandQueue(move |world: &mut World| {
+                CommandQueue { command: move |world: &mut World| {
                     world.spawn(component.clone());
-                })
+                }}
             };
 
 
@@ -153,7 +167,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || CommandInsertResource(resource)).pipe(affect).in_set(InsertSystem),
+                (move || CommandInsertResource { resource }).pipe(affect).in_set(InsertSystem),
             );
 
             app.update();
@@ -188,13 +202,19 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move || {
-                CommandSpawnAnd((), move |parent| {
+            (move || CommandSpawnAnd {
+                bundle: (),
+                f: move |parent| {
                     (
-                        CommandSpawnAnd(ChildOf(parent), |_| ()),
-                        CommandInsertResource(ParentEntity(parent)),
+                        CommandSpawnAnd {
+                            bundle: ChildOf(parent),
+                            f: |_| (),
+                        },
+                        CommandInsertResource {
+                            resource: ParentEntity(parent),
+                        },
                     )
-                })
+                },
             })
             .pipe(affect),
         );
