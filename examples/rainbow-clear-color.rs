@@ -32,10 +32,10 @@ struct NumUpdates(u32);
 fn sample_system_with_effect_and_output(
     num_updates: Res<NumUpdates>,
 ) -> EffectOut<ResSet<NumUpdates>, f32> {
-    EffectOut(
-        ResSet {
+    EffectOut {
+        effect: ResSet {
             value: NumUpdates(num_updates.0 + 1),
         },
-        (num_updates.0 % 10) as f32 / 10.,
-    )
+        out: (num_updates.0 % 10) as f32 / 10.,
+    }
 }
