@@ -2,24 +2,24 @@ use bevy::prelude::*;
 
 use crate::Effect;
 
-/// [`Effect`] that sends an event `E` to the corresponding `EventWriter`.
+/// [`Effect`] that sends a message `M` to the corresponding `MessageWriter`.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct EventWrite<E>
+pub struct MessageWrite<M>
 where
-    E: Event,
+    M: Message,
 {
-    /// The event data that will be written to the `EventWriter`.
-    pub event: E,
+    /// The message data that will be written to the `MessageWriter`.
+    pub message: M,
 }
 
-impl<E> Effect for EventWrite<E>
+impl<M> Effect for MessageWrite<M>
 where
-    E: Event,
+    M: Message,
 {
-    type MutParam = EventWriter<'static, E>;
+    type MutParam = MessageWriter<'static, M>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param.write(self.event);
+        param.write(self.message);
     }
 }
 
@@ -28,28 +28,28 @@ mod tests {
     use proptest::prelude::*;
 
     use super::*;
-    use crate::effects::number_data::NumberEvent;
+    use crate::effects::number_data::NumberMessage;
     use crate::prelude::affect;
 
     proptest! {
         #[test]
-        fn event_send_produces_events(events in prop::collection::vec(any::<NumberEvent>(), 1..10)) {
+        fn message_send_produces_messages(messages in prop::collection::vec(any::<NumberMessage>(), 1..10)) {
             let mut app = App::new();
 
-            let mut events_clone = events.clone();
-            app.add_event::<NumberEvent>()
-                .add_systems(Update, (move || EventWrite { event: events_clone.remove(0) }).pipe(affect));
+            let mut messages_clone = messages.clone();
+            app.add_message::<NumberMessage>()
+                .add_systems(Update, (move || MessageWrite { message: messages_clone.remove(0) }).pipe(affect));
 
-            for expected in events {
+            for expected in messages {
                 app.update();
 
-                let events_in_update = app.world().resource::<Events<NumberEvent>>().iter_current_update_events().collect::<Vec<_>>();
+                let messages_in_update = app.world().resource::<Messages<NumberMessage>>().iter_current_update_messages().collect::<Vec<_>>();
 
-                prop_assert_eq!(events_in_update.len(), 1);
+                prop_assert_eq!(messages_in_update.len(), 1);
 
-                let event_sent = events_in_update.first().unwrap();
+                let message_sent = messages_in_update.first().unwrap();
 
-                prop_assert_eq!(event_sent, &&expected);
+                prop_assert_eq!(message_sent, &&expected);
             }
         }
     }

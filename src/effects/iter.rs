@@ -56,7 +56,7 @@ mod tests {
     use proptest::prelude::*;
 
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{CommandSpawnAnd, EventWrite, ResSet};
+    use crate::effects::{CommandSpawnAnd, MessageWrite, ResSet};
     use crate::prelude::affect;
 
     proptest! {
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn option_can_sometimes_cause_effect() {
-        #[derive(Event)]
+        #[derive(Message)]
         struct UpdateIsEven;
 
         #[derive(Resource)]
@@ -88,7 +88,7 @@ mod tests {
 
         let mut app = App::new();
 
-        app.add_event::<UpdateIsEven>()
+        app.add_message::<UpdateIsEven>()
             .insert_resource(NumUpdates(0))
             .add_systems(
                 Update,
@@ -97,8 +97,8 @@ mod tests {
                         ResSet {
                             value: NumUpdates(num_updates.0 + 1),
                         },
-                        (num_updates.0 % 2 == 0).then_some(EventWrite {
-                            event: UpdateIsEven,
+                        (num_updates.0 % 2 == 0).then_some(MessageWrite {
+                            message: UpdateIsEven,
                         }),
                     )
                 })
@@ -109,8 +109,8 @@ mod tests {
 
         assert_eq!(
             app.world()
-                .resource::<Events<UpdateIsEven>>()
-                .iter_current_update_events()
+                .resource::<Messages<UpdateIsEven>>()
+                .iter_current_update_messages()
                 .count(),
             1
         );
@@ -119,8 +119,8 @@ mod tests {
 
         assert_eq!(
             app.world()
-                .resource::<Events<UpdateIsEven>>()
-                .iter_current_update_events()
+                .resource::<Messages<UpdateIsEven>>()
+                .iter_current_update_messages()
                 .count(),
             0
         );
@@ -129,8 +129,8 @@ mod tests {
 
         assert_eq!(
             app.world()
-                .resource::<Events<UpdateIsEven>>()
-                .iter_current_update_events()
+                .resource::<Messages<UpdateIsEven>>()
+                .iter_current_update_messages()
                 .count(),
             1
         );
@@ -139,8 +139,8 @@ mod tests {
 
         assert_eq!(
             app.world()
-                .resource::<Events<UpdateIsEven>>()
-                .iter_current_update_events()
+                .resource::<Messages<UpdateIsEven>>()
+                .iter_current_update_messages()
                 .count(),
             0
         );

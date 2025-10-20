@@ -56,9 +56,9 @@ pub fn n0_query_data_to_n1_through_one_way_function(
     move |_, n0| (n0_to_n1_through_one_way_function(f)(*n0),)
 }
 
-/// Test `Event` storing a number.
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Event, Arbitrary)]
-pub struct NumberEvent(pub u128);
+/// Test `Message` storing a number.
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Message, Arbitrary)]
+pub struct NumberMessage(pub u128);
 
 /// Test `Resource` storing a number.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
