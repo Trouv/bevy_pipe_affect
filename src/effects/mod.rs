@@ -5,8 +5,8 @@
 mod resource;
 pub use resource::{ResSet, ResSetWith};
 
-mod event;
-pub use event::MessageWrite;
+mod message;
+pub use message::MessageWrite;
 
 mod components;
 pub use components::{ComponentsSet, ComponentsSetWith};
