@@ -64,7 +64,7 @@ all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetWith<F, C, Data = (), Filter = ()>
 where
-    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -77,7 +77,7 @@ where
 
 impl<F, C, Data, Filter> ComponentsSetWith<F, C, Data, Filter>
 where
-    F: for<'a> Fn(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
@@ -97,7 +97,7 @@ macro_rules! impl_effect_for_components_set_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data, Filter> Effect for ComponentsSetWith<F, ($($C,)*), Data, Filter>
         where
-            F: for<'a> Fn(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
+            F: for<'w, 's> Fn(($($C,)*), <Data as QueryData>::Item<'w, 's>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone),*,
             Data: ReadOnlyQueryData + 'static,
             Filter: QueryFilter + 'static,
