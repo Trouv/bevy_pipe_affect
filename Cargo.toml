@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.16.1"
+bevy = "0.17.2"
 variadics_please = "1.1.0"
-either = "1.13.0"
+either = "1.15.0"
 
 [dev-dependencies]
-proptest = "1.7.0"
+proptest = "1.8.0"
 proptest-derive = "0.6.0"
 blake2 = "0.10.6"
