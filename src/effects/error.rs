@@ -1,6 +1,4 @@
-use std::borrow::Cow;
-
-use bevy::ecs::error::{default_error_handler, ErrorContext};
+use bevy::ecs::error::{DefaultErrorHandler, ErrorContext};
 use bevy::ecs::system::{SystemChangeTick, SystemName};
 use bevy::prelude::*;
 
@@ -34,7 +32,7 @@ use crate::Effect;
 /// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
 /// ```
 ///
-/// Using a plain `Result` as an effect works too, but uses `bevy`'s `default_error_handler()`.
+/// Using a plain `Result` as an effect works too, but uses `bevy`'s `DefaultErrorHandler`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct AffectOrHandle<Ef, Er, Handler>
 where
@@ -54,7 +52,7 @@ where
     Er: Into<BevyError>,
     Handler: FnOnce(BevyError, ErrorContext),
 {
-    type MutParam = (Ef::MutParam, SystemName<'static>, SystemChangeTick);
+    type MutParam = (Ef::MutParam, SystemName, SystemChangeTick);
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
         match self.result {
@@ -62,7 +60,7 @@ where
             Err(er) => (self.handler)(
                 er.into(),
                 ErrorContext::System {
-                    name: Cow::Owned(param.1.name().to_string()),
+                    name: param.1.name(),
                     last_run: param.2.last_run(),
                 },
             ),
@@ -75,12 +73,22 @@ where
     Ef: Effect,
     Er: Into<BevyError>,
 {
-    type MutParam = (Ef::MutParam, SystemName<'static>, SystemChangeTick);
+    type MutParam = (
+        Option<Res<'static, DefaultErrorHandler>>,
+        (Ef::MutParam, SystemName, SystemChangeTick),
+    );
 
-    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+    fn affect(
+        self,
+        (default_error_handler, param): &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>,
+    ) {
         AffectOrHandle {
             result: self,
-            handler: default_error_handler(),
+            handler: default_error_handler
+                .as_deref()
+                .copied()
+                .unwrap_or_default()
+                .0,
         }
         .affect(param);
     }

@@ -59,7 +59,7 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSetWith<F, C, Data = ()>
 where
-    F: for<'a> FnOnce(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
+    F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
@@ -71,7 +71,7 @@ where
 
 impl<F, C, Data> EntityComponentsSetWith<F, C, Data>
 where
-    F: for<'a> FnOnce(C, <Data as QueryData>::Item<'a>) -> C + Send + Sync,
+    F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
@@ -90,7 +90,7 @@ macro_rules! impl_effect_for_entity_components_set_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data> Effect for EntityComponentsSetWith<F, ($($C,)*), Data>
         where
-            F: for<'a> FnOnce(($($C,)*), <Data as QueryData>::Item<'a>) -> ($($C,)*) + Send + Sync,
+            F: for<'w, 's> FnOnce(($($C,)*), <Data as QueryData>::Item<'w, 's>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone,)*
             Data: ReadOnlyQueryData + 'static,
         {

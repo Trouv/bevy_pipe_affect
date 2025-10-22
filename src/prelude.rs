@@ -17,7 +17,7 @@ pub use crate::effects::{
     EntityCommandRemove,
     EntityComponentsSet,
     EntityComponentsSetWith,
-    EventWrite,
+    MessageWrite,
     ResSet,
     ResSetWith,
 };
