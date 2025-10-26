@@ -24,17 +24,6 @@ pub fn two_number_components_one_way_transform(
     }
 }
 
-/// Returns a transform for a pair of [`NumberComponent`]s and () using the [`OneWayFn`]s.
-///
-/// Can be used as the function stored in a `-ComponentsSetWith` effect.
-pub fn two_number_components_one_way_transform_with_void_query_data(
-    f0: OneWayFn,
-    f1: OneWayFn,
-) -> impl Fn((NumberComponent<0>, NumberComponent<1>), ()) -> (NumberComponent<0>, NumberComponent<1>)
-{
-    move |(n0, n1), _| two_number_components_one_way_transform(f0, f1)((n0, n1))
-}
-
 /// Returns a function taking a [`NumberComponent`] with `MARKER=0` and returning a `MARKER=1`
 /// using the [`OneWayFn`].
 ///

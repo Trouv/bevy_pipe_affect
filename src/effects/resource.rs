@@ -101,7 +101,7 @@ mod tests {
             prop_assume!(initial != put);
 
             app.insert_resource(initial)
-                .add_systems(Update, (move || ResSet { value: put }).pipe(affect));
+                .add_systems(Update, (move || res_set(put)).pipe(affect));
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
 
@@ -118,7 +118,7 @@ mod tests {
 
             app.insert_resource(initial.clone()).add_systems(
                 Update,
-                (move || ResSetWith::new(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
+                (move || res_set_with(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
             );
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);

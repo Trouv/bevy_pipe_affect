@@ -48,7 +48,7 @@ mod tests {
 
             let mut messages_clone = messages.clone();
             app.add_message::<NumberMessage>()
-                .add_systems(Update, (move || MessageWrite { message: messages_clone.remove(0) }).pipe(affect));
+                .add_systems(Update, (move || message_write(messages_clone.remove(0))).pipe(affect));
 
             for expected in messages {
                 app.update();

@@ -162,7 +162,7 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{CommandInsertResource, CommandSpawnAnd};
+    use crate::effects::{command_insert_resource, command_spawn_and};
     use crate::prelude::affect;
 
     proptest! {
@@ -213,7 +213,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandInsert { entity, bundle: (component_0, component_1) }).pipe(affect).in_set(InsertSystem),
+                (move || entity_command_insert(entity,  (component_0, component_1))).pipe(affect).in_set(InsertSystem),
             );
 
             app.update();
@@ -226,7 +226,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandRemove::<(NumberComponent<1>, NumberComponent<2>)>::new(entity)).pipe(affect).after(InsertSystem),
+                (move || entity_command_remove::<(NumberComponent<1>, NumberComponent<2>)>(entity)).pipe(affect).after(InsertSystem),
             );
 
             app.update();
@@ -239,7 +239,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandRemove::<(NumberComponent<0>, NumberComponent<1>)>::new(entity)).pipe(affect).after(InsertSystem),
+                (move || entity_command_remove::<(NumberComponent<0>, NumberComponent<1>)>(entity)).pipe(affect).after(InsertSystem),
             );
 
             app.update();
@@ -261,14 +261,9 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move || CommandSpawnAnd {
-                bundle: (),
-                f: |entity| CommandInsertResource {
-                    resource: EntityHolder(entity),
-                },
-            })
-            .pipe(affect)
-            .run_if(not(resource_exists::<EntityHolder>)),
+            (move || command_spawn_and((), |entity| command_insert_resource(EntityHolder(entity))))
+                .pipe(affect)
+                .run_if(not(resource_exists::<EntityHolder>)),
         );
 
         app.update();
@@ -279,10 +274,8 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move |entity_holder: Res<EntityHolder>| EntityCommandDespawn {
-                entity: entity_holder.0,
-            })
-            .pipe(affect),
+            (move |entity_holder: Res<EntityHolder>| entity_command_despawn(entity_holder.0))
+                .pipe(affect),
         );
 
         app.update();

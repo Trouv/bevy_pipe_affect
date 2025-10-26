@@ -159,7 +159,6 @@ mod tests {
         n0_query_data_to_n1_through_one_way_function,
         n0_to_n1_through_one_way_function,
         two_number_components_one_way_transform,
-        two_number_components_one_way_transform_with_void_query_data,
         NumberComponent,
     };
     use crate::effects::one_way_fn::OneWayFn;
@@ -194,7 +193,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityComponentsSet::new(entity_to_put, put)).pipe(affect),
+                (move || entity_components_set(entity_to_put, put)).pipe(affect),
             );
 
             app.update();
@@ -232,9 +231,9 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    EntityComponentsSetWith::<_, _, ()>::new(
+                    entity_components_set_with::<_, _>(
                         entity_to_transform,
-                        two_number_components_one_way_transform_with_void_query_data(f0, f1)
+                        two_number_components_one_way_transform(f0, f1)
                     )
                 })
                 .pipe(affect),
@@ -276,7 +275,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    EntityComponentsSetWith::<_, _, &NumberComponent<0>>::new(
+                    entity_components_set_with_query_data::<_, _, &NumberComponent<0>>(
                         entity_to_transform,
                         n0_query_data_to_n1_through_one_way_function(f),
                     )

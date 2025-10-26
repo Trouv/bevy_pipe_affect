@@ -180,9 +180,9 @@ mod tests {
             assert_eq!(component_count, 0);
 
             let spawn_component_system = move || {
-                CommandQueue { command: move |world: &mut World| {
+                command_queue(move |world: &mut World| {
                     world.spawn(component.clone());
-                }}
+                })
             };
 
 
@@ -217,7 +217,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || CommandInsertResource { resource }).pipe(affect).in_set(InsertSystem),
+                (move || command_insert_resource(resource)).pipe(affect).in_set(InsertSystem),
             );
 
             app.update();
@@ -226,7 +226,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || CommandRemoveResource::<NumberResource>::new()).pipe(affect).after(InsertSystem),
+                (move || command_remove_resource::<NumberResource>()).pipe(affect).after(InsertSystem),
             );
 
             app.update();
@@ -252,19 +252,13 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move || CommandSpawnAnd {
-                bundle: (),
-                f: move |parent| {
+            (move || {
+                command_spawn_and((), move |parent| {
                     (
-                        CommandSpawnAnd {
-                            bundle: ChildOf(parent),
-                            f: |_| (),
-                        },
-                        CommandInsertResource {
-                            resource: ParentEntity(parent),
-                        },
+                        command_spawn(ChildOf(parent)),
+                        command_insert_resource(ParentEntity(parent)),
                     )
-                },
+                })
             })
             .pipe(affect),
         );

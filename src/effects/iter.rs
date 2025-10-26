@@ -67,7 +67,7 @@ mod tests {
     use proptest::prelude::*;
 
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{CommandSpawnAnd, MessageWrite, ResSet};
+    use crate::effects::{command_spawn, message_write, res_set};
     use crate::prelude::affect;
 
     proptest! {
@@ -76,7 +76,7 @@ mod tests {
             let mut app = App::new();
 
             let components_clone = components.clone();
-            app.add_systems(Update, (move || components_clone.clone().into_iter().map(|c| CommandSpawnAnd { bundle: c, f: |_| () }).collect::<Vec<_>>()).pipe(affect));
+            app.add_systems(Update, (move || components_clone.clone().into_iter().map(|c| command_spawn(c)).collect::<Vec<_>>()).pipe(affect));
 
             app.update();
 
@@ -105,12 +105,8 @@ mod tests {
                 Update,
                 (|num_updates: Res<NumUpdates>| {
                     (
-                        ResSet {
-                            value: NumUpdates(num_updates.0 + 1),
-                        },
-                        (num_updates.0 % 2 == 0).then_some(MessageWrite {
-                            message: UpdateIsEven,
-                        }),
+                        res_set(NumUpdates(num_updates.0 + 1)),
+                        (num_updates.0 % 2 == 0).then_some(message_write(UpdateIsEven)),
                     )
                 })
                 .pipe(affect),
