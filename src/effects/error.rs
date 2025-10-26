@@ -23,10 +23,7 @@ use crate::Effect;
 ///         _ => Err("color is not srgba"),
 ///     };
 ///
-///     AffectOrHandle {
-///         result,
-///         handler: bevy::ecs::error::warn,
-///     }
+///     affect_or_handle(result, bevy::ecs::error::warn)
 /// }
 ///
 /// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
