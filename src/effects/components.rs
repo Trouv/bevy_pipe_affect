@@ -11,6 +11,8 @@ use crate::Effect;
 /// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+///
+/// Can be constructed by [`components_set`] or [`components_set_filtered`]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSet<C, Filter = ()>
 where
@@ -33,6 +35,23 @@ where
             filter: PhantomData,
         }
     }
+}
+
+/// Construct a new [`ComponentsSet`] [`Effect`], with no filter.
+pub fn components_set<C>(components: C) -> ComponentsSet<C, ()>
+where
+    C: Clone,
+{
+    ComponentsSet::new(components)
+}
+
+/// Construct a new [`ComponentsSet`] [`Effect`], with a custom filter.
+pub fn components_set_filtered<C, Filter>(components: C) -> ComponentsSet<C, Filter>
+where
+    C: Clone,
+    Filter: QueryFilter,
+{
+    ComponentsSet::new(components)
 }
 
 macro_rules! impl_effect_for_components_set {
@@ -61,6 +80,12 @@ all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+///
+/// Can be constructed by
+/// - [`components_set_with`]
+/// - [`components_set_filtered_with`]
+/// - [`components_set_with_query_data`]
+/// - [`components_set_filtered_with_query_data`]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetWith<F, C, Data = (), Filter = ()>
 where
@@ -91,6 +116,50 @@ where
             filter: PhantomData,
         }
     }
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with no filter or query data.
+pub fn components_set_with<F, C>(f: F) -> ComponentsSetWith<impl Fn(C, ()) -> C + Send + Sync, C>
+where
+    F: for<'w, 's> Fn(C) -> C + Send + Sync,
+    C: Clone,
+{
+    ComponentsSetWith::new(move |c, _| f(c))
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with extra query data.
+pub fn components_set_with_query_data<F, C, Data>(f: F) -> ComponentsSetWith<F, C, Data>
+where
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+{
+    ComponentsSetWith::new(f)
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with a custom filter.
+pub fn components_set_filtered_with<F, C, Filter>(
+    f: F,
+) -> ComponentsSetWith<impl Fn(C, ()) -> C + Send + Sync, C, (), Filter>
+where
+    F: for<'w, 's> Fn(C) -> C + Send + Sync,
+    C: Clone,
+    Filter: QueryFilter,
+{
+    ComponentsSetWith::new(move |c, _| f(c))
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with a custom filter and extra query data.
+pub fn components_set_filtered_with_query_data<F, C, Data, Filter>(
+    f: F,
+) -> ComponentsSetWith<F, C, Data, Filter>
+where
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    Filter: QueryFilter,
+{
+    ComponentsSetWith::new(f)
 }
 
 macro_rules! impl_effect_for_components_set_with {

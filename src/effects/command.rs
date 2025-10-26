@@ -5,6 +5,8 @@ use bevy::prelude::*;
 use crate::Effect;
 
 /// [`Effect`] that pushes a generic command to the command queue.
+///
+/// Can be constructed with [`command_queue`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandQueue<C>
@@ -13,6 +15,14 @@ where
 {
     /// The command to push onto the queue.
     pub command: C,
+}
+
+/// Construct a new [`CommandQueue`] [`Effect`].
+pub fn command_queue<C>(command: C) -> CommandQueue<C>
+where
+    C: Command,
+{
+    CommandQueue { command }
 }
 
 impl<C> Effect for CommandQueue<C>
@@ -27,6 +37,8 @@ where
 }
 
 /// [`Effect`] that queues a command for inserting the provided `Resource` in the `World`.
+///
+/// Can be constucted with [`command_insert_resource`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandInsertResource<R>
@@ -35,6 +47,14 @@ where
 {
     /// The initial value of the inserted resource.
     pub resource: R,
+}
+
+/// Construct a new [`CommandInsertResource`] [`Effect`].
+pub fn command_insert_resource<R>(resource: R) -> CommandInsertResource<R>
+where
+    R: Resource,
+{
+    CommandInsertResource { resource }
 }
 
 impl<R> Effect for CommandInsertResource<R>
@@ -49,6 +69,8 @@ where
 }
 
 /// [`Effect`] that queues a command for removing a `Resource` from the `World`.
+///
+/// Can be constructed with [`command_remove_resource`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandRemoveResource<R>
@@ -70,6 +92,14 @@ where
     }
 }
 
+/// Construct a new [`CommandRemoveResource`] [`Effect`].
+pub fn command_remove_resource<R>() -> CommandRemoveResource<R>
+where
+    R: Resource,
+{
+    CommandRemoveResource::new()
+}
+
 impl<R> Effect for CommandRemoveResource<R>
 where
     R: Resource,
@@ -83,6 +113,8 @@ where
 
 /// [`Effect`] that queues a command for spawning an entity with the provided `Bundle`, then
 /// supplies the entity id to the provided effect-producing function to cause another effect.
+///
+/// Can be constructed with [`command_spawn`] or [`command_spawn_and`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CommandSpawnAnd<B, F, E>
@@ -95,6 +127,24 @@ where
     pub bundle: B,
     /// The `Entity -> Effect` function that may cause another effect.
     pub f: F,
+}
+
+/// Construct a new [`CommandSpawnAnd`] [`Effect`], without an extra effect.
+pub fn command_spawn<B>(bundle: B) -> CommandSpawnAnd<B, impl FnOnce(Entity) -> (), ()>
+where
+    B: Bundle,
+{
+    command_spawn_and(bundle, |_| ())
+}
+
+/// Construct a new [`CommandSpawnAnd`] [`Effect`], with an extra effect using the `Entity`.
+pub fn command_spawn_and<B, F, E>(bundle: B, f: F) -> CommandSpawnAnd<B, F, E>
+where
+    B: Bundle,
+    F: FnOnce(Entity) -> E,
+    E: Effect,
+{
+    CommandSpawnAnd { bundle, f }
 }
 
 impl<B, F, E> Effect for CommandSpawnAnd<B, F, E>

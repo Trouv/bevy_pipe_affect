@@ -3,6 +3,8 @@ use crate::Effect;
 /// [`Effect`] that causes all effects in the provided iterator.
 ///
 /// Using a plain `Vec` or `Option` as an effect works too.
+///
+/// Can be constructed with [`affect_many`].
 #[derive(Default, Debug, Copy, Clone, PartialEq, Eq)]
 pub struct AffectMany<I>
 where
@@ -11,6 +13,15 @@ where
 {
     /// The iterator of effects to affect.
     pub iter: I,
+}
+
+/// Construct a new [`AffectMany`] [`Effect`].
+pub fn affect_many<I>(iter: I) -> AffectMany<I>
+where
+    I: IntoIterator,
+    I::Item: Effect,
+{
+    AffectMany { iter }
 }
 
 impl<I> Effect for AffectMany<I>

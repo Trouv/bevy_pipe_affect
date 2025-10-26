@@ -11,6 +11,8 @@ use crate::Effect;
 /// [`Effect`] that sets the `Component`s of the provided entity to the provided `Component` tuple.
 ///
 /// If an entity with these components cannot be found, logs an error.
+///
+/// Can be constructed with [`entity_components_set`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSet<C> {
     entity: Entity,
@@ -22,6 +24,11 @@ impl<C> EntityComponentsSet<C> {
     pub fn new(entity: Entity, components: C) -> Self {
         EntityComponentsSet { entity, components }
     }
+}
+
+/// Construct a new [`EntityComponentsSet`] [`Effect`].
+pub fn entity_components_set<C>(entity: Entity, components: C) -> EntityComponentsSet<C> {
+    EntityComponentsSet::new(entity, components)
 }
 
 macro_rules! impl_effect_for_entity_components_set {
@@ -56,6 +63,8 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
 /// If an entity with these components cannot be found, logs an error.
+///
+/// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSetWith<F, C, Data = ()>
 where
@@ -84,6 +93,31 @@ where
             data: PhantomData,
         }
     }
+}
+
+/// Construct a new [`EntityComponentsSetWith`] [`Effect`], without extra query data.
+pub fn entity_components_set_with<F, C>(
+    entity: Entity,
+    f: F,
+) -> EntityComponentsSetWith<impl FnOnce(C, ()) -> C + Send + Sync, C>
+where
+    F: for<'w, 's> FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    EntityComponentsSetWith::new(entity, move |c, _| f(c))
+}
+
+/// Construct a new [`EntityComponentsSetWith`] [`Effect`], with extra query data.
+pub fn entity_components_set_with_query_data<F, C, Data>(
+    entity: Entity,
+    f: F,
+) -> EntityComponentsSetWith<F, C, Data>
+where
+    F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+{
+    EntityComponentsSetWith::new(entity, f)
 }
 
 macro_rules! impl_effect_for_entity_components_set_with {

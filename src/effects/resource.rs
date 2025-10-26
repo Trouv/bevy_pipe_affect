@@ -6,6 +6,8 @@ use bevy::prelude::*;
 use crate::effect::Effect;
 
 /// [`Effect`] that sets a `Resource` to the provided value.
+///
+/// Can be constructed by [`res_set`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ResSet<R>
 where
@@ -13,6 +15,14 @@ where
 {
     /// The value that the resource will be set to.
     pub value: R,
+}
+
+/// Construct a new [`ResSet`] [`Effect`].
+pub fn res_set<R>(value: R) -> ResSet<R>
+where
+    R: Resource,
+{
+    ResSet { value }
 }
 
 impl<R> Effect for ResSet<R>
@@ -27,6 +37,8 @@ where
 }
 
 /// [`Effect`] that transforms a `Resource` with the provided function.
+///
+/// Can be constructed by [`res_set_with`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ResSetWith<F, R>
 where
@@ -49,6 +61,15 @@ where
             phantom: PhantomData,
         }
     }
+}
+
+/// Construct a new [`ResSetWith`] [`Effect`].
+pub fn res_set_with<F, R>(f: F) -> ResSetWith<F, R>
+where
+    F: FnOnce(R) -> R,
+    R: Resource + Clone,
+{
+    ResSetWith::new(f)
 }
 
 impl<F, R> Effect for ResSetWith<F, R>

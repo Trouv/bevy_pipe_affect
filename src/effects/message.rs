@@ -3,6 +3,8 @@ use bevy::prelude::*;
 use crate::Effect;
 
 /// [`Effect`] that sends a message `M` to the corresponding `MessageWriter`.
+///
+/// Can be constructed with [`message_write`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct MessageWrite<M>
 where
@@ -10,6 +12,14 @@ where
 {
     /// The message data that will be written to the `MessageWriter`.
     pub message: M,
+}
+
+/// Construct a new [`MessageWrite`] [`Effect`].
+pub fn message_write<M>(message: M) -> MessageWrite<M>
+where
+    M: Message,
+{
+    MessageWrite { message }
 }
 
 impl<M> Effect for MessageWrite<M>
