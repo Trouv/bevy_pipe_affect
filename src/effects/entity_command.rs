@@ -6,6 +6,8 @@ use bevy::prelude::*;
 use crate::Effect;
 
 /// [`Effect`] that pushes a generic entity command to the command queue.
+///
+/// Can be constructed with [`entity_command_queue`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandQueue<C, T, M>
@@ -33,6 +35,14 @@ where
     }
 }
 
+/// Construct a new [`EntityCommandQueue`] [`Effect`].
+pub fn entity_command_queue<C, T, M>(entity: Entity, command: C) -> EntityCommandQueue<C, T, M>
+where
+    C: EntityCommand<T> + CommandWithEntity<M>,
+{
+    EntityCommandQueue::new(entity, command)
+}
+
 impl<C, T, M> Effect for EntityCommandQueue<C, T, M>
 where
     C: EntityCommand<T> + CommandWithEntity<M>,
@@ -45,6 +55,8 @@ where
 }
 
 /// [`Effect`] that queues a command for inserting the provided `Bundle` onto the `Entity`.
+///
+/// Can be constructed with [`entity_command_insert`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandInsert<B>
@@ -55,6 +67,14 @@ where
     pub entity: Entity,
     /// The bundle to insert.
     pub bundle: B,
+}
+
+/// Construct a new [`EntityCommandInsert`] [`Effect`].
+pub fn entity_command_insert<B>(entity: Entity, bundle: B) -> EntityCommandInsert<B>
+where
+    B: Bundle,
+{
+    EntityCommandInsert { entity, bundle }
 }
 
 impl<B> Effect for EntityCommandInsert<B>
@@ -69,6 +89,8 @@ where
 }
 
 /// [`Effect`] that queues a command for removing the `Bundle` from the `Entity`.
+///
+/// Can be constructed with [`entity_command_remove`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandRemove<B>
@@ -92,6 +114,14 @@ where
     }
 }
 
+/// Construct a new [`EntityCommandRemove`] [`Effect`].
+pub fn entity_command_remove<B>(entity: Entity) -> EntityCommandRemove<B>
+where
+    B: Bundle,
+{
+    EntityCommandRemove::new(entity)
+}
+
 impl<B> Effect for EntityCommandRemove<B>
 where
     B: Bundle,
@@ -104,11 +134,18 @@ where
 }
 
 /// [`Effect`] that queues a command for despawning an `Entity`.
+///
+/// Can be constructed with [`entity_command_despawn`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandDespawn {
     /// The entity to despawn.
     pub entity: Entity,
+}
+
+/// Construct a new [`EntityCommandDespawn`] [`Effect`].
+pub fn entity_command_despawn(entity: Entity) -> EntityCommandDespawn {
+    EntityCommandDespawn { entity }
 }
 
 impl Effect for EntityCommandDespawn {
@@ -125,7 +162,7 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{CommandInsertResource, CommandSpawnAnd};
+    use crate::effects::{command_insert_resource, command_spawn_and};
     use crate::prelude::affect;
 
     proptest! {
@@ -176,7 +213,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandInsert { entity, bundle: (component_0, component_1) }).pipe(affect).in_set(InsertSystem),
+                (move || entity_command_insert(entity,  (component_0, component_1))).pipe(affect).in_set(InsertSystem),
             );
 
             app.update();
@@ -189,7 +226,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandRemove::<(NumberComponent<1>, NumberComponent<2>)>::new(entity)).pipe(affect).after(InsertSystem),
+                (move || entity_command_remove::<(NumberComponent<1>, NumberComponent<2>)>(entity)).pipe(affect).after(InsertSystem),
             );
 
             app.update();
@@ -202,7 +239,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || EntityCommandRemove::<(NumberComponent<0>, NumberComponent<1>)>::new(entity)).pipe(affect).after(InsertSystem),
+                (move || entity_command_remove::<(NumberComponent<0>, NumberComponent<1>)>(entity)).pipe(affect).after(InsertSystem),
             );
 
             app.update();
@@ -224,14 +261,9 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move || CommandSpawnAnd {
-                bundle: (),
-                f: |entity| CommandInsertResource {
-                    resource: EntityHolder(entity),
-                },
-            })
-            .pipe(affect)
-            .run_if(not(resource_exists::<EntityHolder>)),
+            (move || command_spawn_and((), |entity| command_insert_resource(EntityHolder(entity))))
+                .pipe(affect)
+                .run_if(not(resource_exists::<EntityHolder>)),
         );
 
         app.update();
@@ -242,10 +274,8 @@ mod tests {
 
         app.add_systems(
             Update,
-            (move |entity_holder: Res<EntityHolder>| EntityCommandDespawn {
-                entity: entity_holder.0,
-            })
-            .pipe(affect),
+            (move |entity_holder: Res<EntityHolder>| entity_command_despawn(entity_holder.0))
+                .pipe(affect),
         );
 
         app.update();

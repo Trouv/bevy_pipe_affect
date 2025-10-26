@@ -16,9 +16,7 @@ use crate::{Effect, EffectOut};
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
-///     ResSet {
-///         value: ClearColor(Color::BLACK),
-///     }
+///     res_set(ClearColor(Color::BLACK))
 /// }
 ///
 /// assert_is_system(system_with_effects.pipe(affect))
@@ -54,15 +52,11 @@ where
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
-///     ResSet {
-///         value: ClearColor(Color::BLACK),
-///     }
+///     res_set(ClearColor(Color::BLACK))
 /// }
 ///
 /// fn another_system_with_effects() -> impl Effect {
-///     ResSet {
-///         value: UiScale(2.0),
-///     }
+///     res_set(UiScale(2.0))
 /// }
 ///
 /// assert_is_system(

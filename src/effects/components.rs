@@ -11,6 +11,8 @@ use crate::Effect;
 /// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+///
+/// Can be constructed by [`components_set`] or [`components_set_filtered`]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSet<C, Filter = ()>
 where
@@ -33,6 +35,23 @@ where
             filter: PhantomData,
         }
     }
+}
+
+/// Construct a new [`ComponentsSet`] [`Effect`], with no filter.
+pub fn components_set<C>(components: C) -> ComponentsSet<C, ()>
+where
+    C: Clone,
+{
+    ComponentsSet::new(components)
+}
+
+/// Construct a new [`ComponentsSet`] [`Effect`], with a custom filter.
+pub fn components_set_filtered<C, Filter>(components: C) -> ComponentsSet<C, Filter>
+where
+    C: Clone,
+    Filter: QueryFilter,
+{
+    ComponentsSet::new(components)
 }
 
 macro_rules! impl_effect_for_components_set {
@@ -61,6 +80,12 @@ all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+///
+/// Can be constructed by
+/// - [`components_set_with`]
+/// - [`components_set_filtered_with`]
+/// - [`components_set_with_query_data`]
+/// - [`components_set_filtered_with_query_data`]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetWith<F, C, Data = (), Filter = ()>
 where
@@ -91,6 +116,50 @@ where
             filter: PhantomData,
         }
     }
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with no filter or query data.
+pub fn components_set_with<F, C>(f: F) -> ComponentsSetWith<impl Fn(C, ()) -> C + Send + Sync, C>
+where
+    F: for<'w, 's> Fn(C) -> C + Send + Sync,
+    C: Clone,
+{
+    ComponentsSetWith::new(move |c, _| f(c))
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with extra query data.
+pub fn components_set_with_query_data<F, C, Data>(f: F) -> ComponentsSetWith<F, C, Data>
+where
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+{
+    ComponentsSetWith::new(f)
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with a custom filter.
+pub fn components_set_filtered_with<F, C, Filter>(
+    f: F,
+) -> ComponentsSetWith<impl Fn(C, ()) -> C + Send + Sync, C, (), Filter>
+where
+    F: for<'w, 's> Fn(C) -> C + Send + Sync,
+    C: Clone,
+    Filter: QueryFilter,
+{
+    ComponentsSetWith::new(move |c, _| f(c))
+}
+
+/// Construct a new [`ComponentsSetWith`] [`Effect`], with a custom filter and extra query data.
+pub fn components_set_filtered_with_query_data<F, C, Data, Filter>(
+    f: F,
+) -> ComponentsSetWith<F, C, Data, Filter>
+where
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    Filter: QueryFilter,
+{
+    ComponentsSetWith::new(f)
 }
 
 macro_rules! impl_effect_for_components_set_with {
@@ -127,7 +196,6 @@ mod tests {
         n0_query_data_to_n1_through_one_way_function,
         n0_to_n1_through_one_way_function,
         two_number_components_one_way_transform,
-        two_number_components_one_way_transform_with_void_query_data,
         NumberComponent,
     };
     use crate::effects::one_way_fn::OneWayFn;
@@ -174,7 +242,7 @@ mod tests {
 
             app.add_systems(
                 Update,
-                (move || ComponentsSet::<_, With<MarkerComponent>>::new(put)).pipe(affect),
+                (move || components_set_filtered::<_, With<MarkerComponent>>(put)).pipe(affect),
             );
 
             app.update();
@@ -214,8 +282,8 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    ComponentsSetWith::<_, _, (), With<MarkerComponent>>::new(
-                        two_number_components_one_way_transform_with_void_query_data(f0, f1)
+                    components_set_filtered_with::<_, _, With<MarkerComponent>>(
+                        two_number_components_one_way_transform(f0, f1)
                     )
                 })
                 .pipe(affect),
@@ -261,7 +329,7 @@ mod tests {
             app.add_systems(
                 Update,
                 (move || {
-                    ComponentsSetWith::<_, _, &NumberComponent<0>, With<MarkerComponent>>::new(
+                    components_set_filtered_with_query_data::<_, _, &NumberComponent<0>, With<MarkerComponent>>(
                         n0_query_data_to_n1_through_one_way_function(f)
                     )
                 })

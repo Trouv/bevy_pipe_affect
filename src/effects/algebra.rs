@@ -50,7 +50,7 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::NumberResource;
-    use crate::effects::ResSet;
+    use crate::effects::res_set;
     use crate::prelude::affect;
 
     proptest! {
@@ -61,9 +61,9 @@ mod tests {
             app.insert_resource(NumberResource(current_value)).add_systems(
                 Update,
                 (|num: Res<NumberResource>| if num.0 % 2 == 0 {
-                    Either::Left(ResSet { value: NumberResource(num.0 / 2)})
+                    Either::Left(res_set(NumberResource(num.0 / 2)))
                 } else {
-                    Either::Right(ResSet { value: NumberResource(3 * num.0 + 1) })
+                    Either::Right(res_set(NumberResource(3 * num.0 + 1)))
                 })
                 .pipe(affect),
             );
