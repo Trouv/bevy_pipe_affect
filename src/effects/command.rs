@@ -130,7 +130,7 @@ where
 }
 
 /// Construct a new [`CommandSpawnAnd`] [`Effect`], without an extra effect.
-pub fn command_spawn<B>(bundle: B) -> CommandSpawnAnd<B, impl FnOnce(Entity) -> (), ()>
+pub fn command_spawn<B>(bundle: B) -> CommandSpawnAnd<B, impl FnOnce(Entity), ()>
 where
     B: Bundle,
 {
