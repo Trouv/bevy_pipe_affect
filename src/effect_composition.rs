@@ -2,6 +2,9 @@
 //!
 //! [`and_compose`]: crate::system_combinators::and_compose
 
+use bevy::ecs::error::{BevyError, ErrorContext};
+
+use crate::effects::AffectOrHandle;
 use crate::Effect;
 
 /// [`Effect`] composition function that returns the first effect.
@@ -38,4 +41,43 @@ where
     E1: Effect,
 {
     (e1, e0)
+}
+
+pub fn only_if_some<E0, E1, E2>(
+    composition: impl Fn(E0, E1) -> E2,
+) -> impl Fn(E0, Option<E1>) -> Option<E2>
+where
+    E0: Effect,
+    E1: Effect,
+    E2: Effect,
+{
+    move |e0, e1| e1.map(|e1| composition(e0, e1))
+}
+
+pub fn only_if_ok<E0, E1, E2, Er>(
+    composition: impl Fn(E0, E1) -> E2,
+) -> impl Fn(E0, Result<E1, Er>) -> Result<E2, Er>
+where
+    E0: Effect,
+    E1: Effect,
+    E2: Effect,
+    Er: Into<BevyError>,
+{
+    move |e0, e1| e1.map(|e1| composition(e0, e1))
+}
+
+pub fn only_if_handled<E0, E1, E2, Er, Handler>(
+    composition: impl Fn(E0, E1) -> E2,
+) -> impl Fn(E0, AffectOrHandle<E1, Er, Handler>) -> AffectOrHandle<E2, Er, Handler>
+where
+    E0: Effect,
+    E1: Effect,
+    E2: Effect,
+    Er: Into<BevyError>,
+    Handler: FnOnce(BevyError, ErrorContext),
+{
+    move |e0, AffectOrHandle { result, handler }| AffectOrHandle {
+        result: result.map(|e1| composition(e0, e1)),
+        handler,
+    }
 }
