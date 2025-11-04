@@ -1,6 +1,6 @@
 //! `bevy` systems and higher-order system constructors related to effects piping and composition.
 
-use bevy::ecs::system::StaticSystemParam;
+use bevy::ecs::system::{assert_is_read_only_system, StaticSystemParam};
 use bevy::prelude::*;
 
 use crate::{Effect, EffectOut};
@@ -92,4 +92,38 @@ where
             out,
         }
     }
+}
+
+/// Identity function for read-only-systems.
+///
+/// This totally-optional function can be used if you want the pureness of your systems to be
+/// checked at compile time.
+///
+/// This only fails for bevy system parameters that aren't read-only. There may be other side
+/// effects in your system still that may be unrelated to bevy, like print statements, or global
+/// rust state like `OnceCell`s.
+///
+/// An anti-example that failes to compile:
+/// ```compile_fail
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// fn my_non_read_only_system(_color: ResMut<ClearColor>) -> impl Effect {
+///     // potential mutation
+///
+///     res_set(ClearColor::default())
+/// }
+///
+/// App::new()
+///     .add_systems(Update, pure(my_non_read_only_system).pipe(affect))
+///     .run();
+/// ```
+pub fn pure<In, Out, Marker, S>(system: S) -> S
+where
+    In: SystemInput,
+    Out: 'static,
+    S: IntoSystem<In, Out, Marker>,
+    S::System: ReadOnlySystem,
+{
+    system
 }
