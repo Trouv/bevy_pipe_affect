@@ -44,5 +44,5 @@ pub use crate::effects::{
     ResSet,
     ResSetWith,
 };
-pub use crate::system_combinators::{affect, and_compose};
+pub use crate::system_combinators::{affect, and_compose, pure};
 pub use crate::{Effect, EffectOut};
