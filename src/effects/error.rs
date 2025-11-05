@@ -45,6 +45,38 @@ where
     pub handler: Handler,
 }
 
+impl<Ef, Er, Handler> AffectOrHandle<Ef, Er, Handler>
+where
+    Ef: Effect,
+    Er: Into<BevyError>,
+    Handler: FnOnce(BevyError, ErrorContext),
+{
+    /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, F, H>` by applying a function to
+    /// the `result` value.
+    pub fn map_result<EfO, ErO>(
+        self,
+        f: impl FnOnce(Result<Ef, Er>) -> Result<EfO, ErO>,
+    ) -> AffectOrHandle<EfO, ErO, Handler>
+    where
+        EfO: Effect,
+        ErO: Into<BevyError>,
+    {
+        AffectOrHandle {
+            result: f(self.result),
+            handler: self.handler,
+        }
+    }
+
+    /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, E, H>` by applying a function to
+    /// the contained `Ok` value.
+    pub fn map<EO>(self, f: impl FnOnce(Ef) -> EO) -> AffectOrHandle<EO, Er, Handler>
+    where
+        EO: Effect,
+    {
+        self.map_result(|result| result.map(f))
+    }
+}
+
 /// Construct a new [`AffectOrHandle`] [`Effect`].
 pub fn affect_or_handle<Ef, Er, Handler>(
     result: Result<Ef, Er>,
