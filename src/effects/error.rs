@@ -51,16 +51,29 @@ where
     Er: Into<BevyError>,
     Handler: FnOnce(BevyError, ErrorContext),
 {
+    /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, F, H>` by applying a function to
+    /// the `result` value.
+    pub fn map_result<EfO, ErO>(
+        self,
+        f: impl FnOnce(Result<Ef, Er>) -> Result<EfO, ErO>,
+    ) -> AffectOrHandle<EfO, ErO, Handler>
+    where
+        EfO: Effect,
+        ErO: Into<BevyError>,
+    {
+        AffectOrHandle {
+            result: f(self.result),
+            handler: self.handler,
+        }
+    }
+
     /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, E, H>` by applying a function to
     /// the contained `Ok` value.
     pub fn map<EO>(self, f: impl FnOnce(Ef) -> EO) -> AffectOrHandle<EO, Er, Handler>
     where
         EO: Effect,
     {
-        AffectOrHandle {
-            result: self.result.map(f),
-            handler: self.handler,
-        }
+        self.map_result(|result| result.map(f))
     }
 }
 
