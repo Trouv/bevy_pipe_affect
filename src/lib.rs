@@ -12,4 +12,6 @@ pub mod effects;
 
 pub mod system_combinators;
 
+pub mod effect_composition;
+
 pub mod prelude;
