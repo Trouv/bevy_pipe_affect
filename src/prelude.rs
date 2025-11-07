@@ -45,4 +45,4 @@ pub use crate::effects::{
     ResSetWith,
 };
 pub use crate::system_combinators::{affect, and_compose, pure};
-pub use crate::{Effect, EffectOut};
+pub use crate::{effect_out, Effect, EffectOut};
