@@ -126,6 +126,7 @@ where
 ///         .pipe(affect), // applies both effects
 /// )
 /// ```
+#[expect(clippy::type_complexity)]
 pub fn and_combine<I1, E1, O1, System, Marker, I2, E2, O2>(
     s: System,
 ) -> impl FnMut(In<I1>, StaticSystemParam<System::Param>) -> EffectOut<(E1, E2), O2>
