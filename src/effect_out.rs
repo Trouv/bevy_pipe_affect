@@ -22,3 +22,11 @@ where
         EffectOut { effect, out: () }
     }
 }
+
+/// Construct a new [`EffectOut`].
+pub fn effect_out<E, O>(effect: E, out: O) -> EffectOut<E, O>
+where
+    E: Effect,
+{
+    EffectOut { effect, out }
+}
