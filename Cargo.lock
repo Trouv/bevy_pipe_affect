@@ -1027,11 +1027,21 @@ name = "bevy_pipe_affect"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_pipe_affect_derive",
  "blake2",
  "either",
  "proptest",
  "proptest-derive",
  "variadics_please",
+]
+
+[[package]]
+name = "bevy_pipe_affect_derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
