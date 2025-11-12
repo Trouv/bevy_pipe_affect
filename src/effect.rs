@@ -4,6 +4,42 @@ use bevy::ecs::system::SystemParam;
 ///
 /// Can be returned by `bevy` systems and `pipe`d into [`affect`] to perform the transition.
 ///
+/// # Derive
+/// More complex effects can be derived for structs and enums whose fields also implement `Effect`,
+/// if the `derive` cargo feature is enabled.
+///
+/// In the `enum` case, all params for all variants will still be accessed by the `affect` system,
+/// but only the affects for the value's variant will be executed.
+///
+/// Generics may also be present, and the `Effect` `impl` will simply bound them with `Effect`.
+///
+/// ```no_run
+/// # #[cfg(feature = "bevy_pipe_affect/derive")] {
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Component)]
+/// struct Health(f32);
+///
+/// #[derive(Effect)]
+/// struct DeathEffect<T> {
+///     // If there are multiple fields, they will be affected in field order.
+///     despawn: EntityCommandDespawn,
+///     // `T: Effect` will be imposed on the `impl`.
+///     bonus_effect: T,
+/// }
+///
+/// #[derive(Effect)]
+/// enum HealthProcessEffect<T> {
+///     Died(DeathEffect<T>),
+///     Regenerating {
+///         new_health: EntityComponentsSet<Health>,
+///     },
+///     // Unit structs/variants will do nothing.
+///     HealthFull,
+/// }
+/// # }
+/// ```
+///
 /// [`affect`]: crate::system_combinators::affect
 pub trait Effect {
     /// The `SystemParam` this effect mutates.
