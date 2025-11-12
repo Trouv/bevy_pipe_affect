@@ -40,10 +40,19 @@ fn effect_tuple_for_enum(data_enum: &DataEnum) -> TokenStream {
 /// Returns the tokens for a tuple type with the same elements as the provided type's fields.
 ///
 /// For enums, a nested tuple with an element per variant is returned.
-pub fn effect_tuple_for_data(data: &Data) -> TokenStream {
+fn effect_tuple_for_data(data: &Data) -> TokenStream {
     match data {
         Data::Struct(data) => effect_tuple_for_fields(&data.fields),
         Data::Enum(data) => effect_tuple_for_enum(data),
         Data::Union(_) => unimplemented!(),
+    }
+}
+
+/// Returns the tokens for the `Effect::MutParam` associated type for the given type.
+pub fn mut_param_type_for_data(data: &Data) -> TokenStream {
+    let effect_tuple = effect_tuple_for_data(data);
+
+    quote! {
+        type MutParam = <#effect_tuple as bevy_pipe_affect::Effect>::MutParam;
     }
 }

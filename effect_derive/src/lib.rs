@@ -3,7 +3,7 @@ use syn::{parse_macro_input, DeriveInput};
 
 mod generics;
 
-mod effect_tuple;
+mod mut_param_type;
 
 mod destructure;
 
@@ -21,14 +21,14 @@ pub fn derive_effect(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
     let generics = generics::generics_with_effect_bounds(input.generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let mut_param = effect_tuple::effect_tuple_for_data(&input.data);
+    let mut_param_type = mut_param_type::mut_param_type_for_data(&input.data);
 
     let affect_fn = affect_fn::affect_fn_for_data(&input.data, &name);
 
     let expanded = quote! {
         // The generated impl.
         impl #impl_generics bevy_pipe_affect::Effect for #name #ty_generics #where_clause {
-            type MutParam = <#mut_param as bevy_pipe_affect::Effect>::MutParam;
+            #mut_param_type
 
             #affect_fn
         }
