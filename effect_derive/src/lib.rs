@@ -1,4 +1,4 @@
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 mod generics;
@@ -7,7 +7,7 @@ mod effect_tuple;
 
 mod destructure;
 
-mod affect_calls;
+mod affect_fn;
 
 #[proc_macro_derive(Effect)]
 pub fn derive_effect(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -23,22 +23,14 @@ pub fn derive_effect(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 
     let mut_param = effect_tuple::effect_tuple_for_data(&input.data);
 
-    let params_ident = format_ident!("params");
-    let affect_calls = affect_calls::affect_calls_for_data(
-        &input.data,
-        &format_ident!("self"),
-        &name,
-        &params_ident,
-    );
+    let affect_fn = affect_fn::affect_fn_for_data(&input.data, &name);
 
     let expanded = quote! {
         // The generated impl.
         impl #impl_generics bevy_pipe_affect::Effect for #name #ty_generics #where_clause {
             type MutParam = <#mut_param as bevy_pipe_affect::Effect>::MutParam;
 
-            fn affect(self, #params_ident: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-                #affect_calls
-            }
+            #affect_fn
         }
     };
 

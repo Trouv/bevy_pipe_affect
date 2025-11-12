@@ -165,16 +165,29 @@ fn affect_calls_for_enum(
     }
 }
 
-// Generate an expression to sum up the heap size of each field.
-pub fn affect_calls_for_data(
+fn affect_calls_for_data(
     data: &Data,
+    value_ident: &Ident,
     type_ident: &Ident,
-    type_ty: &Ident,
     params_ident: &Ident,
 ) -> TokenStream {
-    match *data {
-        Data::Struct(ref data) => affect_calls_for_struct(data, type_ident, type_ty, params_ident),
-        Data::Enum(ref data) => affect_calls_for_enum(data, type_ident, type_ty, params_ident),
+    match data {
+        Data::Struct(data) => affect_calls_for_struct(data, value_ident, type_ident, params_ident),
+        Data::Enum(data) => affect_calls_for_enum(data, value_ident, type_ident, params_ident),
         Data::Union(_) => unimplemented!(),
+    }
+}
+
+/// Returns the tokens for an `Effect::affect` function for the given type.
+pub fn affect_fn_for_data(data: &Data, type_ident: &Ident) -> TokenStream {
+    let self_ident = format_ident!("self");
+    let params_ident = format_ident!("params");
+
+    let affect_calls = affect_calls_for_data(data, &self_ident, type_ident, &params_ident);
+
+    quote! {
+        fn affect(#self_ident, #params_ident: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+            #affect_calls
+        }
     }
 }
