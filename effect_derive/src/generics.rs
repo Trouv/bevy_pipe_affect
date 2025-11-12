@@ -1,4 +1,4 @@
-use syn::{parse_quote, GenericParam, Generics, TypeParam};
+use syn::{GenericParam, Generics, TypeParam, parse_quote};
 
 fn type_param_with_effect_bound(type_param: TypeParam) -> TypeParam {
     let bounds = type_param
