@@ -24,6 +24,11 @@ fn destructure_unnamed_fields(
     }
 }
 
+/// Returns the tokens that can destructure the provided fields into the idents from the ident fns.
+///
+/// Result does not include the type/variant name, just the braces:
+/// - `{ field, field, field }` for named fields
+/// - `( field, field, field )` for unnamed fields
 pub fn destructure_fields(
     fields: &Fields,
     named_ident_fn: impl Fn(&Field) -> &Option<Ident>,
