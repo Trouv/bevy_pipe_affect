@@ -41,8 +41,10 @@ fn affect_calls_for_named_fields(
         let affect_call = affect_call(field_ident, &param_ident);
 
         quote_spanned! { field.span() =>
-            let mut #param_ident = #params_ident.#param_method;
-            #affect_call
+            {
+                let mut #param_ident = #params_ident.#param_method;
+                #affect_call
+            }
         }
     });
 
@@ -67,8 +69,10 @@ fn affect_calls_for_unnamed_fields(
             let affect_call = affect_call(&field_ident, &param_ident);
 
             quote_spanned! { field.span() =>
-                let mut #param_ident = #params_ident.#param_method;
-                #affect_call
+                {
+                    let mut #param_ident = #params_ident.#param_method;
+                    #affect_call
+                }
             }
         });
 
