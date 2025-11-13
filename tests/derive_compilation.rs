@@ -1,8 +1,19 @@
 //! Some basic `Effect`-deriving types that should compile.
 #![allow(dead_code, clippy::enum_variant_names)]
 
+use bevy::ecs::component::Mutable;
 use bevy::prelude::*;
 use bevy_pipe_affect::prelude::*;
+
+/// Fails to compile if a non-effect is used as `E`.
+fn type_implements_effect<E: Effect>() -> bool {
+    true
+}
+
+/// Fails to compile if a non-effect is passed in.
+fn value_implements_effect<E: Effect>(_effect: E) -> bool {
+    true
+}
 
 #[derive(Message)]
 struct MessageN<const N: usize>;
@@ -63,20 +74,66 @@ enum MyComplexEnum {
 }
 
 #[derive(Effect)]
-struct MyGenericTupleStruct<T, U>(T, U);
+struct MyGenericTupleStruct<T: Effect, U: Effect>(T, U);
 
 #[derive(Effect)]
-struct MyGenericStruct<T, U> {
+struct MyGenericStruct<T: Effect, U: Effect> {
     generic_effect_1: T,
     generic_effect_2: U,
 }
 
 #[derive(Effect)]
-enum MyGenericEnum<T, U, V> {
+enum MyGenericEnum<T: Effect, U: Effect, V: Effect> {
     MyUnitVariant,
     MyOneStructVariant(T),
     MyTwoStructVariant {
         generic_effect_1: U,
         generic_effect_2: V,
     },
+}
+
+#[test]
+fn effect_with_effect_parameter_implements_effect() {
+    assert!(type_implements_effect::<
+        MyGenericTupleStruct<MessageWrite<MessageN<0>>, MessageWrite<MessageN<1>>>,
+    >());
+    assert!(type_implements_effect::<
+        MyGenericStruct<MessageWrite<MessageN<2>>, MessageWrite<MessageN<3>>>,
+    >());
+    assert!(type_implements_effect::<
+        MyGenericEnum<
+            MessageWrite<MessageN<4>>,
+            MessageWrite<MessageN<5>>,
+            MessageWrite<MessageN<6>>,
+        >,
+    >());
+}
+
+#[derive(Clone, Component, Resource)]
+struct MyComponentResource;
+
+#[derive(Effect)]
+struct SetResAndComponent<C: Clone + Resource + Component<Mutability = Mutable>> {
+    resource: ResSet<C>,
+    components: ComponentsSet<(C,)>,
+}
+
+#[test]
+fn effect_with_non_effect_parameter_can_implement_effect() {
+    assert!(type_implements_effect::<
+        SetResAndComponent<MyComponentResource>,
+    >());
+}
+
+#[derive(Effect)]
+struct MyEffectWithFunction<F: Fn(Entity) -> MessageWrite<MessageN<100>>> {
+    effect_with_fn: CommandSpawnAnd<MyComponentResource, F, MessageWrite<MessageN<100>>>,
+}
+
+#[test]
+fn effect_with_fn_can_implement_effect() {
+    assert!(value_implements_effect(command_spawn_and(
+        MyComponentResource,
+        |_| message_write(MessageN::<100>)
+    )));
 }
