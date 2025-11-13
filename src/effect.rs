@@ -11,28 +11,27 @@ use bevy::ecs::system::SystemParam;
 /// In the `enum` case, all params for all variants will still be accessed by the `affect` system,
 /// but only the affects for the value's variant will be executed.
 ///
-/// Generics may also be present, and the `Effect` `impl` will simply bound them with `Effect`.
-///
 /// ```no_run
-/// # #[cfg(feature = "bevy_pipe_affect/derive")] {
+/// # #[cfg(feature = "derive")] {
+/// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// #[derive(Component)]
 /// struct Health(f32);
 ///
 /// #[derive(Effect)]
-/// struct DeathEffect<T> {
+/// struct DeathEffect<T: Effect> {
 ///     // If there are multiple fields, they will be affected in field order.
 ///     despawn: EntityCommandDespawn,
-///     // `T: Effect` will be imposed on the `impl`.
+///     // Generic effects can be present as well
 ///     bonus_effect: T,
 /// }
 ///
 /// #[derive(Effect)]
-/// enum HealthProcessEffect<T> {
+/// enum HealthProcessEffect<T: Effect> {
 ///     Died(DeathEffect<T>),
 ///     Regenerating {
-///         new_health: EntityComponentsSet<Health>,
+///         new_health: EntityComponentsSet<(Health,)>,
 ///     },
 ///     // Unit structs/variants will do nothing.
 ///     HealthFull,
