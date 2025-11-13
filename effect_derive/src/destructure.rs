@@ -24,7 +24,7 @@ fn destructure_unnamed_fields(
     }
 }
 
-/// Returns the tokens that can destructure the provided fields into the idents from the ident fns.
+/// Returns the tokens that can destructure the provided fields into the idents from the ident fn.
 ///
 /// Result does not include the type/variant name, just the braces:
 /// - `{ field, field, field }` for named fields
