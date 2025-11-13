@@ -1,5 +1,5 @@
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{DeriveInput, parse_macro_input};
 
 mod mut_param_type;
 
