@@ -4,9 +4,9 @@ use syn::{Field, Fields, FieldsNamed, FieldsUnnamed, Ident};
 
 fn destructure_named_fields(
     fields: &FieldsNamed,
-    ident_fn: impl Fn(&Field) -> &Option<Ident>,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
 ) -> TokenStream {
-    let names = fields.named.iter().map(ident_fn);
+    let names = fields.named.iter().enumerate().map(field_ident_fn);
 
     quote! {
         { #(#names,)* }
@@ -15,9 +15,9 @@ fn destructure_named_fields(
 
 fn destructure_unnamed_fields(
     fields: &FieldsUnnamed,
-    ident_fn: impl Fn(usize) -> Ident,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
 ) -> TokenStream {
-    let names = (0..fields.unnamed.len()).map(ident_fn);
+    let names = fields.unnamed.iter().enumerate().map(field_ident_fn);
 
     quote! {
         ( #(#names,)* )
@@ -31,12 +31,11 @@ fn destructure_unnamed_fields(
 /// - `( field, field, field )` for unnamed fields
 pub fn destructure_fields(
     fields: &Fields,
-    named_ident_fn: impl Fn(&Field) -> &Option<Ident>,
-    unnamed_ident_fn: impl Fn(usize) -> Ident,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
 ) -> TokenStream {
     match &fields {
-        Fields::Named(fields) => destructure_named_fields(fields, named_ident_fn),
-        Fields::Unnamed(fields) => destructure_unnamed_fields(fields, unnamed_ident_fn),
+        Fields::Named(fields) => destructure_named_fields(fields, field_ident_fn),
+        Fields::Unnamed(fields) => destructure_unnamed_fields(fields, field_ident_fn),
         Fields::Unit => quote! {},
     }
 }

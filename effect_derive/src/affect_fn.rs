@@ -5,12 +5,12 @@ use syn::{Data, DataEnum, DataStruct, Field, Fields, FieldsNamed, FieldsUnnamed,
 
 use crate::destructure::destructure_fields;
 
-fn effect_ident_for_named_field(field: &Field) -> &Option<Ident> {
-    &field.ident
-}
-
-fn effect_ident_for_unnamed_field(field_index: usize) -> Ident {
-    format_ident!("f{field_index}")
+fn effect_ident_for_field((field_index, field): (usize, &Field)) -> Ident {
+    if let Some(ident) = &field.ident {
+        ident.clone()
+    } else {
+        format_ident!("f{field_index}")
+    }
 }
 
 fn param_method(param_index: usize) -> TokenStream {
@@ -29,16 +29,14 @@ fn affect_call(effect_ident: &Ident, param_ident: &Ident) -> TokenStream {
 
 fn affect_calls_for_named_fields(
     fields: &FieldsNamed,
-    field_ident_fn: impl Fn(&Field) -> &Option<Ident>,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
     params_ident: &Ident,
 ) -> TokenStream {
     let affect_calls = fields.named.iter().enumerate().map(|(field_index, field)| {
-        let field_ident = field_ident_fn(field)
-            .as_ref()
-            .expect("named fields should have idents");
+        let field_ident = field_ident_fn((field_index, field));
         let param_ident = format_ident!("param");
         let param_method = param_method(field_index);
-        let affect_call = affect_call(field_ident, &param_ident);
+        let affect_call = affect_call(&field_ident, &param_ident);
 
         quote_spanned! { field.span() =>
             {
@@ -55,7 +53,7 @@ fn affect_calls_for_named_fields(
 
 fn affect_calls_for_unnamed_fields(
     fields: &FieldsUnnamed,
-    field_ident_fn: impl Fn(usize) -> Ident,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
     params_ident: &Ident,
 ) -> TokenStream {
     let affect_calls = fields
@@ -63,7 +61,7 @@ fn affect_calls_for_unnamed_fields(
         .iter()
         .enumerate()
         .map(|(field_index, field)| {
-            let field_ident = field_ident_fn(field_index);
+            let field_ident = field_ident_fn((field_index, field));
             let param_ident = format_ident!("param");
             let param_method = param_method(field_index);
             let affect_call = affect_call(&field_ident, &param_ident);
@@ -83,16 +81,15 @@ fn affect_calls_for_unnamed_fields(
 
 fn affect_calls_for_fields(
     fields: &Fields,
-    named_field_ident_fn: impl Fn(&Field) -> &Option<Ident>,
-    unnamed_field_ident_fn: impl Fn(usize) -> Ident,
+    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
     params_ident: &Ident,
 ) -> TokenStream {
     match fields {
         Fields::Named(fields) => {
-            affect_calls_for_named_fields(fields, named_field_ident_fn, params_ident)
+            affect_calls_for_named_fields(fields, field_ident_fn, params_ident)
         }
         Fields::Unnamed(fields) => {
-            affect_calls_for_unnamed_fields(fields, unnamed_field_ident_fn, params_ident)
+            affect_calls_for_unnamed_fields(fields, field_ident_fn, params_ident)
         }
         Fields::Unit => {
             quote! {}
@@ -106,17 +103,9 @@ fn affect_calls_for_struct(
     struct_ty: &Ident,
     params_ident: &Ident,
 ) -> TokenStream {
-    let destructure = destructure_fields(
-        &data_struct.fields,
-        effect_ident_for_named_field,
-        effect_ident_for_unnamed_field,
-    );
-    let affect_calls = affect_calls_for_fields(
-        &data_struct.fields,
-        effect_ident_for_named_field,
-        effect_ident_for_unnamed_field,
-        params_ident,
-    );
+    let destructure = destructure_fields(&data_struct.fields, effect_ident_for_field);
+    let affect_calls =
+        affect_calls_for_fields(&data_struct.fields, effect_ident_for_field, params_ident);
     quote! {
         let #struct_ty #destructure = #struct_ident;
         #affect_calls
@@ -135,17 +124,12 @@ fn affect_calls_for_enum(
         .enumerate()
         .map(|(variant_index, variant)| {
             let name = &variant.ident;
-            let destructure = destructure_fields(
-                &variant.fields,
-                effect_ident_for_named_field,
-                effect_ident_for_unnamed_field,
-            );
+            let destructure = destructure_fields(&variant.fields, effect_ident_for_field);
             let variant_params_ident = format_ident!("variant_params");
             let param_method = param_method(variant_index);
             let affect_calls = affect_calls_for_fields(
                 &variant.fields,
-                effect_ident_for_named_field,
-                effect_ident_for_unnamed_field,
+                effect_ident_for_field,
                 &variant_params_ident,
             );
 
