@@ -1,7 +1,5 @@
 use quote::quote;
-use syn::{DeriveInput, parse_macro_input};
-
-mod generics;
+use syn::{parse_macro_input, DeriveInput};
 
 mod mut_param_type;
 
@@ -15,8 +13,9 @@ pub fn derive_effect(input: proc_macro::TokenStream) -> proc_macro::TokenStream 
 
     let name = input.ident;
 
-    let generics = generics::generics_with_effect_bounds(input.generics);
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    // we don't impose `: Effect` bounds automatically to allow users to use non-effect generics in
+    // their fields, like functions or components or resources.
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let mut_param_type = mut_param_type::mut_param_type_for_data(&input.data);
 
