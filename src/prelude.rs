@@ -3,6 +3,23 @@
 pub use either::Either;
 
 pub use crate::effects::{
+    AffectMany,
+    AffectOrHandle,
+    CommandInsertResource,
+    CommandQueue,
+    CommandRemoveResource,
+    CommandSpawnAnd,
+    ComponentsSet,
+    ComponentsSetWith,
+    EntityCommandDespawn,
+    EntityCommandInsert,
+    EntityCommandQueue,
+    EntityCommandRemove,
+    EntityComponentsSet,
+    EntityComponentsSetWith,
+    MessageWrite,
+    ResSet,
+    ResSetWith,
     affect_many,
     affect_or_handle,
     command_insert_resource,
@@ -26,23 +43,6 @@ pub use crate::effects::{
     message_write,
     res_set,
     res_set_with,
-    AffectMany,
-    AffectOrHandle,
-    CommandInsertResource,
-    CommandQueue,
-    CommandRemoveResource,
-    CommandSpawnAnd,
-    ComponentsSet,
-    ComponentsSetWith,
-    EntityCommandDespawn,
-    EntityCommandInsert,
-    EntityCommandQueue,
-    EntityCommandRemove,
-    EntityComponentsSet,
-    EntityComponentsSetWith,
-    MessageWrite,
-    ResSet,
-    ResSetWith,
 };
 pub use crate::system_combinators::{affect, and_combine, and_compose, pure};
-pub use crate::{effect_out, Effect, EffectOut};
+pub use crate::{Effect, EffectOut, effect_out};

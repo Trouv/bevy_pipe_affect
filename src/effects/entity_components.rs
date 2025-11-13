@@ -156,10 +156,10 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::{
+        NumberComponent,
         n0_query_data_to_n1_through_one_way_function,
         n0_to_n1_through_one_way_function,
         two_number_components_one_way_transform,
-        NumberComponent,
     };
     use crate::effects::one_way_fn::OneWayFn;
     use crate::prelude::affect;

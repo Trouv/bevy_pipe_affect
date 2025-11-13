@@ -155,7 +155,7 @@ where
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// fn my_non_read_only_system(_color: ResMut<ClearColor>) -> impl Effect {
+/// fn my_non_read_only_system(_color: ResMut<ClearColor>) -> impl Effect + use <> {
 ///     // potential mutation
 ///
 ///     res_set(ClearColor::default())
