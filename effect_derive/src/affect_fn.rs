@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{Data, DataEnum, DataStruct, Field, Fields, FieldsNamed, FieldsUnnamed, Ident};
+use syn::{Data, DataEnum, DataStruct, Field, Fields, Ident};
 
 use crate::destructure::destructure_fields;
 
@@ -27,12 +27,12 @@ fn affect_call(effect_ident: &Ident, param_ident: &Ident) -> TokenStream {
     }
 }
 
-fn affect_calls_for_named_fields(
-    fields: &FieldsNamed,
+fn affect_calls_for_field_iter<'a>(
+    fields: impl IntoIterator<Item = &'a Field>,
     field_ident_fn: impl Fn((usize, &Field)) -> Ident,
     params_ident: &Ident,
 ) -> TokenStream {
-    let affect_calls = fields.named.iter().enumerate().map(|(field_index, field)| {
+    let affect_calls = fields.into_iter().enumerate().map(|(field_index, field)| {
         let field_ident = field_ident_fn((field_index, field));
         let param_ident = format_ident!("param");
         let param_method = param_method(field_index);
@@ -51,34 +51,6 @@ fn affect_calls_for_named_fields(
     }
 }
 
-fn affect_calls_for_unnamed_fields(
-    fields: &FieldsUnnamed,
-    field_ident_fn: impl Fn((usize, &Field)) -> Ident,
-    params_ident: &Ident,
-) -> TokenStream {
-    let affect_calls = fields
-        .unnamed
-        .iter()
-        .enumerate()
-        .map(|(field_index, field)| {
-            let field_ident = field_ident_fn((field_index, field));
-            let param_ident = format_ident!("param");
-            let param_method = param_method(field_index);
-            let affect_call = affect_call(&field_ident, &param_ident);
-
-            quote_spanned! { field.span() =>
-                {
-                    let mut #param_ident = #params_ident.#param_method;
-                    #affect_call
-                }
-            }
-        });
-
-    quote! {
-        #(#affect_calls)*
-    }
-}
-
 fn affect_calls_for_fields(
     fields: &Fields,
     field_ident_fn: impl Fn((usize, &Field)) -> Ident,
@@ -86,10 +58,10 @@ fn affect_calls_for_fields(
 ) -> TokenStream {
     match fields {
         Fields::Named(fields) => {
-            affect_calls_for_named_fields(fields, field_ident_fn, params_ident)
+            affect_calls_for_field_iter(&fields.named, field_ident_fn, params_ident)
         }
         Fields::Unnamed(fields) => {
-            affect_calls_for_unnamed_fields(fields, field_ident_fn, params_ident)
+            affect_calls_for_field_iter(&fields.unnamed, field_ident_fn, params_ident)
         }
         Fields::Unit => {
             quote! {}
