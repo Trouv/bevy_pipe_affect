@@ -12,7 +12,7 @@ use crate::Effect;
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// fn zero_red_clear_color_srgba(clear_color: Res<ClearColor>) -> impl Effect {
+/// fn zero_red_clear_color_srgba(clear_color: Res<ClearColor>) -> impl Effect + use<> {
 ///     let result = match clear_color.0 {
 ///         Color::Srgba(srgba) => {
 ///             let color = Color::Srgba(Srgba { red: 0., ..srgba });
@@ -156,7 +156,7 @@ mod tests {
 
     fn spawn_blueprint_component(
         processed_blueprints: Query<(), Or<(With<Blueprint>, With<ProcessedBlueprint>)>>,
-    ) -> impl Effect {
+    ) -> impl Effect + use<> {
         processed_blueprints.is_empty().then_some(CommandSpawnAnd {
             bundle: Blueprint,
             f: |_| (),

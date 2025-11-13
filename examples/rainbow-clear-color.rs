@@ -13,7 +13,7 @@ fn main() {
 }
 
 /// This system defines the clear color as a pure function of time.
-fn rainbow_clear_color(time: Res<Time>) -> impl Effect {
+fn rainbow_clear_color(time: Res<Time>) -> impl Effect + use<> {
     let color = Color::hsv(time.elapsed_secs() * 20.0, 0.7, 0.7);
     res_set(ClearColor(color))
 }
