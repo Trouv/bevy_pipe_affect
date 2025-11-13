@@ -6,7 +6,7 @@ mod effect;
 pub use effect::Effect;
 
 mod effect_out;
-pub use effect_out::{effect_out, EffectOut};
+pub use effect_out::{EffectOut, effect_out};
 
 pub mod effects;
 
