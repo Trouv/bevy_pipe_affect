@@ -15,3 +15,7 @@ pub mod system_combinators;
 pub mod effect_composition;
 
 pub mod prelude;
+
+/// Derive macro for the [`Effect`] trait. See that trait for more details.
+#[cfg(feature = "derive")]
+pub use bevy_pipe_affect_derive::Effect;
