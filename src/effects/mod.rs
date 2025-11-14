@@ -3,64 +3,66 @@
 //! [`Effect`]: crate::Effect
 
 mod resource;
-pub use resource::{ResSet, ResSetWith, res_set, res_set_with};
+pub use resource::{res_set, res_set_with, ResSet, ResSetWith};
 
 mod message;
-pub use message::{MessageWrite, message_write};
+pub use message::{message_write, MessageWrite};
 
 mod components;
 pub use components::{
-    ComponentsSet,
-    ComponentsSetWith,
     components_set,
     components_set_filtered,
     components_set_filtered_with,
     components_set_filtered_with_query_data,
     components_set_with,
     components_set_with_query_data,
+    ComponentsSet,
+    ComponentsSetWith,
 };
 
 mod entity_components;
 pub use entity_components::{
-    EntityComponentsSet,
-    EntityComponentsSetWith,
     entity_components_set,
     entity_components_set_with,
     entity_components_set_with_query_data,
+    EntityComponentsSet,
+    EntityComponentsSetWith,
 };
 
 mod command;
 pub use command::{
-    CommandInsertResource,
-    CommandQueue,
-    CommandRemoveResource,
-    CommandSpawnAnd,
     command_insert_resource,
     command_queue,
     command_remove_resource,
     command_spawn,
     command_spawn_and,
+    CommandInsertResource,
+    CommandQueue,
+    CommandRemoveResource,
+    CommandSpawnAnd,
 };
 
 mod entity_command;
 pub use entity_command::{
-    EntityCommandDespawn,
-    EntityCommandInsert,
-    EntityCommandQueue,
-    EntityCommandRemove,
     entity_command_despawn,
     entity_command_insert,
     entity_command_queue,
     entity_command_remove,
+    EntityCommandDespawn,
+    EntityCommandInsert,
+    EntityCommandQueue,
+    EntityCommandRemove,
 };
 
 mod algebra;
 
 mod iter;
-pub use iter::{AffectMany, affect_many};
+pub use iter::{affect_many, AffectMany};
 
 mod error;
-pub use error::{AffectOrHandle, affect_or_handle};
+pub use error::{affect_or_handle, AffectOrHandle};
+
+mod asset_server;
 
 #[cfg(test)]
 mod one_way_fn;
