@@ -54,6 +54,9 @@ pub use entity_command::{
     EntityCommandRemove,
 };
 
+mod asset_server;
+pub use asset_server::{asset_server_load_and, AssetServerLoadAnd};
+
 mod algebra;
 
 mod iter;
@@ -61,8 +64,6 @@ pub use iter::{affect_many, AffectMany};
 
 mod error;
 pub use error::{affect_or_handle, AffectOrHandle};
-
-mod asset_server;
 
 #[cfg(test)]
 mod one_way_fn;
