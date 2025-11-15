@@ -5,15 +5,50 @@ use bevy::prelude::*;
 
 use crate::Effect;
 
-struct AssetServerLoadAnd<'a, F, A, E>
+/// [`Effect`] that loads an asset, then supplies the asset handle to the provided
+/// effect-producing function to cause another effect.
+///
+/// Can be constructed with [`asset_server_load_and`].
+pub struct AssetServerLoadAnd<'a, F, A, E>
 where
     F: FnOnce(Handle<A>) -> E,
     A: Asset,
     E: Effect,
 {
+    /// The path to the asset to load.
     pub path: AssetPath<'a>,
+    /// The `Handle<A> -> Effect` function that may cause another effect.
     pub f: F,
     asset: PhantomData<A>,
+}
+
+impl<'a, F, A, E> AssetServerLoadAnd<'a, F, A, E>
+where
+    F: FnOnce(Handle<A>) -> E,
+    A: Asset,
+    E: Effect,
+{
+    fn new<P>(path: P, f: F) -> Self
+    where
+        P: Into<AssetPath<'a>>,
+    {
+        AssetServerLoadAnd {
+            path: path.into(),
+            f,
+            asset: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`AssetServerLoadAnd`] [`Effect`], with an extra effect using the `Handle<A>`.
+pub fn asset_server_load_and<'a, P, F, A, E>(path: P, f: F) -> AssetServerLoadAnd<'a, F, A, E>
+where
+    P: Into<AssetPath<'a>>,
+    F: FnOnce(Handle<A>) -> E,
+    A: Asset,
+    E: Effect,
+{
+    AssetServerLoadAnd::new(path, f)
 }
 
 impl<'a, F, A, E> Effect for AssetServerLoadAnd<'a, F, A, E>
