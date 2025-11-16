@@ -5,6 +5,7 @@ pub use either::Either;
 pub use crate::effects::{
     AffectMany,
     AffectOrHandle,
+    AssetServerLoadAnd,
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
@@ -22,6 +23,7 @@ pub use crate::effects::{
     ResSetWith,
     affect_many,
     affect_or_handle,
+    asset_server_load_and,
     command_insert_resource,
     command_queue,
     command_remove_resource,

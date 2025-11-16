@@ -54,6 +54,9 @@ pub use entity_command::{
     entity_command_remove,
 };
 
+mod asset_server;
+pub use asset_server::{AssetServerLoadAnd, asset_server_load_and};
+
 mod algebra;
 
 mod iter;
