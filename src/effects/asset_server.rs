@@ -64,3 +64,45 @@ where
         (self.f)(handle).affect(&mut param.1);
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use bevy::asset::LoadState;
+
+    use super::*;
+    use crate::effects::command_insert_resource;
+    use crate::prelude::affect;
+
+    #[derive(Resource)]
+    struct PlayerSprite(Handle<Image>);
+
+    #[test]
+    fn asset_server_load_loads_asset() {
+        let mut app = App::new();
+
+        app.add_plugins((
+            MinimalPlugins,
+            AssetPlugin::default(),
+            ImagePlugin::default_linear(),
+        ))
+        .add_systems(
+            Startup,
+            (|| {
+                asset_server_load_and("player.png", |handle| {
+                    command_insert_resource(PlayerSprite(handle))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+        let player_sprite_handle = &app.world().resource::<PlayerSprite>().0;
+
+        let asset_server = app.world().resource::<AssetServer>();
+        assert!(matches!(
+            asset_server.get_load_state(player_sprite_handle),
+            Some(LoadState::Loading)
+        ));
+    }
+}
