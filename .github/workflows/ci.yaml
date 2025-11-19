@@ -31,7 +31,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
-      - name: Run cargo test
+      - name: Run cargo test --no-default-features
+        run: cargo test --no-default-features
+      - name: Run cargo test --all-features
         run: cargo test --all-features
 
   clippy_check:
