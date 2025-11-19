@@ -1,4 +1,5 @@
 //! Some basic `Effect`-deriving types that should compile.
+#![cfg(feature = "derive")]
 #![allow(dead_code, clippy::enum_variant_names)]
 
 use bevy::ecs::component::Mutable;
