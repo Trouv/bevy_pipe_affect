@@ -4,6 +4,7 @@ use crate::effect::Effect;
 ///
 /// Can be returned by `bevy` systems to produce effects with `E` while preserving normal pipe
 /// functionality with `O`.
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Default)]
 pub struct EffectOut<E, O>
 where
     E: Effect,
