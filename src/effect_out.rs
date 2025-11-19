@@ -21,6 +21,21 @@ where
     E: Effect,
 {
     /// Maps a `EffectOut<E, O>` to an `EffectOut<E, O2>` by applying a function to the `output`.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect;
+    ///
+    /// let initial = effect_out(MyEffect, 5);
+    /// let mapped = initial.map(|x| format!("{x}"));
+    ///
+    /// assert_eq!(mapped, effect_out(MyEffect, "5".to_string()));
+    /// # }
+    /// ```
     pub fn map<O2>(self, f: impl FnOnce(O) -> O2) -> EffectOut<E, O2> {
         let EffectOut { effect, out } = self;
         EffectOut {
@@ -36,6 +51,24 @@ where
     /// returned by `f`.
     ///
     /// See [`EffectOut::and_then_compose`] for more effect composition flexibility.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect<const N: usize>;
+    ///
+    /// let initial = effect_out(MyEffect::<0>, 5);
+    /// let composed = initial.and_then(|x| effect_out(MyEffect::<1>, format!("{x}")));
+    ///
+    /// assert_eq!(
+    ///     composed,
+    ///     effect_out((MyEffect::<0>, MyEffect::<1>), "5".to_string())
+    /// );
+    /// # }
+    /// ```
     pub fn and_then<IntoEffectOut, E2, O2>(
         self,
         f: impl FnOnce(O) -> IntoEffectOut,
@@ -59,6 +92,28 @@ where
     /// See [`EffectOut::and_then`] for a short-hand of `and_then_compose(f, combine)`.
     ///
     /// [`effect_composition`]: crate::effect_composition
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::effect_composition;
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect<const N: usize>;
+    ///
+    /// let initial = effect_out(MyEffect::<0>, 5);
+    /// let composed = initial.and_then_compose(
+    ///     |x| effect_out(MyEffect::<1>, format!("{x}")),
+    ///     effect_composition::enibmoc,
+    /// );
+    ///
+    /// assert_eq!(
+    ///     composed,
+    ///     effect_out((MyEffect::<1>, MyEffect::<0>), "5".to_string())
+    /// );
+    /// # }
+    /// ```
     pub fn and_then_compose<IntoEffectOut, E2, O2, E3>(
         self,
         f: impl FnOnce(O) -> IntoEffectOut,
@@ -83,6 +138,21 @@ where
     /// i.e. `EffectOut<E1, EffectOut<E2, 0>>` becomes `EffectOut<(E1, E2), O>`.
     ///
     /// See [`EffectOut::flatten_compose`] for more effect composition flexibility.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect<const N: usize>;
+    ///
+    /// let nested = effect_out(MyEffect::<0>, effect_out(MyEffect::<1>, 5));
+    /// let flattened = nested.flatten();
+    ///
+    /// assert_eq!(flattened, effect_out((MyEffect::<0>, MyEffect::<1>), 5));
+    /// # }
+    /// ```
     pub fn flatten(self) -> EffectOut<(E1, E2), O> {
         self.flatten_compose(combine)
     }
@@ -98,6 +168,22 @@ where
     /// See [`EffectOut::flatten`] for a short-hand of `flatten_compose(combine)`.
     ///
     /// [`effect_composition`]: crate::effect_composition
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::effect_composition;
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect<const N: usize>;
+    ///
+    /// let nested = effect_out(MyEffect::<0>, effect_out(MyEffect::<1>, 5));
+    /// let flattened = nested.flatten_compose(effect_composition::enibmoc);
+    ///
+    /// assert_eq!(flattened, effect_out((MyEffect::<1>, MyEffect::<0>), 5));
+    /// # }
+    /// ```
     pub fn flatten_compose<E3>(self, compose: impl FnOnce(E1, E2) -> E3) -> EffectOut<E3, O>
     where
         E3: Effect,
