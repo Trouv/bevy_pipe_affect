@@ -46,5 +46,5 @@ pub use crate::effects::{
     res_set,
     res_set_with,
 };
-pub use crate::system_combinators::{affect, and_combine, and_compose, pure};
+pub use crate::system_combinators::{affect, in_and_then, in_and_then_compose, pure};
 pub use crate::{Effect, EffectOut, effect_out};

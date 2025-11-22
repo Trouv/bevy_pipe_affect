@@ -8,12 +8,15 @@ use crate::{Effect, EffectOut};
 
 /// `bevy` system that accepts [`Effect`]s as pipe input and performs their state transition.
 ///
-/// Technically, this actually accepts [`I: Into<EffectOut<E, O>>`] as pipe-input, and performs the
-/// conversion implicitly. Returns the output `O` of the [`EffectOut`], so piping can continue.
+/// Technically, this actually accepts `IntoEffectOut: Into<EffectOut<E, O>>` as pipe-input, and
+/// performs the conversion implicitly (with `O=()` in the simple converted-effect case). The
+/// `output: O` of the [`EffectOut<E, O>`] is returned, so this system can be piped into more
+/// systems if [`EffectOut<E, O>`] output exists.
 ///
+/// # Examples
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy::ecs::system::assert_is_system;
+/// use bevy::ecs::system::assert_is_system;
+/// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
@@ -23,10 +26,13 @@ use crate::{Effect, EffectOut};
 /// assert_is_system(system_with_effects.pipe(affect))
 /// ```
 ///
-/// [`I: Into<EffectOut<E, O>>`]: EffectOut
-pub fn affect<I, E, O>(In(into_effect_out): In<I>, param: StaticSystemParam<E::MutParam>) -> O
+/// [`EffectOut<E, O>>`]: EffectOut
+pub fn affect<IntoEffectOut, E, O>(
+    In(into_effect_out): In<IntoEffectOut>,
+    param: StaticSystemParam<E::MutParam>,
+) -> O
 where
-    I: Into<EffectOut<E, O>>,
+    IntoEffectOut: Into<EffectOut<E, O>>,
     E: Effect,
 {
     let EffectOut { effect, out } = into_effect_out.into();
@@ -37,22 +43,24 @@ where
 
 /// Higher-order `bevy` system constructor for composing two systems with effects via piping.
 ///
-/// Accepts a system with effects and an effect composition function and returns a system that
-/// composes their effects.
-///
-/// Normal pipe input can be passed into `S` by returning [`EffectOut<E, O>`] in the source system
-/// instead of a plain [`Effect`]. The output `O` will be passed into `S`.
-///
-/// Similarly, normal pipe output can be passed out of the resulting system if `S` returns
-/// [`EffectOut<E, O>`].
+/// Accepts an effect-returning system `s` and returns a system that composes the effects of the
+/// piped-in system and `s` using the `compose` function.
 ///
 /// Some basic effect composition functions are provided by this library in the
 /// [`effect_composition`] module.
 ///
-/// In this example, the effect composition just ignores the effect of the original system:
+/// See [`in_and_then`] for a short-hand of `in_and_then_compose(s, combine)`.
+///
+/// If the piped-in system returns [`EffectOut<E, O>`] instead of a simple effect, then the
+/// `output: O` is passed into the given system `s`. This allows for a monad-ish API of chaining
+/// many systems and piping their outputs while composing their effects.
+///
+/// # Examples
+/// ## No output piping
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy::ecs::system::assert_is_system;
+/// use bevy::ecs::system::assert_is_system;
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::effect_composition;
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
@@ -65,51 +73,80 @@ where
 ///
 /// assert_is_system(
 ///     system_with_effects
-///         .pipe(and_compose(another_system_with_effects, |_, e| e))
-///         .pipe(affect),
+///         .pipe(in_and_then_compose(
+///             another_system_with_effects,
+///             effect_composition::enibmoc, // |e1, e2| (e2, e1)
+///         ))
+///         .pipe(affect), // applies both effects, in reverse
+/// )
+/// ```
+///
+/// ## [`EffectOut<E, O>`] piping
+/// ```
+/// use bevy::ecs::system::assert_is_system;
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::effect_composition;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// fn system_with_effects() -> EffectOut<impl Effect, f32> {
+///     effect_out(res_set(ClearColor(Color::BLACK)), 2.0)
+/// }
+///
+/// fn another_system_with_effects(In(value): In<f32>) -> impl Effect {
+///     res_set(UiScale(value))
+/// }
+///
+/// assert_is_system(
+///     system_with_effects
+///         .pipe(in_and_then_compose(
+///             another_system_with_effects,
+///             effect_composition::enibmoc, // |e1, e2| (e2, e1)
+///         ))
+///         .pipe(affect), // applies both effects, in reverse
 /// )
 /// ```
 ///
 /// [`EffectOut<E, O>`]: EffectOut
 /// [`effect_composition`]: crate::effect_composition
-pub fn and_compose<I1, E1, O1, System, Marker, I2, E2, O2, E3>(
+pub fn in_and_then_compose<IntoEffectOut1, E1, O1, System, Marker, IntoEffectOut2, E2, O2, E3>(
     mut s: System,
-    compose_fn: impl Fn(E1, E2) -> E3,
-) -> impl FnMut(In<I1>, StaticSystemParam<System::Param>) -> EffectOut<E3, O2>
+    compose_fn: impl Fn(E1, E2) -> E3 + Clone,
+) -> impl FnMut(In<IntoEffectOut1>, StaticSystemParam<System::Param>) -> EffectOut<E3, O2>
 where
-    System: SystemParamFunction<Marker, Out = I2>,
-    I1: Into<EffectOut<E1, O1>>,
-    I2: Into<EffectOut<E2, O2>>,
+    System: SystemParamFunction<Marker, Out = IntoEffectOut2>,
+    IntoEffectOut1: Into<EffectOut<E1, O1>>,
+    IntoEffectOut2: Into<EffectOut<E2, O2>>,
     E1: Effect,
     E2: Effect,
     E3: Effect,
     for<'a> System::In: SystemInput<Inner<'a> = O1>,
 {
     move |In(into_effect_out), params| {
-        let EffectOut {
-            effect: e1,
-            out: input,
-        } = into_effect_out.into();
-        let EffectOut { effect: e2, out } = s.run(input, params.into_inner()).into();
-
-        EffectOut {
-            effect: compose_fn(e1, e2),
-            out,
-        }
+        into_effect_out.into().and_then_compose(
+            |input| s.run(input, params.into_inner()),
+            compose_fn.clone(),
+        )
     }
 }
 
 /// Higher-order `bevy` system constructor for combining the effects of two systems via piping.
 ///
-/// Accepts a system with effects and returns a system that combines the effects of the given
-/// system and the piped-in system.
+/// Accepts an effect-returning system `s` and returns a system that combines the effects of the
+/// piped-in system and `s`.
 ///
-/// This function is just [`and_compose`] used with [`combine`] for convenience. See [`and_compose`] for more
-/// effect composition flexibility.
+/// To "combine" these effects just means to apply them in order, first the effect of the piped-in
+/// system, then the effect of the given system. See [`in_and_then_compose`] for more effect
+/// composition flexibility.
 ///
+/// If the piped-in system returns [`EffectOut<E, O>`] instead of a simple effect, then the
+/// `output: O` is passed into the given system `s`. This allows for a monad-ish API of chaining
+/// many systems and piping their outputs while combining their effects.
+///
+/// # Examples
+/// ## No output
 /// ```
-/// # use bevy::prelude::*;
-/// # use bevy::ecs::system::assert_is_system;
+/// use bevy::ecs::system::assert_is_system;
+/// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
 /// fn system_with_effects() -> impl Effect {
@@ -122,23 +159,47 @@ where
 ///
 /// assert_is_system(
 ///     system_with_effects
-///         .pipe(and_combine(another_system_with_effects))
+///         .pipe(in_and_then(another_system_with_effects))
 ///         .pipe(affect), // applies both effects
 /// )
 /// ```
+///
+/// ## [`EffectOut<E, O>`] piping
+/// ```
+/// use bevy::ecs::system::assert_is_system;
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::effect_composition;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// fn system_with_effects() -> EffectOut<impl Effect, f32> {
+///     effect_out(res_set(ClearColor(Color::BLACK)), 2.0)
+/// }
+///
+/// fn another_system_with_effects(In(value): In<f32>) -> impl Effect {
+///     res_set(UiScale(value))
+/// }
+///
+/// assert_is_system(
+///     system_with_effects
+///         .pipe(in_and_then(another_system_with_effects))
+///         .pipe(affect), // applies both effects
+/// )
+/// ```
+///
+/// [`EffectOut<E, O>`]: EffectOut
 #[expect(clippy::type_complexity)]
-pub fn and_combine<I1, E1, O1, System, Marker, I2, E2, O2>(
+pub fn in_and_then<IntoEffectOut1, E1, O1, System, Marker, IntoEffectOut2, E2, O2>(
     s: System,
-) -> impl FnMut(In<I1>, StaticSystemParam<System::Param>) -> EffectOut<(E1, E2), O2>
+) -> impl FnMut(In<IntoEffectOut1>, StaticSystemParam<System::Param>) -> EffectOut<(E1, E2), O2>
 where
-    System: SystemParamFunction<Marker, Out = I2>,
-    I1: Into<EffectOut<E1, O1>>,
-    I2: Into<EffectOut<E2, O2>>,
+    System: SystemParamFunction<Marker, Out = IntoEffectOut2>,
+    IntoEffectOut1: Into<EffectOut<E1, O1>>,
+    IntoEffectOut2: Into<EffectOut<E2, O2>>,
     E1: Effect,
     E2: Effect,
     for<'a> System::In: SystemInput<Inner<'a> = O1>,
 {
-    and_compose(s, combine)
+    in_and_then_compose(s, combine)
 }
 
 /// Identity function for read-only-systems.
@@ -148,8 +209,10 @@ where
 ///
 /// This only fails for bevy system parameters that aren't read-only. There may be other side
 /// effects in your system still that may be unrelated to bevy, like print statements, or global
-/// rust state like `OnceCell`s.
+/// rust state like `OnceCell`s. There are even some `bevy` things with interior mutability that
+/// will not get caught, notably `Res<AssetServer>`.
 ///
+/// # Examples
 /// An anti-example that failes to compile:
 /// ```compile_fail
 /// use bevy::prelude::*;

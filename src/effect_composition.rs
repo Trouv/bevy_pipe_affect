@@ -1,6 +1,8 @@
-//! [`Effect`] composition functions, that can be used with [`and_compose`].
+//! [`Effect`] composition functions, that can be used with [`in_and_then_compose`] and
+//! [`EffectOut::and_then_compose`].
 //!
-//! [`and_compose`]: crate::system_combinators::and_compose
+//! [`in_and_then_compose`]: crate::system_combinators::in_and_then_compose
+//! [`EffectOut::and_then_compose`]: crate::EffectOut::and_then_compose
 
 use bevy::ecs::error::{BevyError, ErrorContext};
 
