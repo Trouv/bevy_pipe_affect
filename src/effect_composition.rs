@@ -12,16 +12,18 @@ use crate::effects::AffectOrHandle;
 /// [`Effect`] composition function that returns the first effect.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::mandela;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let effect = mandela(message_write(MyMessage::<0>), message_write(MyMessage::<1>));
+/// let effect = mandela(MyEffect::<0>, MyEffect::<1>);
 ///
-/// assert_eq!(effect, message_write(MyMessage::<0>));
+/// assert_eq!(effect, MyEffect::<0>);
+/// # }
 /// ```
 pub fn mandela<E0, E1>(e0: E0, _e1: E1) -> E0
 where
@@ -34,16 +36,18 @@ where
 /// [`Effect`] composition function that returns the second effect.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::placebo;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let effect = placebo(message_write(MyMessage::<0>), message_write(MyMessage::<1>));
+/// let effect = placebo(MyEffect::<0>, MyEffect::<1>);
 ///
-/// assert_eq!(effect, message_write(MyMessage::<1>));
+/// assert_eq!(effect, MyEffect::<1>);
+/// # }
 /// ```
 pub fn placebo<E0, E1>(_e0: E0, e1: E1) -> E1
 where
@@ -56,19 +60,18 @@ where
 /// [`Effect`] composition function that returns an effect that will apply both in order.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::combine;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let effect = combine(message_write(MyMessage::<0>), message_write(MyMessage::<1>));
+/// let effect = combine(MyEffect::<0>, MyEffect::<1>);
 ///
-/// assert_eq!(
-///     effect,
-///     (message_write(MyMessage::<0>), message_write(MyMessage::<1>))
-/// );
+/// assert_eq!(effect, (MyEffect::<0>, MyEffect::<1>));
+/// # }
 /// ```
 pub fn combine<E0, E1>(e0: E0, e1: E1) -> (E0, E1)
 where
@@ -81,19 +84,18 @@ where
 /// [`Effect`] composition function that returns an effect that will apply both in reverse order.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::enibmoc;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let effect = enibmoc(message_write(MyMessage::<0>), message_write(MyMessage::<1>));
+/// let effect = enibmoc(MyEffect::<0>, MyEffect::<1>);
 ///
-/// assert_eq!(
-///     effect,
-///     (message_write(MyMessage::<1>), message_write(MyMessage::<0>))
-/// );
+/// assert_eq!(effect, (MyEffect::<1>, MyEffect::<0>));
+/// # }
 /// ```
 pub fn enibmoc<E0, E1>(e0: E0, e1: E1) -> (E1, E0)
 where
@@ -107,26 +109,22 @@ where
 /// `Some`-wrapped left effect and the right effect, otherwise `None`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::lhs_some_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = lhs_some_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = lhs_some_then(|_, _| MyEffect::<2>);
 ///
-/// let some_effect = composition(
-///     Some(message_write(MyMessage::<0>)),
-///     message_write(MyMessage::<1>),
-/// );
-/// assert_eq!(some_effect, Some(message_write(MyMessage::<2>)));
+/// let some_effect = composition(Some(MyEffect::<0>), MyEffect::<1>);
+/// assert_eq!(some_effect, Some(MyEffect::<2>));
 ///
-/// let none_effect = composition(
-///     None::<MessageWrite<MyMessage<0>>>,
-///     message_write(MyMessage::<1>),
-/// );
+/// let none_effect = composition(None::<MyEffect<0>>, MyEffect::<1>);
 /// assert!(none_effect.is_none());
+/// # }
 /// ```
 pub fn lhs_some_then<E0, E1, E2>(
     composition: impl Fn(E0, E1) -> E2,
@@ -143,26 +141,22 @@ where
 /// effect and the `Some`-wrapped right effect, otherwise `None`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::rhs_some_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = rhs_some_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = rhs_some_then(|_, _| MyEffect::<2>);
 ///
-/// let some_effect = composition(
-///     message_write(MyMessage::<0>),
-///     Some(message_write(MyMessage::<1>)),
-/// );
-/// assert_eq!(some_effect, Some(message_write(MyMessage::<2>)));
+/// let some_effect = composition(MyEffect::<0>, Some(MyEffect::<1>));
+/// assert_eq!(some_effect, Some(MyEffect::<2>));
 ///
-/// let none_effect = composition(
-///     message_write(MyMessage::<0>),
-///     None::<MessageWrite<MyMessage<1>>>,
-/// );
+/// let none_effect = composition(MyEffect::<0>, None::<MyEffect<1>>);
 /// assert!(none_effect.is_none());
+/// # }
 /// ```
 pub fn rhs_some_then<E0, E1, E2>(
     composition: impl Fn(E0, E1) -> E2,
@@ -179,26 +173,22 @@ where
 /// `Ok`-wrapped left effect and the right effect, otherwise `Err`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::lhs_ok_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = lhs_ok_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = lhs_ok_then(|_, _| MyEffect::<2>);
 ///
-/// let ok_effect = composition(
-///     Ok::<_, &str>(message_write(MyMessage::<0>)),
-///     message_write(MyMessage::<1>),
-/// );
-/// assert_eq!(ok_effect, Ok(message_write(MyMessage::<2>)));
+/// let ok_effect = composition(Ok::<_, &str>(MyEffect::<0>), MyEffect::<1>);
+/// assert_eq!(ok_effect, Ok(MyEffect::<2>));
 ///
-/// let err_effect = composition(
-///     Err::<MessageWrite<MyMessage<0>>, _>("snafu"),
-///     message_write(MyMessage::<1>),
-/// );
+/// let err_effect = composition(Err::<MyEffect<0>, _>("snafu"), MyEffect::<1>);
 /// assert!(err_effect.is_err());
+/// # }
 /// ```
 pub fn lhs_ok_then<E0, E1, E2, Er>(
     composition: impl Fn(E0, E1) -> E2,
@@ -216,26 +206,22 @@ where
 /// effect and the `Ok`-wrapped right effect, otherwise `Err`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::rhs_ok_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = rhs_ok_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = rhs_ok_then(|_, _| MyEffect::<2>);
 ///
-/// let ok_effect = composition(
-///     message_write(MyMessage::<0>),
-///     Ok::<_, &str>(message_write(MyMessage::<1>)),
-/// );
-/// assert_eq!(ok_effect, Ok(message_write(MyMessage::<2>)));
+/// let ok_effect = composition(MyEffect::<0>, Ok::<_, &str>(MyEffect::<1>));
+/// assert_eq!(ok_effect, Ok(MyEffect::<2>));
 ///
-/// let err_effect = composition(
-///     message_write(MyMessage::<0>),
-///     Err::<MessageWrite<MyMessage<1>>, _>("snafu"),
-/// );
+/// let err_effect = composition(MyEffect::<0>, Err::<MyEffect<1>, _>("snafu"));
 /// assert!(err_effect.is_err());
+/// # }
 /// ```
 pub fn rhs_ok_then<E0, E1, E2, Er>(
     composition: impl Fn(E0, E1) -> E2,
@@ -254,32 +240,34 @@ where
 /// `AffectOrHandle { result: Err, .. }`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::lhs_affect_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = lhs_affect_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = lhs_affect_then(|_, _| MyEffect::<2>);
 ///
 /// let affect_effect = composition(
 ///     AffectOrHandle {
-///         result: Ok::<_, &str>(message_write(MyMessage::<0>)),
+///         result: Ok::<_, &str>(MyEffect::<0>),
 ///         handler: bevy::ecs::error::warn,
 ///     },
-///     message_write(MyMessage::<1>),
+///     MyEffect::<1>,
 /// );
-/// assert_eq!(affect_effect.result, Ok(message_write(MyMessage::<2>)));
+/// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
 ///     AffectOrHandle {
-///         result: Err::<MessageWrite<MyMessage<0>>, _>("snafu"),
+///         result: Err::<MyEffect<0>, _>("snafu"),
 ///         handler: bevy::ecs::error::warn,
 ///     },
-///     message_write(MyMessage::<1>),
+///     MyEffect::<1>,
 /// );
 /// assert!(handle_effect.result.is_err());
+/// # }
 /// ```
 pub fn lhs_affect_then<E0, E1, E2, Er, Handler>(
     composition: impl Fn(E0, E1) -> E2,
@@ -299,32 +287,34 @@ where
 /// { result: Err, .. }`.
 ///
 /// ```
+/// # #[cfg(feature = "derive")] {
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::effect_composition::rhs_affect_then;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, PartialEq, Eq, Message)]
-/// struct MyMessage<const N: u8>;
+/// #[derive(Debug, PartialEq, Eq, Effect)]
+/// struct MyEffect<const N: u8>;
 ///
-/// let composition = rhs_affect_then(|_, _| message_write(MyMessage::<2>));
+/// let composition = rhs_affect_then(|_, _| MyEffect::<2>);
 ///
 /// let affect_effect = composition(
-///     message_write(MyMessage::<0>),
+///     MyEffect::<0>,
 ///     AffectOrHandle {
-///         result: Ok::<_, &str>(message_write(MyMessage::<1>)),
+///         result: Ok::<_, &str>(MyEffect::<1>),
 ///         handler: bevy::ecs::error::warn,
 ///     },
 /// );
-/// assert_eq!(affect_effect.result, Ok(message_write(MyMessage::<2>)));
+/// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
-///     message_write(MyMessage::<0>),
+///     MyEffect::<0>,
 ///     AffectOrHandle {
-///         result: Err::<MessageWrite<MyMessage<1>>, _>("snafu"),
+///         result: Err::<MyEffect<1>, _>("snafu"),
 ///         handler: bevy::ecs::error::warn,
 ///     },
 /// );
 /// assert!(handle_effect.result.is_err());
+/// # }
 /// ```
 pub fn rhs_affect_then<E0, E1, E2, Er, Handler>(
     composition: impl Fn(E0, E1) -> E2,
