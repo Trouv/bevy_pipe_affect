@@ -6,8 +6,8 @@
 
 use bevy::ecs::error::{BevyError, ErrorContext};
 
-use crate::effects::AffectOrHandle;
 use crate::Effect;
+use crate::effects::AffectOrHandle;
 
 /// [`Effect`] composition function that returns the first effect.
 ///
