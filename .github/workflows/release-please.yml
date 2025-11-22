@@ -1,0 +1,19 @@
+on:
+  push:
+    branches:
+      - main
+
+name: release-please
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          token: ${{ secrets.PAT }}
+          release-type: rust
+          package-name: bevy_pipe_affect
+          bump-minor-pre-major: true
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"docs","section":"Documentation Changes","hidden":false},{"type":"example","section":"Example Changes","hidden":false},{"type":"refactor","section":"Code Refactors","hidden":true},{"type":"ci","section":"CI Changes","hidden":true}]'
+          extra-files: |
+            README.md
