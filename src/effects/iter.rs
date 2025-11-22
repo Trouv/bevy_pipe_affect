@@ -38,6 +38,19 @@ where
     }
 }
 
+impl<I> IntoIterator for AffectMany<I>
+where
+    I: IntoIterator,
+    I::Item: Effect,
+{
+    type Item = I::Item;
+    type IntoIter = I::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter.into_iter()
+    }
+}
+
 impl<E> Effect for Vec<E>
 where
     E: Effect,
