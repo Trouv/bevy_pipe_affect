@@ -13,9 +13,9 @@ User-written systems can all be read-only, pure functions.
 All mutability can be _piped out_ of your code.
 
 ## Development
-`bevy_pipe_affect` is unreleased.
-A set of effects is planned for the initial release.
-These are listed in [mvp-effects](mvp-effects.md).
+`bevy_pipe_affect` is nearing release.
+The initial set of effects and utilities have been created.
+See #47 for the remainder of the planned work before the initial release.
 
 ## License
 
