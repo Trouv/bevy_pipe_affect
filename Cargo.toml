@@ -7,7 +7,7 @@ edition = "2024"
 members = ["effect_derive"]
 
 [dependencies]
-bevy = "0.17.2"
+bevy = { version = "0.17.3", default-features = false, features = ["bevy_asset", "bevy_log", "bevy_camera", "bevy_ui"] }
 variadics_please = "1.1.0"
 either = "1.15.0"
 bevy_pipe_affect_derive = { version = "0.1.0", path = "effect_derive", optional = true }
