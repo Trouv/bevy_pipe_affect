@@ -1,6 +1,6 @@
 # Summary
 
-[Introduction]()
+[Introduction](README.md)
 # Tutorials
 - [Alien Cake Addict Refactor]()
 # Explanation
