@@ -7,7 +7,14 @@
       "bump-patch-for-minor-pre-major": false,
       "draft": false,
       "prerelease": false,
-      "extra-files": ["README.md"]
+      "extra-files": ["README.md"],
+      "changelog-sections": [
+        {"type": "feat", "section": "Features"},
+        {"type": "fix", "section": "Bug Fixes"},
+        {"type": "book", "section": "Book Changes"},
+        {"type": "example", "section": "Example Changes"},
+        {"type": "ci", "section": "CI Changes"}
+      ]
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
