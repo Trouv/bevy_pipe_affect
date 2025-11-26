@@ -4,7 +4,7 @@
 # Tutorials
 - [Alien Cake Addict Refactor]()
 # Explanation
-- [Motivation and Theory]()
+- [Motivation and Theory](explanation/motivation-and-theory.md)
 - [Output and Effect Composition]()
 - [Return Types]()
 # How-To Guides
