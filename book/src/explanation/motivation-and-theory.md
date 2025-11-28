@@ -64,3 +64,37 @@ fn main() {
     bevy::ecs::system::assert_is_system(detect_deaths.pipe(write_messages));
 }
 ```
+
+So, in this example, I've gone from 0% of my systems being pure to 50%.
+Wouldn't it be nice if it could be 100%?
+If somebody provided all the systems you may ever need to do the "writing" so that you only have to worry about writing ECS effects declaratively?
+`bevy_pipe_affect` aims to provide these systems, or rather, a single system for all ECS mutation.
+Her name is `affect`:
+
+```rust
+# #[derive(Component)]
+# struct Health(u32);
+use bevy::prelude::*;
+use bevy_pipe_affect::prelude::*;
+
+#[derive(Message)]
+struct DeathMessage(Entity);
+
+fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<MessageWrite<DeathMessage>> {
+    query
+        .iter()
+        .flat_map(|(entity, health)| {
+            if health.0 == 0 {
+                Some(DeathMessage(entity))
+            } else {
+                None
+            }
+        })
+        .map(message_write)
+        .collect()
+}
+
+fn main() {
+    bevy::ecs::system::assert_is_system(detect_deaths.pipe(affect));
+}
+```
