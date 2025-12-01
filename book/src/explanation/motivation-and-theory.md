@@ -3,17 +3,25 @@ Scrawled here is a blog post on functional programming, bevy, or why I made this
 It may not be the most practical piece of documentation, but I hope it shines a light on some things for library users and maybe others.
 
 ## I'm an FP shill now
-Rust takes a lot of inspiration from purely functional languages like haskell.
-As a person who learned rust before functional programming, most of its features that I found to be revelations turned out to be derivative.
-Iterator chains, algebraic data types, sum-types used in place of `null` and exceptions, `?` operators, to name a few.
+Here is a brief shill for writing FP rust.
+If you already are an FP shill, you can skip this.
 
+Rust takes a lot of inspiration from purely functional languages like haskell.
+As a person who learned rust before functional programming, I was intrigued to learn that most of its features that I found to be revelations turned out to be derivative.
+Iterator chains, algebraic data types, sum-types used in place of `null` and exceptions, `?` operators, to name a few.
+Similar things have been etched into purely functional languages for a long time.
 I've written a lot of rust professionally over the past few years, and gradually it has become obvious how beneficial it is to use these features.
-Or, more than anything else, it has become obvious how beneficial it is to write pure functions.
+Or, more than anything else, it has become obvious how beneficial it is to write pure functions with the aid of these features.
+
+For the uninitiated, pure functions are those that are deterministic and have no side effects.
+Like a function in mathematics, they are mere input and output, so they do not read or write anything from the state of the world at large.
+A purely functional language, like haskell, is one that only allows you to write pure functions.
+This may seem limiting, but thanks to higher-order functions, plus the strength of FP's theoretical foundations in general, it really isn't.
+
 Pure functions are easily unit tested.
 They are easy to compose without unexpected consequences.
-In professional software, if you must read from state or write to state, go to great lengths to push these things to the fringes of the program.
+If you must read from state or write to state, go to great lengths to push these things to the fringes of the program.
 Even if you are designing a system of programs, push the state to the fringes of the data flow at large.
-
 Every time you write `mut`, a puppy dies.
 `for` loops kill kittens instead.
 
@@ -21,9 +29,9 @@ Every time you write `mut`, a puppy dies.
 Now, like a true software-gamedev-hipster, I also shill `bevy`.
 The core framework of bevy is an ECS among many great rust ECSs, but I especially appreciate that its systems are mere functions.
 Its system scheduler may be particularly attractive to FP shills as well.
-It is declarative, it leverages higher-order functions for scheduling your systems, it provides system composition with piping and mapping, and it does its best to abstract away the parallel execution of systems.
+It is declarative, it leverages higher-order functions for scheduling your systems, it provides system composition with piping and mapping, and it does its best to abstract away the parallel execution of systems safely.
 
-However, the only way to interact with the world in vanilla bevy is by writing systems that have side effects.
+However, the main way to interact with the world in vanilla bevy is by writing systems that have side effects.
 If you want to update a resource, you must parameterize a `ResMut`.
 If you want to edit components in-place, you must query them `&mut`-ably.
 If you want to load an asset, you must interact with the internally mutable `AssetServer`.
