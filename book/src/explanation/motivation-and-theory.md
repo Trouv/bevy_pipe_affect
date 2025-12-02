@@ -25,7 +25,7 @@ Even if you are designing a system of programs, push the state to the fringes of
 Every time you write `mut`, a puppy dies.
 `for` loops kill kittens instead.
 
-## Bevy's side effects
+## Practical motivation
 Now, like a true software-gamedev-hipster, I also shill `bevy`.
 The core framework of bevy is an ECS among many great rust ECSs, but I especially appreciate that its systems are mere functions.
 Its system scheduler may be particularly attractive to FP shills as well.
@@ -107,3 +107,26 @@ fn main() {
     bevy::ecs::system::assert_is_system(detect_deaths.pipe(affect));
 }
 ```
+
+## Theoretical motivation
+Bevy's system scheduling APIs are higher-order functions that allow you to register system-functions to the App.
+We can basically think of these higher-order functions as taking functions with two arguments, a `SystemInput` and a `SystemParam`, and then having an output.
+Technically there's an extra wrinkle to this for two reasons, but both are just a bit of sugar that carmelize down to these two arguments:
+- the `SystemInput` can be omitted, but the `bevy` scheduling traits just use the unit type `()` in these cases
+- the `SystemParam` can occupy more than 1 arguments to the function (or even 0), but the `bevy` scheduling traits just convert these cases to a tuple `SystemParam`
+
+This is elegant.
+Our `SystemParam` argument not only serves as normal function input, but it also expresses to the higher-order scheduling APIs what *factor* of the world needs to be input to the system.
+I say *factor* in the sense of algebraic data types.
+In the language of algebraic data types, an ECS world is sort of like a *product* of component storages and resources, and our `SystemParam` identifies a *factor* of this *product*.
+Again, the reality of bevy is more complicated (this time, much more complicated) than this theoretical framework.
+
+The `SystemParam` is even composable.
+The *factor* of the world that a system gets as input can actually be a larger product of system params.
+As in, it can be a tuple of other system params, which again, is what the sugar of multi-system-param-argument functions carmelizes into.
+Pipe systems also leverage this fact by composing the `SystemParam`s of two systems into one (this time using a `ParamSet` type to guarantee safe memory access).
+
+So far nothing about this is functionally impure.
+We have functions with two arguments and an output, the first argument is `SystemInput` which is parameterized by output of another system, the second argument is `SystemParam` which is parameterized by some data in the world.
+The impurity arrives when we allow that data from the world to be mutable.
+And of course, in vanilla bevy, this is our only choice if we want to have any effect on the world other than heating up our computers.
