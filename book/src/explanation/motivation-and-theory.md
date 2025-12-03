@@ -10,6 +10,7 @@ Rust takes a lot of inspiration from purely functional languages like haskell.
 As a person who learned rust before functional programming, I was intrigued to learn that most of its features that I found to be revelations turned out to be derivative.
 Iterator chains, algebraic data types, sum-types used in place of `null` and exceptions, `?` operators, to name a few.
 Similar things have been etched into purely functional languages for a long time.
+
 I've written a lot of rust professionally over the past few years, and gradually it has become obvious how beneficial it is to use these features.
 Or, more than anything else, it has become obvious how beneficial it is to write pure functions with the aid of these features.
 
@@ -22,8 +23,6 @@ Pure functions are easily unit tested.
 They are easy to compose without unexpected consequences.
 If you must read from state or write to state, go to great lengths to push these things to the fringes of the program.
 Even if you are designing a system of programs, push the state to the fringes of the data flow at large.
-Every time you write `mut`, a puppy dies.
-`for` loops kill kittens instead.
 
 ## Practical motivation
 Now, like a true software-gamedev-hipster, I also shill `bevy`.
@@ -73,9 +72,13 @@ fn main() {
 }
 ```
 
-So, in this example, I've gone from 0% of my systems being pure to 50%.
-Wouldn't it be nice if it could be 100%?
+So, in this example, I have a pure system `detect_deaths` that produces messages as output, and then a system that actually writes the messages `write_messages`.
+I've gone from 0% of my systems being pure to 50%.
+Since `write_messages` is generic, I can now write more pure systems that produce messages and reuse it.
+
+Wouldn't it be nice if 100% of user-written systems could be pure?
 If somebody provided all the systems you may ever need to do the "writing" so that you only have to worry about writing ECS effects declaratively?
+
 `bevy_pipe_affect` aims to provide these systems.
 Or rather, a single system for all ECS mutation.
 Her name is `affect`:
@@ -107,6 +110,11 @@ fn main() {
     bevy::ecs::system::assert_is_system(detect_deaths.pipe(affect));
 }
 ```
+
+Rather than returning a list of messages, `detect_deaths` now returns `MessageWrite`s, which is an `Effect`.
+A `Vec` of `Effect`s is also an `Effect`.
+Then, the `affect` system can take any `Effect` and do the necessary writing.
+The user no longer has to write words like `mut` and `for`.
 
 ## Theoretical motivation
 Bevy's system scheduling APIs are higher-order functions that allow you to register system-functions to the App.
