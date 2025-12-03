@@ -19,10 +19,21 @@ Like a function in mathematics, they are mere input and output, so they do not r
 A purely functional language, like haskell, is one that only allows you to write pure functions.
 This may seem limiting, but thanks to higher-order functions, plus the strength of FP's theoretical foundations in general, it really isn't.
 
-Pure functions are easily unit tested.
+Pure functions are easily unit tested, since you don't need to set up any state.
 They are easy to compose without unexpected consequences.
-If you must read from state or write to state, go to great lengths to push these things to the fringes of the program.
-Even if you are designing a system of programs, push the state to the fringes of the data flow at large.
+There's a simplicity in functions that only have input and output, for both readers and writers of the code.
+
+> Which function should perform this change?
+
+> Should the data this function uses be input or read from state?
+
+> Should the data this function calculates be output or written to state?
+
+If you're writing pure functions, these questions aren't just foregone conclusions, they are invalid.
+
+So in my regular programming practice now, I go to great lengths to _at least_ push the state reading/writing to the fringes of the program.
+Even when designing a system of programs, I consider pushing the state to the fringes of the data flow at large.
+This practice isn't that common in `bevy`.
 
 ## Practical motivation
 Now, like a true software-gamedev-hipster, I also shill `bevy`.
