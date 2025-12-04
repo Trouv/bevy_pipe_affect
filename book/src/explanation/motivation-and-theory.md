@@ -1,6 +1,6 @@
-# The Pipe Affect Scrawl
-Scrawled here is a blog post on functional programming, bevy, or why I made this library.
-It may not be the most practical piece of documentation, but I hope it shines a light on some things for library users and maybe others.
+# Motivations
+Scrawled here is basically a blog post on functional programming, bevy, and why I made this library.
+It may not be the most practical piece of documentation, but I hope it shines a light on some of the design choices for library users, and maybe even reaches out to others who are future FP+ECS enthusiasts.
 
 ## I'm an FP shill now
 Here is a brief shill for writing FP rust.
