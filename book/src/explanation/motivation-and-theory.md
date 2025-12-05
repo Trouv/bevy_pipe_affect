@@ -149,3 +149,18 @@ So far nothing about this is functionally impure.
 We have functions with two arguments and an output, the first argument is `SystemInput` which is parameterized by output of another system, the second argument is `SystemParam` which is parameterized by some data in the world.
 The impurity arrives when we allow that data from the world to be mutable.
 And of course, in vanilla bevy, this is our only choice if we want to have any effect on the world other than heating up our computers.
+
+Pure functions are just input and output.
+We'd like to use the output instead of the side effects to have an effect on world data.
+Hence the `Effect` types provided by `bevy_pipe_affect`, intended to be returned by user systems.
+
+`Effect`s, conceptually, are almost a reflection of `SystemParam`s.
+Where `SystemParam`s allow systems to express what *factor* of the world should be read, `Effect`s allow systems to express what *factor* of the world should be written (and how).
+Where `SystemParam`s have an identity in the form of `()` that requests no data from the world, `Effect`s also treats `()` as an identity that has no effect on the world.
+Where `SystemParam`s offer composibility with product types and derives, `Effect`s offer composibility with product types, derives, and sum-types.
+
+Yes, not only is `Effect` implemented for tuples of effects, it can also be derived for structs of `Effect`s and enums of `Effect`s.
+The latter is not a reflection of `SystemParam` behavior.
+After all, it's not that common that you want a system that accepts *either* system param A *or* system param B.
+It's a different story for `Effect`s, as there are many situations where you want *either* effect A to happen *or* effect B to happen.
+The composibility of `Effect`s is as algebraic as algebraic data types.
