@@ -53,7 +53,7 @@ In my feable attempts to write more immutable systems, I would simply write syst
 # struct Health(u32);
 use bevy::prelude::*;
 
-#[derive(Message)]
+#[derive(Debug, PartialEq, Eq, Message)]
 struct DeathMessage(Entity);
 
 fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<DeathMessage> {
@@ -100,7 +100,7 @@ Her name is `affect`:
 use bevy::prelude::*;
 use bevy_pipe_affect::prelude::*;
 
-#[derive(Message)]
+#[derive(Debug, PartialEq, Eq, Message)]
 struct DeathMessage(Entity);
 
 fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<MessageWrite<DeathMessage>> {
