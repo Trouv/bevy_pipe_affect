@@ -164,3 +164,80 @@ The latter is not a reflection of `SystemParam` behavior.
 After all, it's not that common that you want a system that accepts *either* system param A *or* system param B.
 It's a different story for `Effect`s, as there are many situations where you want *either* effect A to happen *or* effect B to happen.
 The composibility of `Effect`s is as algebraic as algebraic data types.
+
+## Write systems as pure functions
+Of course, none of this is required with `bevy_pipe_affect`.
+Nothing about it forces you to write pure systems, you could write an effectful system that pipes an `Effect` into the `affect` system.
+
+If you choose to, you will enjoy many of the benefits of pure functions.
+The consequences of your systems will be more obvious at a glance: they are in the system's return type.
+If you need more specifics, their value will always be at the very bottom of your function body.
+In general, these two facts make it more difficult for you to muddy your systems with effects.
+You will be encouraged to separate the concerns of your systems even more.
+
+And of course, unit tests are easier to write.
+Instead of observing the effects your systems have on the bevy world, you can just observe the output of your systems.
+An example, testing the `detect_deaths` system written above
+```rust
+# #[derive(Component)]
+# struct Health(u32);
+# use bevy::prelude::*;
+# use bevy_pipe_affect::prelude::*;
+#
+# #[derive(Debug, PartialEq, Eq, Message)]
+# struct DeathMessage(Entity);
+#
+# fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<MessageWrite<DeathMessage>> {
+#     query
+#         .iter()
+#         .flat_map(|(entity, health)| {
+#             if health.0 == 0 {
+#                 Some(DeathMessage(entity))
+#             } else {
+#                 None
+#             }
+#         })
+#         .map(message_write)
+#         .collect()
+# }
+use bevy::ecs::system::RunSystemOnce;
+
+#[derive(Resource)]
+struct TestEntities {
+    healthy: Entity,
+    unhealthy: Entity,
+}
+
+fn my_test() {
+    let mut world = World::new();
+
+    // We still need to setup the initial state of the world
+    let _setup = world
+        .run_system_once(
+            (|| {
+                command_spawn_and(Health(100), |healthy| {
+                    command_spawn_and(Health(0), move |unhealthy| {
+                        command_insert_resource(TestEntities { healthy, unhealthy })
+                    })
+                })
+            })
+            .pipe(affect)
+            .pipe(ApplyDeferred),
+        )
+        .unwrap();
+
+    // Now we can just assert against system output instead of state changes
+    let dead_entity_messages = world.run_system_once(detect_deaths).unwrap();
+
+    let test_entities = world.get_resource::<TestEntities>().unwrap().clone();
+
+    assert_eq!(
+        dead_entity_messages,
+        vec![message_write(DeathMessage(test_entities.unhealthy))]
+    );
+}
+# fn main() { my_test() }
+```
+
+Over all, game logic just becomes easier to reason about, especially *ex post facto*.
+I hope you enjoy writing systems this way, and that they bring you more joy when the time comes for you to maintain them.
