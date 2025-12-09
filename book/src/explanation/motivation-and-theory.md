@@ -143,7 +143,7 @@ Again, the reality of bevy is more complicated (this time, much more complicated
 The `SystemParam` is even composable.
 The *factor* of the world that a system gets as input can actually be a larger product of system params.
 As in, it can be a tuple of other system params, which again, is what the sugar of multi-system-param-argument functions carmelizes into.
-Pipe systems also leverage this fact by composing the `SystemParam`s of two systems into one (this time using a `ParamSet` type to guarantee safe memory access).
+Pipe systems also leverage this fact by composing the `SystemParam`s of two systems into one.
 
 So far nothing about this is functionally impure.
 We have functions with two arguments and an output, the first argument is `SystemInput` which is parameterized by output of another system, the second argument is `SystemParam` which is parameterized by some data in the world.
