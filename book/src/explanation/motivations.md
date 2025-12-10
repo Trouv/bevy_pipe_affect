@@ -95,27 +95,7 @@ Or rather, a single system for all ECS mutation.
 Her name is `affect`:
 
 ```rust
-# #[derive(Component)]
-# struct Health(u32);
-use bevy::prelude::*;
-use bevy_pipe_affect::prelude::*;
-
-#[derive(Debug, PartialEq, Eq, Message)]
-struct DeathMessage(Entity);
-
-fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<MessageWrite<DeathMessage>> {
-    query
-        .iter()
-        .flat_map(|(entity, health)| {
-            if health.0 == 0 {
-                Some(DeathMessage(entity))
-            } else {
-                None
-            }
-        })
-        .map(message_write)
-        .collect()
-}
+{{#rustdoc_include ../../../tests/effect-testing.rs:detect_deaths}}
 
 fn main() {
     bevy::ecs::system::assert_is_system(detect_deaths.pipe(affect));
@@ -179,64 +159,8 @@ And of course, unit tests are easier to write.
 Instead of observing the effects your systems have on the bevy world, you can just observe the output of your systems.
 An example, testing the `detect_deaths` system written above
 ```rust
-# #[derive(Component)]
-# struct Health(u32);
-# use bevy::prelude::*;
-# use bevy_pipe_affect::prelude::*;
-#
-# #[derive(Debug, PartialEq, Eq, Message)]
-# struct DeathMessage(Entity);
-#
-# fn detect_deaths(query: Query<(Entity, &Health)>) -> Vec<MessageWrite<DeathMessage>> {
-#     query
-#         .iter()
-#         .flat_map(|(entity, health)| {
-#             if health.0 == 0 {
-#                 Some(DeathMessage(entity))
-#             } else {
-#                 None
-#             }
-#         })
-#         .map(message_write)
-#         .collect()
-# }
-use bevy::ecs::system::RunSystemOnce;
-
-#[derive(Resource)]
-struct TestEntities {
-    healthy: Entity,
-    unhealthy: Entity,
-}
-
-fn my_test() {
-    let mut world = World::new();
-
-    // We still need to setup the initial state of the world
-    let _setup = world
-        .run_system_once(
-            (|| {
-                command_spawn_and(Health(100), |healthy| {
-                    command_spawn_and(Health(0), move |unhealthy| {
-                        command_insert_resource(TestEntities { healthy, unhealthy })
-                    })
-                })
-            })
-            .pipe(affect)
-            .pipe(ApplyDeferred),
-        )
-        .unwrap();
-
-    // Now we can just assert against system output instead of state changes
-    let dead_entity_messages = world.run_system_once(detect_deaths).unwrap();
-
-    let test_entities = world.get_resource::<TestEntities>().unwrap().clone();
-
-    assert_eq!(
-        dead_entity_messages,
-        vec![message_write(DeathMessage(test_entities.unhealthy))]
-    );
-}
-# fn main() { my_test() }
+{{#rustdoc_include ../../../tests/effect-testing.rs:test_detect_deaths}}
+# fn main() { test_detect_deaths() }
 ```
 
 Over all, game logic just becomes easier to reason about, especially *ex post facto*.
