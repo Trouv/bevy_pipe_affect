@@ -146,6 +146,11 @@ After all, it's not that common that you want a system that accepts *either* sys
 It's a different story for `Effect`s, as there are many situations where you want *either* effect A to happen *or* effect B to happen.
 The composibility of `Effect`s is as algebraic as algebraic data types.
 
+In vanilla Bevy, systems are functions that have a side effect on system params.
+By _returning_ effects instead, systems now have a more satisfying theoretical definition.
+They are mappings from some _factor_ of the world to a state transition.
+Or, more abstractly, they are pure, deterministic declarations of world behavior.
+
 ## Write systems as pure functions
 Of course, none of this is required with `bevy_pipe_affect`.
 Nothing about it forces you to write pure systems, you could write an effectful system that pipes an `Effect` into the `affect` system.
