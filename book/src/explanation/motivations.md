@@ -21,7 +21,8 @@ This may seem limiting, but thanks to higher-order functions, plus the strength 
 
 Pure functions are easily unit tested, since you don't need to set up any state.
 They are easy to compose without unexpected consequences.
-There's a simplicity in functions that only have input and output, for both readers and writers of the code.
+Programs can become extremely complex through composition, but each component can be obvious and simple and predictable.
+There's relief in functions that only have input and output, for both readers and writers of the code.
 
 > Which function should perform this change?
 
