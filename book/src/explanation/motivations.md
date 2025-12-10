@@ -137,7 +137,7 @@ Hence the `Effect` types provided by `bevy_pipe_affect`, intended to be returned
 
 `Effect`s, conceptually, are almost a reflection of `SystemParam`s.
 Where `SystemParam`s allow systems to express what *factor* of the world should be read, `Effect`s allow systems to express what *factor* of the world should be written (and how).
-Where `SystemParam`s have an identity in the form of `()` that requests no data from the world, `Effect`s also treats `()` as an identity that has no effect on the world.
+Where `SystemParam`s have an identity in the form of `()` that requests no data from the world, `Effect`s also treat `()` as an identity that has no effect on the world.
 Where `SystemParam`s offer composibility with product types and derives, `Effect`s offer composibility with product types, derives, and sum-types.
 
 Yes, not only is `Effect` implemented for tuples of effects, it can also be derived for structs of `Effect`s and enums of `Effect`s.
