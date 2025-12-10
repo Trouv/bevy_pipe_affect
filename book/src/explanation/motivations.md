@@ -3,20 +3,20 @@ Scrawled here is basically a blog post on functional programming, bevy, and why 
 It may not be the most practical piece of documentation, but I hope it shines a light on some of the design choices for library users, and maybe even reaches out to others who are future FP+ECS enthusiasts.
 
 ## I'm an FP shill now
-Here is a brief shill for writing FP rust.
+Here is a brief shill for writing FP Rust.
 If you already are an FP shill, you can skip this.
 
-Rust takes a lot of inspiration from purely functional languages like haskell.
-As a person who learned rust before functional programming, I was intrigued to learn that most of its features that I found to be revelations turned out to be derivative.
+Rust takes a lot of inspiration from purely functional languages like Haskell.
+As a person who learned Rust before functional programming, I was intrigued to learn that most of its features that I found to be revelations turned out to be derivative.
 Iterator chains, algebraic data types, sum-types used in place of `null` and exceptions, `?` operators, to name a few.
 Similar things have been etched into purely functional languages for a long time.
 
-I've written a lot of rust professionally over the past few years, and gradually it has become obvious how beneficial it is to use these features.
+I've written a lot of Rust professionally over the past few years, and gradually it has become obvious how beneficial it is to use these features.
 Or, more than anything else, it has become obvious how beneficial it is to write pure functions with the aid of these features.
 
 For the uninitiated, pure functions are those that are deterministic and have no side effects.
 Like a function in mathematics, they are mere input and output, so they do not read or write anything from the state of the world at large.
-A purely functional language, like haskell, is one that only allows you to write pure functions.
+A purely functional language, like Haskell, is one that only allows you to write pure functions.
 This may seem limiting, but thanks to higher-order functions, plus the strength of FP's theoretical foundations in general, it really isn't.
 
 Pure functions are easily unit tested, since you don't need to set up any state.
@@ -37,7 +37,7 @@ This practice isn't that common in `bevy`.
 
 ## Practical motivation
 Now, like a true software-gamedev-hipster, I also shill `bevy`.
-The core framework of bevy is an ECS among many great rust ECSs, but I especially appreciate that its systems are mere functions.
+The core framework of bevy is an ECS among many great Rust ECSs, but I especially appreciate that its systems are mere functions.
 Its system scheduler may be particularly attractive to FP shills as well.
 It is declarative, it leverages higher-order functions for scheduling your systems, it provides system composition with piping and mapping, and it does its best to abstract away the parallel execution of systems safely.
 
