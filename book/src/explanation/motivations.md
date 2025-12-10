@@ -159,11 +159,11 @@ If you choose to, you will enjoy many of the benefits of pure functions.
 The consequences of your systems will be more obvious at a glance: they are in the system's return type.
 If you need more specifics, their value will always be at the very bottom of your function body.
 In general, these two facts make it more difficult for you to muddy your systems with effects.
-You will be encouraged to separate the concerns of your systems even more.
+You will be encouraged to separate the concerns of your systems even more than you already are.
 
 And of course, unit tests are easier to write.
 Instead of observing the effects your systems have on the Bevy world, you can just observe the output of your systems.
-An example, testing the `detect_deaths` system written above
+An example, testing the `detect_deaths` system written above:
 ```rust
 {{#rustdoc_include ../../../tests/effect-testing.rs:test_detect_deaths}}
 # fn main() { test_detect_deaths() }
