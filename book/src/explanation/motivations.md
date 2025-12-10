@@ -1,5 +1,5 @@
 # Motivations
-Scrawled here is basically a blog post on functional programming, bevy, and why I made this library.
+Scrawled here is basically a blog post on functional programming, Bevy, and why I made this library.
 It may not be the most practical piece of documentation, but I hope it shines a light on some of the design choices for library users, and maybe even reaches out to others who are future FP+ECS enthusiasts.
 
 ## I'm an FP shill now
@@ -33,15 +33,15 @@ If you're writing pure functions, these questions aren't just foregone conclusio
 
 So in my regular programming practice now, I go to great lengths to _at least_ push the state reading/writing to the fringes of the program.
 Even when designing a system of programs, I consider pushing the state to the fringes of the data flow at large.
-This practice isn't that common in `bevy`.
+This practice isn't that common in Bevy.
 
 ## Practical motivation
-Now, like a true software-gamedev-hipster, I also shill `bevy`.
-The core framework of bevy is an ECS among many great Rust ECSs, but I especially appreciate that its systems are mere functions.
+Now, like a true software-gamedev-hipster, I also shill Bevy.
+The core framework of Bevy is an ECS among many great Rust ECSs, but I especially appreciate that its systems are mere functions.
 Its system scheduler may be particularly attractive to FP shills as well.
 It is declarative, it leverages higher-order functions for scheduling your systems, it provides system composition with piping and mapping, and it does its best to abstract away the parallel execution of systems safely.
 
-However, the main way to interact with the world in vanilla bevy is by writing systems that have side effects.
+However, the main way to interact with the world in vanilla Bevy is by writing systems that have side effects.
 If you want to update a resource, you must parameterize a `ResMut`.
 If you want to edit components in-place, you must query them `&mut`-ably.
 If you want to load an asset, you must interact with the internally mutable `AssetServer`.
@@ -111,14 +111,14 @@ The user no longer has to write words like `mut` and `for`.
 Bevy's system scheduling APIs are higher-order functions that allow you to register system-functions to the App.
 We can basically think of these higher-order functions as taking functions with two arguments, a `SystemInput` and a `SystemParam`, and then having an output.
 Technically there's an extra wrinkle to this for two reasons, but both are just a bit of sugar that carmelize down to these two arguments:
-- the `SystemInput` can be omitted, but the `bevy` scheduling traits just use the unit type `()` in these cases
-- the `SystemParam` can occupy more than 1 arguments to the function (or even 0), but the `bevy` scheduling traits just convert these cases to a tuple `SystemParam`
+- the `SystemInput` can be omitted, but the Bevy scheduling traits just use the unit type `()` in these cases
+- the `SystemParam` can occupy more than 1 arguments to the function (or even 0), but the Bevy scheduling traits just convert these cases to a tuple `SystemParam`
 
 This is elegant.
 Our `SystemParam` argument not only serves as normal function input, but it also expresses to the higher-order scheduling APIs what *factor* of the world needs to be input to the system.
 I say *factor* in the sense of algebraic data types.
 In the language of algebraic data types, an ECS world is sort of like a *product* of component storages and resources, and our `SystemParam` identifies a *factor* of this *product*.
-Again, the reality of bevy is more complicated (this time, much more complicated) than this theoretical framework.
+Again, the reality of Bevy is more complicated (this time, much more complicated) than this theoretical framework.
 
 The `SystemParam` is even composable.
 The *factor* of the world that a system gets as input can actually be a larger product of system params.
@@ -128,7 +128,7 @@ Pipe systems also leverage this fact by composing the `SystemParam`s of two syst
 So far nothing about this is functionally impure.
 We have functions with two arguments and an output, the first argument is `SystemInput` which is parameterized by output of another system, the second argument is `SystemParam` which is parameterized by some data in the world.
 The impurity arrives when we allow that data from the world to be mutable.
-And of course, in vanilla bevy, this is our only choice if we want to have any effect on the world other than heating up our computers.
+And of course, in vanilla Bevy, this is our only choice if we want to have any effect on the world other than heating up our computers.
 
 Pure functions are just input and output.
 We'd like to use the output instead of the side effects to have an effect on world data.
@@ -156,7 +156,7 @@ In general, these two facts make it more difficult for you to muddy your systems
 You will be encouraged to separate the concerns of your systems even more.
 
 And of course, unit tests are easier to write.
-Instead of observing the effects your systems have on the bevy world, you can just observe the output of your systems.
+Instead of observing the effects your systems have on the Bevy world, you can just observe the output of your systems.
 An example, testing the `detect_deaths` system written above
 ```rust
 {{#rustdoc_include ../../../tests/effect-testing.rs:test_detect_deaths}}
