@@ -19,3 +19,11 @@ blake2 = "0.10.6"
 
 [features]
 derive = ["bevy_pipe_affect_derive"]
+
+[[example]]
+name = "rainbow-clear-color"
+required-features = ["bevy/default"]
+
+[[example]]
+name = "relationship"
+required-features = ["bevy/default"]
