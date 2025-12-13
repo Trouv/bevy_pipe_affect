@@ -9,7 +9,7 @@
 - [Return Types]()
 # How-To Guides
 - [Create a custom Effect]()
-- [Create a Relation]()
+- [Spawn a Relationship Synchronously](how-to-guides/spawn-a-relationship-synchronously.md)
 - [Create an Observer]()
 ---
 [API Reference]()
