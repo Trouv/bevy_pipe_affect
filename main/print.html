@@ -89,7 +89,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><div><strong aria-hidden="true">1.</strong> Alien Cake Addict Refactor</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="explanation/motivations.html"><strong aria-hidden="true">2.</strong> Motivations</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.</strong> Output and Effect Composition</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Return Types</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Create a custom Effect</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Create a Relation</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Create an Observer</div></li><li class="spacer"></li><li class="chapter-item expanded affix "><div>API Reference</div></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded affix "><li class="part-title">Tutorials</li><li class="chapter-item expanded "><div><strong aria-hidden="true">1.</strong> Alien Cake Addict Refactor</div></li><li class="chapter-item expanded affix "><li class="part-title">Explanation</li><li class="chapter-item expanded "><a href="explanation/motivations.html"><strong aria-hidden="true">2.</strong> Motivations</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.</strong> Output and Effect Composition</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Return Types</div></li><li class="chapter-item expanded affix "><li class="part-title">How-To Guides</li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Create a custom Effect</div></li><li class="chapter-item expanded "><a href="how-to-guides/spawn-a-relationship-synchronously.html"><strong aria-hidden="true">6.</strong> Spawn a Relationship Synchronously</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">7.</strong> Create an Observer</div></li><li class="spacer"></li><li class="chapter-item expanded affix "><div>API Reference</div></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -444,6 +444,42 @@ fn test_detect_deaths() {
 </span><span class="boring">fn main() { test_detect_deaths() }</span></code></pre></pre>
 <p>Over all, game logic just becomes easier to reason about, especially <em>ex post facto</em>.
 I hope you enjoy writing systems this way, and that they bring you more joy when the time comes for you to maintain them.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spawn-a-relationship-synchronously"><a class="header" href="#spawn-a-relationship-synchronously">Spawn a Relationship Synchronously</a></h1>
+<p>Bevy relationships may be spawned using specialized commands, like <code>with_children</code> or <code>with_related_entities</code>.
+<code>bevy_pipe_affect</code> APIs are more minimal, but these situations can still be handled ergonomically:</p>
+<ol>
+<li>Return an effect that spawns the entity that will be the <code>RelationshipTarget</code> with <code>command_spawn_and</code>. In the <code>Parent</code>/<code>ChildOf</code> relationship, this will become the <code>Parent</code> entity. That component does not need to be provided, it will be created by Bevy.</li>
+<li>Provide a closure to the second argument of the <code>command_spawn_and</code> call that returns another <code>command_spawn-</code> effect that will spawn the <code>Relationship</code> entity. In the <code>Parent</code>/<code>ChildOf</code> relationship, this is the <code>ChildOf</code> entity. This time, you do need to provide that component with the <code>Entity</code> provided to the closure (this will be <code>RelationshipTarget</code> <code>Entity</code>, spawned in step 1).</li>
+</ol>
+<p>The <code>relationship</code> example does this, while also bundling some sprites/marker components:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Component)] struct Spinny;
+</span>use bevy::prelude::*;
+use bevy_pipe_affect::prelude::*;
+
+fn spawn_relationship() -&gt; impl Effect {
+    // We will give both entities a sprite, which we can load using this effect
+    // We can use its handle to create more effects with a closure
+    asset_server_load_and(&quot;player.png&quot;, |image_handle| {
+        // Similarly, this effect will spawn our components
+        // Then, we use the resulting Entity to create more effects with a closure
+        command_spawn_and(
+            (
+                Spinny,
+                Sprite::from_image(image_handle.clone()),
+                Transform::from_scale(Vec3::splat(10.0)),
+            ),
+            |parent| {
+                command_spawn((
+                    ChildOf(parent), // This is where the relationship happens!
+                    Spinny,
+                    Sprite::from_image(image_handle),
+                    Transform::from_xyz(20.0, 20.0, 0.0).with_scale(Vec3::splat(0.5)),
+                ))
+            },
+        )
+    })
+}
+<span class="boring">fn main() { bevy::ecs::system::assert_is_system(spawn_relationship.pipe(affect)) }</span></code></pre></pre>
 
                     </main>
 
