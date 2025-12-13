@@ -9,6 +9,7 @@ fn spawn_camera() -> impl Effect {
     command_spawn(Camera2d)
 }
 
+// ANCHOR: spawn_relationship
 fn spawn_relationship() -> impl Effect {
     // We will give both entities a sprite, which we can load using this effect
     // We can use its handle to create more effects with a closure
@@ -23,15 +24,16 @@ fn spawn_relationship() -> impl Effect {
             ),
             |parent| {
                 command_spawn((
+                    ChildOf(parent), // This is where the relationship happens!
                     Spinny,
                     Sprite::from_image(image_handle),
-                    ChildOf(parent),
                     Transform::from_xyz(20.0, 20.0, 0.0).with_scale(Vec3::splat(0.5)),
                 ))
             },
         )
     })
 }
+// ANCHOR_END: spawn_relationship
 
 // This system defines the rotation of entities with a Spinny component to be a function of time.
 fn spin(time: Res<Time>) -> impl Effect + use<> {
