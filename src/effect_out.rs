@@ -218,3 +218,71 @@ where
 {
     EffectOut { effect, out }
 }
+
+impl<E, O, EIter, OIter> FromIterator<EffectOut<E, O>> for EffectOut<EIter, OIter>
+where
+    E: Effect,
+    EIter: Effect + Default + Extend<E>,
+    OIter: Default + Extend<O>,
+{
+    fn from_iter<T: IntoIterator<Item = EffectOut<E, O>>>(iter: T) -> Self {
+        let (e_iter, o_iter): (EIter, OIter) = iter
+            .into_iter()
+            .map(|EffectOut { effect, out }| (effect, out))
+            .unzip();
+
+        EffectOut {
+            effect: e_iter,
+            out: o_iter,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::message_write;
+    use crate::effects::number_data::NumberMessage;
+
+    proptest! {
+        #[test]
+        fn we_can_collect_effect_outs_with_unit_out(
+            messages in proptest::collection::vec(any::<NumberMessage>(), 0..1000usize)
+        ) {
+            let actual = messages
+                .clone()
+                .into_iter()
+                .map(|message| effect_out(message_write(message), ()))
+                .collect::<EffectOut<_, _>>();
+
+            let expected = effect_out(
+                messages.into_iter().map(message_write).collect::<Vec<_>>(),
+                (),
+            );
+
+            assert_eq!(actual, expected);
+        }
+
+        #[test]
+        fn we_can_collect_effect_outs_with_vec_out(
+            message_outs in proptest::collection::vec(any::<(NumberMessage, f32)>(), 0..1000usize),
+        ) {
+            let actual = message_outs
+                .clone()
+                .into_iter()
+                .map(|(message, out)| effect_out(message_write(message), out))
+                .collect::<EffectOut<_, _>>();
+
+            let (expected_messages, expected_outs): (Vec<_>, Vec<_>) = message_outs
+                .into_iter()
+                .map(|(m, o)| (message_write(m), o))
+                .unzip();
+
+            let expected = effect_out(expected_messages, expected_outs);
+
+            assert_eq!(actual, expected);
+        }
+    }
+}

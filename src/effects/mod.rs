@@ -69,4 +69,4 @@ pub use error::{AffectOrHandle, affect_or_handle};
 mod one_way_fn;
 
 #[cfg(test)]
-mod number_data;
+pub mod number_data;
