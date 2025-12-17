@@ -8,9 +8,16 @@ The `affect` system will perform their effects from left to right.
 
 So, if you want a system that has 2 or more effects of heterogenous type, you can just return their tuple.
 
+## Effect iterators
+`Effect` is implemented for a couple of important iterators, `Option` and `Vec`.
+There's also the `affect_many` effect, which can wrap any iterator.
+
+So, if you want a system that has 2 or more effects of homogenous type, you can return them as a `Vec`.
 
 ## EffectOut
 
 ## EffectOut composition
+
+## EffectOut iterators
 
 ## System-level composition
