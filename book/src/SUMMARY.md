@@ -5,7 +5,7 @@
 - [Alien Cake Addict Refactor]()
 # Explanation
 - [Motivations](explanation/motivations.md)
-- [Output and Effect Composition]()
+- [Output and Effect Composition](explanation/output-and-effect-composition.md)
 - [Return Types]()
 # How-To Guides
 - [Create a custom Effect]()
