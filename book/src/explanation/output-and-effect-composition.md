@@ -35,9 +35,29 @@ So, if you want a system that has 2 or more effects of homogenous type, you can 
 ```
 
 ## EffectOut
+`bevy_pipe_affect` sort of hijacks bevy's system piping.
+So, at first glance, it may seem like there's no way to go about typical system pipe usage while making effects.
+The `EffectOut` type aims to give system piping back to the people, while also providing some composibility of its own that may be useful beyond systems.
+And actually, the higher-order systems provided by `bevy_pipe_affect` only ever expect a type that can convert into `EffectOut`, not just a mere `Effect`:
 
-## EffectOut composition
+```rust
+# use bevy::prelude::*;
+# use bevy_pipe_affect::prelude::*;
+#[derive(Resource)]
+struct Score(u32);
 
-## EffectOut iterators
+#[derive(Deref, DerefMut, Resource)]
+struct StartTime(f32);
 
-## System-level composition
+fn update_score(time: Res<Time>, start_time: Res<StartTime>) -> EffectOut<ResSet<Score>, f32> {
+    let level_time = time.elapsed_secs() - **start_time;
+    effect_out(res_set(Score(level_time as u32)), level_time)
+}
+# fn main() { bevy::ecs::system::assert_is_system(update_score.pipe(affect)) }
+```
+
+### EffectOut composition
+
+### EffectOut iterators
+
+### System-level composition
