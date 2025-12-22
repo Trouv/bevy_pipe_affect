@@ -3,7 +3,7 @@
 use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::*;
 
-use crate::effect_composition::combine;
+use crate::effect_composition::{combine, extend};
 use crate::{Effect, EffectOut};
 
 /// `bevy` system that accepts [`Effect`]s as pipe input and performs their state transition.
@@ -200,6 +200,32 @@ where
     for<'a> System::In: SystemInput<Inner<'a> = O1>,
 {
     in_and_then_compose(s, combine)
+}
+
+/// Higher-order `bevy` system constructor for concatenating the iterator effects of two systems
+/// via piping.
+///
+/// Accepts an iterator-effect-returning system `s` and returns a system that concatenates the
+/// extendable-iterator effect of the piped-in system and `s`.
+///
+/// See [`in_and_then`] if you want to combine effects of heterogenous type. See
+/// [`in_and_then_compose`] for more effect composition flexibility.
+///
+/// If the piped-in system returns [`EffectOut<E, O>`] instead of a simple effect, then the
+/// `output: O` is passed into the given system `s`. This allows for a monad-ish API of chaining
+/// many systems and piping their outputs while concatenating their effects.
+pub fn in_and_extend<IntoEffectOut1, E1, O1, System, Marker, IntoEffectOut2, E2, O2>(
+    s: System,
+) -> impl FnMut(In<IntoEffectOut1>, StaticSystemParam<System::Param>) -> EffectOut<E1, O2>
+where
+    System: SystemParamFunction<Marker, Out = IntoEffectOut2>,
+    IntoEffectOut1: Into<EffectOut<E1, O1>>,
+    IntoEffectOut2: Into<EffectOut<E2, O2>>,
+    E1: Extend<E2::Item> + Effect,
+    E2: IntoIterator + Effect,
+    for<'a> System::In: SystemInput<Inner<'a> = O1>,
+{
+    in_and_then_compose(s, extend)
 }
 
 /// Identity function for read-only-systems.
