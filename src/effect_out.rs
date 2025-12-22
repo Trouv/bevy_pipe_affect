@@ -1,5 +1,5 @@
 use crate::effect::Effect;
-use crate::effect_composition::combine;
+use crate::effect_composition::{combine, extend};
 
 /// An [`Effect`] and an output.
 ///
@@ -125,6 +125,19 @@ where
         IntoEffectOut: Into<EffectOut<E2, O2>>,
     {
         self.map(f).map(Into::into).flatten_compose(compose)
+    }
+
+    pub fn and_extend<IntoEffectOut, EIter, O2>(
+        self,
+        f: impl FnOnce(O) -> IntoEffectOut,
+        ) -> EffectOut<E, O2>
+        where 
+            EIter: IntoIterator + Effect,
+            EIter::Item: Effect,
+            E: Extend<EIter::Item>,
+            IntoEffectOut: Into<EffectOut<EIter, O2>>
+        {
+        self.and_then_compose(f, extend)
     }
 }
 
