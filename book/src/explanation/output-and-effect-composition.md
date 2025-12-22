@@ -61,6 +61,70 @@ fn update_score(time: Res<Time>, start_time: Res<StartTime>) -> EffectOut<ResSet
 
 ### EffectOut composition
 
+```rust
+# use bevy::prelude::*;
+# use bevy_pipe_affect::prelude::*;
+# // A simple marker component for players.
+# #[derive(Component)]
+# struct Player<const N: usize>;
+# // A logical component for player level.
+# #[derive(Component, Deref, DerefMut)]
+# struct FightLevel(u32);
+# /// A simple message we can write with effects.
+# #[derive(Message)]
+# struct Log(String);
+/// Will be used as an intermediate result of the fight logic.
+enum FightOutcome {
+    Player1Wins,
+    Player2Wins,
+    Draw,
+}
+
+/// This is not a system! It describes the logic for the upcoming fight system and also has a logging effect.
+fn fight_outcome(
+    player_1: &FightLevel,
+    player_2: &FightLevel,
+) -> EffectOut<MessageWrite<Log>, FightOutcome> {
+    if **player_1 > **player_2 {
+        effect_out(
+            message_write(Log("player 1 wins!".to_string())),
+            FightOutcome::Player1Wins,
+        )
+    } else if **player_1 < **player_2 {
+        effect_out(
+            message_write(Log("player 2 wins!".to_string())),
+            FightOutcome::Player2Wins,
+        )
+    } else {
+        effect_out(
+            message_write(Log("fight came to a draw!".to_string())),
+            FightOutcome::Draw,
+        )
+    }
+}
+
+/// This is a system! It defines the effects of a player 1 and 2 fighting (logging the result and despawning).
+fn fight(
+    player_1: Single<(Entity, &FightLevel), With<Player<1>>>,
+    player_2: Single<(Entity, &FightLevel), With<Player<2>>>,
+) -> EffectOut<(MessageWrite<Log>, Option<EntityCommandDespawn>), ()> {
+    let (player_1_entity, player_1_level) = *player_1;
+    let (player_2_entity, player_2_level) = *player_2;
+
+    // here's an EffectOut-returning call
+    fight_outcome(player_1_level, player_2_level)
+        // and now we're composing it w/ a closure processing the `out`
+        .and_then(|outcome| match outcome {
+            FightOutcome::Player1Wins => Some(entity_command_despawn(player_2_entity)),
+            FightOutcome::Player2Wins => Some(entity_command_despawn(player_1_entity)),
+            FightOutcome::Draw => None,
+            // we can return an EffectOut here, but a mere Effect works too (in this case Option<EntityCommandDespawn>)
+        })
+    // we could continue composing it with more `.and_then`s if we had more output to process into effects.
+}
+# fn main() { bevy::ecs::system::assert_is_system(fight.pipe(affect)) }
+```
+
 ### EffectOut iterators
 
 ### System-level composition
