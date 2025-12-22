@@ -165,13 +165,13 @@ where
     pub fn and_extend<IntoEffectOut, EIter, O2>(
         self,
         f: impl FnOnce(O) -> IntoEffectOut,
-        ) -> EffectOut<E, O2>
-        where 
-            EIter: IntoIterator + Effect,
-            EIter::Item: Effect,
-            E: Extend<EIter::Item>,
-            IntoEffectOut: Into<EffectOut<EIter, O2>>
-        {
+    ) -> EffectOut<E, O2>
+    where
+        EIter: IntoIterator + Effect,
+        EIter::Item: Effect,
+        E: Extend<EIter::Item>,
+        IntoEffectOut: Into<EffectOut<EIter, O2>>,
+    {
         self.and_then_compose(f, extend)
     }
 }
