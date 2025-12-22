@@ -105,6 +105,41 @@ where
     (e1, e0)
 }
 
+
+/// [`Effect`] composition function for extendable iterator effects that concatenates them.
+///
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::effect_composition::extend;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, PartialEq, Eq, Message)]
+/// struct MyMessage(u32);
+///
+/// let effect = extend(
+///     vec![message_write(MyMessage(0)), message_write(MyMessage(1))],
+///     vec![message_write(MyMessage(2))],
+/// );
+///
+/// assert_eq!(
+///     effect,
+///     vec![
+///         message_write(MyMessage(0)),
+///         message_write(MyMessage(1)),
+///         message_write(MyMessage(2))
+///     ]
+/// );
+/// ```
+pub fn extend<E0, E1>(
+    mut e0: E0,
+    e1: E1,
+) -> E0
+    where E0: Extend<E1::Item> + Effect,
+          E1: IntoIterator + Effect {
+    e0.extend(e1);
+    e0
+}
+
 /// Returns an [`Effect`] composition function that applies the given composition to the
 /// `Some`-wrapped left effect and the right effect, otherwise `None`.
 ///
@@ -327,14 +362,4 @@ where
     Handler: FnOnce(BevyError, ErrorContext),
 {
     move |e0, affect_or_handle| affect_or_handle.map(|e1| composition(e0, e1))
-}
-
-pub fn extend<E0, E1>(
-    mut e0: E0,
-    e1: E1,
-) -> E0
-    where E0: Extend<E1::Item> + Effect,
-          E1: IntoIterator + Effect {
-    e0.extend(e1);
-    e0
 }
