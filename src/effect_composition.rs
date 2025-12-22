@@ -328,3 +328,13 @@ where
 {
     move |e0, affect_or_handle| affect_or_handle.map(|e1| composition(e0, e1))
 }
+
+pub fn extend<E0, E1>(
+    mut e0: E0,
+    e1: E1,
+) -> E0
+    where E0: Extend<E1::Item> + Effect,
+          E1: IntoIterator + Effect {
+    e0.extend(e1);
+    e0
+}
