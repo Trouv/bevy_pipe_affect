@@ -41,7 +41,9 @@ The `EffectOut` type aims to give system piping back to the people.
 It also providing some composibility of its own that may be useful beyond systems.
 More on this in the following sections.
 
-In fact, the higher-order systems provided by `bevy_pipe_affect` only ever expect a type that can convert into `EffectOut`, not just a mere `Effect`:
+Structurally, it's just an `effect` field containing an effect, and an `out` field containing additional output.
+
+You may be interested to know that the higher-order systems provided by `bevy_pipe_affect` actually only ever expect a type that can convert into `EffectOut`, not just a mere `Effect`:
 
 ```rust
 # use bevy::prelude::*;
@@ -56,8 +58,13 @@ fn update_score(time: Res<Time>, start_time: Res<StartTime>) -> EffectOut<ResSet
     let level_time = time.elapsed_secs() - **start_time;
     effect_out(res_set(Score(level_time as u32)), level_time)
 }
-# fn main() { bevy::ecs::system::assert_is_system(update_score.pipe(affect)) }
+
+fn main() {
+    bevy::ecs::system::assert_is_system(update_score.pipe(affect))
+}
 ```
+
+Notice that we can still pipe `update_score` into `affect`, even though `update_score` returns an `EffectOut` instead of an `Effect`.
 
 ### EffectOut composition
 
