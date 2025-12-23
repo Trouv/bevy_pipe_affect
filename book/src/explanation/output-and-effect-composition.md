@@ -67,7 +67,10 @@ fn main() {
 Notice that we can still pipe `update_score` into `affect`, even though `update_score` returns an `EffectOut` instead of an `Effect`.
 
 ### EffectOut composition
+`EffectOut`s compose in a few different ways, with the main goal of letting users process the `out` field while continuing to collect effects.
+For example, the `and_then` method takes a function for processing the `out` into another `Effect`/`EffectOut`, and returns an `EffectOut` with the `effect` combining the original/new effect, and an `out` being the new output.
 
+This code example shows `and_then` being used to process the `EffectOut` returned by one function into more effects:
 ```rust
 # use bevy::prelude::*;
 # use bevy_pipe_affect::prelude::*;
@@ -131,6 +134,14 @@ fn fight(
 }
 # fn main() { bevy::ecs::system::assert_is_system(fight.pipe(affect)) }
 ```
+You may notice that, if we _did_ want to create the "despawn" effects in the `fight_outcome` system, we'd have to complicate its function signature with more `Entity` inputs.
+This composition of `EffectOut`s keeps each function smaller and simpler, but allows for a grander logic that is much more complicated and powerful.
+
+Rust users will recognize this API as being similar in name and purpose to `Option::and_then` and `Result::and_then`, and they'd roughly be correct.
+Functional programmers, on the other hand, may recognize this API as being similar to a monad's bind operation.
+It is _kind of_ like that, but not quite.
+While the `out: O` type gets mapped in a monadic way, the `effect: E` type changes to be a tuple of the new and old effects.
+If it were truly monadic, only one type parameter (`out: O`) of `EffectOut` would be changed by bind, not both.
 
 ### EffectOut iterators
 
