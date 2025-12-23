@@ -51,6 +51,16 @@ where
     }
 }
 
+impl<I, E> Extend<E> for AffectMany<I>
+where
+    I: IntoIterator<Item = E> + Extend<E>,
+    E: Effect,
+{
+    fn extend<T: IntoIterator<Item = E>>(&mut self, iter: T) {
+        self.iter.extend(iter)
+    }
+}
+
 impl<E> Effect for Vec<E>
 where
     E: Effect,
