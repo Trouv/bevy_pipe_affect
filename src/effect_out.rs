@@ -1,5 +1,5 @@
 use crate::effect::Effect;
-use crate::effect_composition::combine;
+use crate::effect_composition::{combine, extend};
 
 /// An [`Effect`] and an output.
 ///
@@ -125,6 +125,54 @@ where
         IntoEffectOut: Into<EffectOut<E2, O2>>,
     {
         self.map(f).map(Into::into).flatten_compose(compose)
+    }
+
+    /// Apply a function `f` to the `output` and return an `EffectOut` with [`Effect`] extension.
+    ///
+    /// i.e. `self`'s effect is an extendable iterator, and `f` takes `output: O` and returns an
+    /// iterator [`Effect`] (or `EffectOut`). Then, this returns an `EffectOut` whose `effect` is
+    /// the concatenation of `self`'s effect, and the effect returned by `f`.
+    ///
+    /// See [`EffectOut::and_then_compose`] for more effect composition flexibility.
+    ///
+    /// # Examples
+    /// ```
+    /// use bevy::prelude::*;
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Message)]
+    /// struct MyMessage(u32);
+    ///
+    /// let initial = effect_out(
+    ///     vec![message_write(MyMessage(0)), message_write(MyMessage(1))],
+    ///     5,
+    /// );
+    /// let composed =
+    ///     initial.and_extend(|x| effect_out(vec![message_write(MyMessage(2))], format!("{x}")));
+    ///
+    /// assert_eq!(
+    ///     composed,
+    ///     effect_out(
+    ///         vec![
+    ///             message_write(MyMessage(0)),
+    ///             message_write(MyMessage(1)),
+    ///             message_write(MyMessage(2))
+    ///         ],
+    ///         "5".to_string()
+    ///     )
+    /// );
+    /// ```
+    pub fn and_extend<IntoEffectOut, EIter, O2>(
+        self,
+        f: impl FnOnce(O) -> IntoEffectOut,
+    ) -> EffectOut<E, O2>
+    where
+        EIter: IntoIterator + Effect,
+        EIter::Item: Effect,
+        E: Extend<EIter::Item>,
+        IntoEffectOut: Into<EffectOut<EIter, O2>>,
+    {
+        self.and_then_compose(f, extend)
     }
 }
 
