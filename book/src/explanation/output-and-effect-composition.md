@@ -217,6 +217,8 @@ fn push(
 # fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }
 ```
 
+### `EffectOut::and_then_compose`
+
 ### EffectOut iterators
 
 ### System-level composition
