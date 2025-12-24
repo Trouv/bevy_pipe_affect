@@ -162,12 +162,47 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for triggering the given event.
+///
+/// Can be constructed with [`command_trigger`].
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct CommandTrigger<E>
+where
+    E: Event,
+    for<'a> E::Trigger<'a>: Default,
+{
+    /// The event being triggered.
+    pub event: E,
+}
+
+/// Construct a new [`CommandTrigger`] [`Effect`].
+pub fn command_trigger<E>(event: E) -> CommandTrigger<E>
+where
+    E: Event,
+    for<'a> E::Trigger<'a>: Default,
+{
+    CommandTrigger { event }
+}
+
+impl<E> Effect for CommandTrigger<E>
+where
+    E: Event,
+    for<'a> E::Trigger<'a>: Default,
+{
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param.trigger(self.event);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
 
     use super::*;
-    use crate::effects::number_data::{NumberComponent, NumberResource};
+    use crate::effects::number_data::{NumberComponent, NumberEvent, NumberResource};
     use crate::prelude::affect;
 
     proptest! {
@@ -232,6 +267,31 @@ mod tests {
             app.update();
 
             assert!(app.world().get_resource::<NumberResource>().is_none());
+        }
+
+        #[test]
+        fn command_trigger_correctly_triggers_observers(event in any::<NumberEvent>()) {
+            let mut app = App::new();
+
+            app.add_systems(
+                Startup,
+                (move || command_spawn(Observer::new((|event: On<NumberEvent>| command_insert_resource(NumberResource(event.0))).pipe(affect)))).pipe(affect),
+            );
+
+            app.update();
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            app.update();
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            app.add_systems(
+                Update,
+                (move || command_trigger(event)).pipe(affect)
+            );
+
+            app.update();
+
+            assert_eq!(app.world().get_resource::<NumberResource>(), Some(&NumberResource(event.0)));
         }
     }
 
