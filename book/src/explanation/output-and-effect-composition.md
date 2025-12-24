@@ -143,6 +143,80 @@ It is _kind of_ like that, but not quite.
 While the `out: O` type gets mapped in a monadic way, the `effect: E` type changes to be a tuple of the new and old effects.
 If it were truly monadic, only one type parameter (`out: O`) of `EffectOut` would be changed by bind, not both.
 
+### `EffectOut::and_extend`
+Unlike `and_then` there is another `EffectOut` composition function that is actually more monadic.
+If the `effect: E` of the original `EffectOut` is an extendable iterator, and the new effect is an iterator, they can be concatenated with `and_extend`.
+
+In this example, we take advantage of this to write a system with recursive logic.
+This recursion is only possible because the recursive function's typing stays consistent.
+I.e., the effect type doesn't need to change with `and_extend` like it does with `and_then`:
+```rust
+# use bevy::prelude::*;
+# use bevy_pipe_affect::prelude::*;
+# #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Component, Deref, DerefMut)]
+# struct Position(IVec2);
+# #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Component, Deref, DerefMut)]
+# struct Weight(u32);
+/// An observer event for triggering the push system
+#[derive(EntityEvent)]
+struct PushEntity {
+    direction: IVec2,
+    #[event_target]
+    entity: Entity,
+}
+
+/// The recursive function that creates the effects for pushing entities and also sums their weights.
+fn push_and_weigh(
+    positions: &Query<(Entity, &Position, &Weight)>,
+    position_pushed: Position,
+    direction: IVec2,
+) -> EffectOut<Vec<EntityComponentsSet<(Position,)>>, Weight> {
+    match positions
+        .iter()
+        .find(|(_, position, _)| **position == position_pushed)
+    {
+        // base case
+        None => effect_out(vec![], Weight(0)),
+        // recursive case
+        Some((entity, _, weight)) => {
+            let new_position = Position(*position_pushed + direction);
+
+            push_and_weigh(&positions, new_position.clone(), direction)
+                // Here's the composition!
+                .and_extend(|acc_weight| {
+                    effect_out(
+                        vec![entity_components_set(entity, (new_position,))],
+                        Weight(*acc_weight + **weight),
+                    )
+                })
+        }
+    }
+}
+
+/// The system that triggers the above pushing logic.
+///
+/// In this case, we happen to only use `EffectOut` for intermediate computation, and return a normal `Effect` in the system.
+fn push(
+    push: On<PushEntity>,
+    positions: Query<(Entity, &Position, &Weight)>,
+) -> Vec<EntityComponentsSet<(Position,)>> {
+    let (_first_entity, position_pushed, _weight) = positions.get(push.entity).unwrap();
+
+    let EffectOut {
+        effect: pushes,
+        out: weight,
+    } = push_and_weigh(&positions, *position_pushed, push.direction);
+
+    if *weight > 10 {
+        // too heavy, do nothing.
+        vec![]
+    } else {
+        pushes
+    }
+}
+# fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }
+```
+
 ### EffectOut iterators
 
 ### System-level composition
