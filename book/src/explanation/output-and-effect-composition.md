@@ -66,7 +66,7 @@ fn main() {
 
 Notice that we can still pipe `update_score` into `affect`, even though `update_score` returns an `EffectOut` instead of an `Effect`.
 
-### EffectOut composition
+### `EffectOut::and_then`
 `EffectOut`s compose in a few different ways, with the main goal of letting users process the `out` field while continuing to collect effects.
 For example, the `and_then` method takes a function for processing the `out` into another `Effect`/`EffectOut`, and returns an `EffectOut` with the `effect` combining the original/new effect, and an `out` being the new output.
 
