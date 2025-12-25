@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 use bevy_pipe_affect::prelude::*;
 
+/// Component defining the logical position of a sokoban entity.
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Component, Deref, DerefMut)]
 pub struct Position(pub IVec2);
 
+/// Component defining the weight of a sokoban block (blocks too heavy cannot be pushed).
 #[derive(Debug, Default, Copy, Clone, Eq, PartialEq, Component, Deref, DerefMut)]
 pub struct Weight(pub u32);
 
+// ANCHOR: push_logic
 /// An observer event for triggering the push system
 #[derive(Event)]
 pub struct PushEntity {
@@ -14,7 +17,7 @@ pub struct PushEntity {
     pub entity: Entity,
 }
 
-/// The recursive function that creates the effects for pushing entities and also sums their weights.
+/// This recursive function creates the effects for pushing entities and also sums their weights.
 fn push_and_weigh(
     positions: &Query<(Entity, &Position, &Weight)>,
     position_pushed: Position,
@@ -31,7 +34,7 @@ fn push_and_weigh(
             let new_position = Position(*position_pushed + direction);
 
             push_and_weigh(&positions, new_position.clone(), direction)
-                // Here's the composition!
+                // This is monadic EffectOut composition!
                 .and_extend(|acc_weight| {
                     effect_out(
                         vec![entity_components_set(entity, (new_position,))],
@@ -42,15 +45,14 @@ fn push_and_weigh(
     }
 }
 
-/// The system that triggers the above pushing logic.
-///
-/// In this case, we happen to only use `EffectOut` for intermediate computation, and return a normal `Effect` in the system.
+/// This observer system is the entrypoint for the above recursive pushing logic.
 pub fn push(
     push: On<PushEntity>,
     positions: Query<(Entity, &Position, &Weight)>,
 ) -> Vec<EntityComponentsSet<(Position,)>> {
     let (_first_entity, position_pushed, _weight) = positions.get(push.entity).unwrap();
 
+    // We only use `EffectOut` for intermediate computation, and return a normal `Effect` in the system.
     let EffectOut {
         effect: pushes,
         out: weight,
@@ -62,4 +64,10 @@ pub fn push(
     } else {
         pushes
     }
+}
+// ANCHOR_END: push_logic
+
+/// Spawns an observer for the push system.
+pub fn spawn_push_observer() -> impl Effect {
+    command_spawn(Observer::new(push.pipe(affect)))
 }

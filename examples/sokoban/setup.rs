@@ -1,22 +1,14 @@
 use bevy::prelude::*;
 use bevy_pipe_affect::prelude::*;
 
-use crate::player::Player;
-use crate::push::{push, Position, Weight};
+use crate::push::{Position, Weight};
 
+/// The size of the grid cells/blocks.
 pub const BLOCK_SIZE: Vec2 = Vec2 { x: 32.0, y: 32.0 };
 
-pub fn spawn_player() -> impl Effect {
-    command_spawn((
-        Player,
-        Weight(0),
-        Position(IVec2::ZERO),
-        Sprite::from_color(Color::srgb(1.0, 0.0, 0.0), BLOCK_SIZE),
-    ))
-}
-
+/// Spawns 10 blocks of varying color/weight/position.
 pub fn spawn_blocks() -> Vec<impl Effect> {
-    (1..10)
+    (1..=10)
         .map(|block_num| {
             let color_value = (10 - block_num) as f32 / 10.0;
 
@@ -32,10 +24,7 @@ pub fn spawn_blocks() -> Vec<impl Effect> {
         .collect()
 }
 
+/// Spawns a simple camera entity.
 pub fn spawn_camera() -> impl Effect {
     command_spawn(Camera2d)
-}
-
-pub fn spawn_push_observer() -> impl Effect {
-    command_spawn(Observer::new(push.pipe(affect)))
 }

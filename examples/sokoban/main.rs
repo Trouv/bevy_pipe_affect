@@ -1,9 +1,17 @@
+//! This example implements simple sokoban pushing logic with one extra wrinkle: block weight.
+//!
+//! Aside from basic effect usage, this demonstrates...
+//! - recursive EffectOut composition
+//! - observer workflows
+//!
+//! Some code examples from the book are pulled from here.
 use bevy::prelude::*;
 use bevy_pipe_affect::prelude::*;
 
 use crate::animate::animate_position;
-use crate::player::player_input;
-use crate::setup::{spawn_blocks, spawn_camera, spawn_player, spawn_push_observer};
+use crate::player::{player_input, spawn_player};
+use crate::push::spawn_push_observer;
+use crate::setup::{spawn_blocks, spawn_camera};
 
 mod push;
 
