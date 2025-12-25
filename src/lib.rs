@@ -1,4 +1,4 @@
-#![doc = include_str!("../README.md")]
+#![doc = include_str!("../book/src/blurb.md")]
 #![warn(missing_docs)]
 #![deny(rustdoc::all)]
 
