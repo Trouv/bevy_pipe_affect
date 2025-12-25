@@ -176,9 +176,16 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<h2 id="bevy_pipe_affect"><a class="header" href="#bevy_pipe_affect"><code>bevy_pipe_affect</code></a></h2>
-<p>This book is under construction.</p>
+                        <h1 id="bevy_pipe_affectwrite-systems-as-pure-functions"><a class="header" href="#bevy_pipe_affectwrite-systems-as-pure-functions"><code>bevy_pipe_affect</code><br>Write systems as pure functions</a></h1>
+<p>Normally, Bevy systems perform some state changes as side effects.
+This crate enables you to instead return <code>Effect</code>s as system output.</p>
+<p><code>Effect</code>s define an ECS state transition.
+All common ECS operations have one or more <code>Effect</code> types provided in the library.</p>
+<p>These "systems with effects" can then be <code>.pipe(affect)</code>-ed.
+The <code>affect</code> system will perform the state transition.</p>
+<p>This enables a more functional code-style in <code>bevy</code> app development.
+User-written systems can all be read-only, pure functions.
+All mutability can be <em>piped out</em> of your code.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="motivations"><a class="header" href="#motivations">Motivations</a></h1>
 <p>Scrawled here is basically a blog post on functional programming, Bevy, and why I made this library.
 It may not be the most practical piece of documentation, but I hope it shines a light on some of the design choices for library users, and maybe even reaches out to others who are future FP+ECS enthusiasts.</p>
