@@ -5,7 +5,6 @@ pub use either::Either;
 pub use crate::effects::{
     AffectMany,
     AffectOrHandle,
-    AssetServerLoadAnd,
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
@@ -24,7 +23,6 @@ pub use crate::effects::{
     ResSetWith,
     affect_many,
     affect_or_handle,
-    asset_server_load_and,
     command_insert_resource,
     command_queue,
     command_remove_resource,
@@ -48,6 +46,8 @@ pub use crate::effects::{
     res_set,
     res_set_with,
 };
+#[cfg(feature = "asset_server")]
+pub use crate::effects::{AssetServerLoadAnd, asset_server_load_and};
 pub use crate::system_combinators::{
     affect,
     in_and_extend,

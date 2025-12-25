@@ -28,7 +28,7 @@ The following are good jumping-off points for beginners:
 
 Cargo examples are also available in this repository:
 ```sh
-$ cargo run --example example-name --release --features bevy/default
+$ cargo run --release --all-features --example example-name
 ```
 
 ## Compatibility

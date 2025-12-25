@@ -7,27 +7,21 @@ edition = "2024"
 members = ["effect_derive"]
 
 [dependencies]
-bevy = { version = "0.17.3", default-features = false, features = ["bevy_asset", "bevy_log", "bevy_camera", "bevy_ui"] }
+bevy = { version = "0.17.3", default-features = false }
 variadics_please = "1.1.0"
 either = "1.15.0"
 bevy_pipe_affect_derive = { version = "0.1.0", path = "effect_derive", optional = true }
 
 [dev-dependencies]
+bevy = { version = "0.17.3", default-feature = true }
 proptest = "1.8.0"
 proptest-derive = "0.6.0"
 blake2 = "0.10.6"
 
 [features]
 derive = ["bevy_pipe_affect_derive"]
-
-[[example]]
-name = "rainbow-clear-color"
-required-features = ["bevy/default"]
+asset_server = ["bevy/bevy_asset"]
 
 [[example]]
 name = "relationship"
-required-features = ["bevy/default"]
-
-[[example]]
-name = "sokoban"
-required-features = ["bevy/default"]
+required-features = ["asset_server"]

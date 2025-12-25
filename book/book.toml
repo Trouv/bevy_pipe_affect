@@ -10,4 +10,4 @@ command = "mdbook-keeper"
 after = ["links"]
 manifest_dir = "."
 externs = ["bevy", "bevy_pipe_affect"]
-build_features = ["bevy/bevy_audio"]
+build_features = ["asset_server", "bevy/default"]

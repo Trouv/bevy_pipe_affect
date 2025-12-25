@@ -56,7 +56,9 @@ pub use entity_command::{
     entity_command_remove,
 };
 
+#[cfg(feature = "asset_server")]
 mod asset_server;
+#[cfg(feature = "asset_server")]
 pub use asset_server::{AssetServerLoadAnd, asset_server_load_and};
 
 mod algebra;
