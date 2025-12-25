@@ -26,7 +26,7 @@ This book is not suitable documentation for Bevy.
 Some resources for learning Bevy include those listed on the [Bevy website](https://bevyengine.org/learn), as well as the unofficial [Bevy Cheat Book](https://bevy-cheatbook.github.io/).
 
 `bevy_pipe_affect`'s [source code](https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0) is available on github. <!-- x-release-please-version -->
-This repository also contains [cargo examples](https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples), which can be run after cloning the repository using `$ cargo run --example example-name --features bevy/default`. <!-- x-release-please-version -->
+This repository also contains [cargo examples](https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples), which can be run after cloning the repository using `$ cargo run --release --all-features --example example-name`. <!-- x-release-please-version -->
 These examples may be difficult to follow on their own, and many of their strategies are described in this book.
 When viewing these examples, be careful to checkout the correct git tag for the version of the library you are using.
 Some changes may have been made to the library or to the examples on the `main` branch that are not released yet, and trying to apply these to the version of the library you are using can lead to errors.
