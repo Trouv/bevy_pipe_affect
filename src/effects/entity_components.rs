@@ -10,7 +10,8 @@ use crate::Effect;
 
 /// [`Effect`] that sets the `Component`s of the provided entity to the provided `Component` tuple.
 ///
-/// If an entity with these components cannot be found, logs an error.
+/// If an entity with these components cannot be found, handles the `QueryEntityError` with
+/// `bevy`'s `DefaultErrorHandler`.
 ///
 /// Can be constructed with [`entity_components_set`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -37,13 +38,13 @@ macro_rules! impl_effect_for_entity_components_set {
         where
             $($C: Component<Mutability = Mutable>,)*
         {
-            type MutParam = Query<'static, 'static, ($(&'static mut $C,)*)>;
+            type MutParam = (Query<'static, 'static, ($(&'static mut $C,)*)>, <Result<(), bevy::ecs::query::QueryEntityError> as Effect>::MutParam);
 
             fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-                let ($(mut $r,)*) = match param.get_mut(self.entity) {
+                let ($(mut $r,)*) = match param.0.get_mut(self.entity) {
                     Ok(r) => r,
                     Err(e) => {
-                        error!("unable to query entity in EntityComponentsSet: {e}");
+                        Err::<(), _>(e).affect(&mut param.1);
                         return ();
                     }
                 };
@@ -62,7 +63,8 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 ///
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
-/// If an entity with these components cannot be found, logs an error.
+/// If an entity with these components cannot be found, handles the `QueryEntityError` with
+/// `bevy`'s `DefaultErrorHandler`.
 ///
 /// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -128,13 +130,13 @@ macro_rules! impl_effect_for_entity_components_set_with {
             $($C: Component<Mutability = Mutable> + Clone,)*
             Data: ReadOnlyQueryData + 'static,
         {
-            type MutParam = Query<'static, 'static, (($(&'static mut $C,)*), Data)>;
+            type MutParam = (Query<'static, 'static, (($(&'static mut $C,)*), Data)>, <Result<(), bevy::ecs::query::QueryEntityError> as Effect>::MutParam);
 
             fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-                let (($(mut $r,)*), data) = match param.get_mut(self.entity) {
+                let (($(mut $r,)*), data) = match param.0.get_mut(self.entity) {
                     Ok(r) => r,
                     Err(e) => {
-                        error!("unable to query entity in EntityComponentsSetWith: {e}");
+                        Err::<(), _>(e).affect(&mut param.1);
                         return ();
                     }
                 };
@@ -151,10 +153,12 @@ all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
 
 #[cfg(test)]
 mod tests {
+    use bevy::ecs::error::DefaultErrorHandler;
     use proptest::prelude::*;
     use proptest::sample::SizeRange;
 
     use super::*;
+    use crate::effects::command_spawn_and;
     use crate::effects::number_data::{
         NumberComponent,
         n0_query_data_to_n1_through_one_way_function,
@@ -301,5 +305,81 @@ mod tests {
                 prop_assert_eq!(actual_written_component, &expected_written_component);
             }
         }
+    }
+
+    #[test]
+    #[should_panic]
+    fn entity_components_set_uses_default_error_handler_panic() {
+        let mut app = App::new();
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set(entity, (NumberComponent::<0>(0),))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    fn entity_components_set_uses_default_error_handler_overridden_doesnt_panic() {
+        let mut app = App::new();
+
+        app.world_mut()
+            .insert_resource(DefaultErrorHandler(bevy::ecs::error::warn));
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set(entity, (NumberComponent::<0>(0),))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    #[should_panic]
+    fn entity_components_set_with_uses_default_error_handler_panic() {
+        let mut app = App::new();
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with(entity, |_| (NumberComponent::<0>(0),))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    fn entity_components_set_with_uses_default_error_handler_overridden_doesnt_panic() {
+        let mut app = App::new();
+
+        app.world_mut()
+            .insert_resource(DefaultErrorHandler(bevy::ecs::error::warn));
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with(entity, |_| (NumberComponent::<0>(0),))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
     }
 }
