@@ -185,6 +185,38 @@ The <code>affect</code> system will perform the state transition.</p>
 <p>This enables a more functional code-style in <code>bevy</code> app development.
 User-written systems can all be read-only, pure functions.
 All mutability can be <em>piped out</em> of your code.</p>
+<h2 id="this-book"><a class="header" href="#this-book">This book</a></h2>
+<p>This book aims to provide a place for the following pieces of documentation:</p>
+<ul>
+<li>tutorials: lessons detailing the creation of simple games from start to finish</li>
+<li>explanation: clarification of concepts and strategies employed by <code>bevy_pipe_affect</code>, including details about how it works and why</li>
+<li>how-to guides: recommended solutions to common problems, as well as migration guides</li>
+</ul>
+<p>This book is not an API reference.
+For that, please refer to <code>bevy_pipe_affect</code>'s documentation on <a href="https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect">docs.rs</a>. <!-- x-release-please-version --></p>
+<p>While this book aims to be comprehensive, it should also be easy to maintain and up-to-date.
+This is why, in consort with the API reference, documentation for <code>bevy_pipe_affect</code> aims to satisfy <a href="https://documentation.divio.com/">The Grand Unified Theory of Documentation</a>.
+Furthermore, code snippets in this book are automatically tested by <code>bevy_pipe_affect</code>'s CI wherever possible with the help of <a href="https://github.com/tfpk/mdbook-keeper/">mdBook-Keeper</a>.
+This should help inform maintainers when changes to the library have made documentation out-of-date.
+Deployment of this book to github pages is also performed by <code>bevy_pipe_affect</code>'s CI automatically on new releases.</p>
+<p>Splitting the documentation up this way means that docs are not necessarily meant to be read in order.
+Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
+The following are good jumping-off points for beginners:</p>
+<ul>
+<li><a href="explanation/motivations.html"><em>Motivations</em> explanation</a></li>
+<li><a href="https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect/effects/index.html"><em>effects</em> module api reference</a> (a list of effects and constructors provided by the library) <!-- x-release-please-version --></li>
+</ul>
+<h2 id="other-resources"><a class="header" href="#other-resources">Other resources</a></h2>
+<p>This book is not suitable documentation for Bevy.
+Some resources for learning Bevy include those listed on the <a href="https://bevyengine.org/learn">Bevy website</a>, as well as the unofficial <a href="https://bevy-cheatbook.github.io/">Bevy Cheat Book</a>.</p>
+<p><code>bevy_pipe_affect</code>'s <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0">source code</a> is available on github. <!-- x-release-please-version -->
+This repository also contains <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --example example-name --features bevy/default</code>. <!-- x-release-please-version -->
+These examples may be difficult to follow on their own, and many of their strategies are described in this book.
+When viewing these examples, be careful to checkout the correct git tag for the version of the library you are using.
+Some changes may have been made to the library or to the examples on the <code>main</code> branch that are not released yet, and trying to apply these to the version of the library you are using can lead to errors.</p>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>The pages of this book fall under the same license as the rest of the <code>bevy_pipe_affect</code> repository.
+I.e., this book is dual-licensed under <a href="http://opensource.org/licenses/MIT">MIT</a> and <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a> at your option.</p>
 
                     </main>
 
