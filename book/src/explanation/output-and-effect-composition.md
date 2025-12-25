@@ -38,7 +38,7 @@ So, if you want a system that has 2 or more effects of homogenous type, you can 
 `bevy_pipe_affect` sort of hijacks bevy's system piping.
 So, at first glance, it may seem like there's no way to go about typical system pipe usage while making effects.
 The `EffectOut` type aims to give system piping back to the people.
-It also providing some composibility of its own that may be useful beyond systems.
+It also provides some composibility of its own that may be useful beyond systems.
 More on this in the following sections.
 
 Structurally, it's just an `effect` field containing an effect, and an `out` field containing additional output.
@@ -66,11 +66,12 @@ fn main() {
 
 Notice that we can still pipe `update_score` into `affect`, even though `update_score` returns an `EffectOut` instead of an `Effect`.
 However, be aware that `affect` will actually have an output too; the `f32` is passed along.
-This would prevent us from scheduling the system without piping it further in this case, but would be inconsequential if the `out` type was `()`.
+This would prevent us from scheduling the system (without further piping to drop the `f32`).
+However, it is inconsequential if the `out` type is `()`.
 
 ### `EffectOut::and_then`
 [`EffectOut`](#effectout)s compose in a few different ways, with the main goal of letting users process the `out` field while continuing to collect effects.
-For example, the `and_then` method takes a function for processing the `out` into another `Effect`/`EffectOut`, and returns an `EffectOut` with the `effect` combining the original/new effect, and an `out` being the new output.
+For example, the `and_then` method takes a function for processing the `out` into another `Effect`/`EffectOut`, and returns an `EffectOut` with the `effect` [combining the original/new effect](#combined-effects), and an `out` being the new output.
 
 This code example shows `and_then` being used to process the `EffectOut` returned by one function into more effects:
 ```rust
@@ -146,12 +147,12 @@ While the `out: O` type gets mapped in a monadic way, the `effect: E` type chang
 If it were truly monadic, only one type parameter (`out: O`) of `EffectOut` would be changed by bind, not both.
 
 ### `EffectOut::and_extend`
-Unlike [`and_then`](#effectoutand_then) there is another [`EffectOut`](#effectout) composition function that is actually more monadic.
+[`and_then`](#effectoutand_then) may not be monadic, but there is another [`EffectOut`](#effectout) composition function that is.
 If the `effect: E` of the original `EffectOut` is an extendable iterator, and the new effect is an iterator, they can be concatenated with `and_extend`.
 
-In this example, we take advantage of this to write a system with recursive logic.
+In this excerpt from the `sokoban` example, we take advantage of this to write a system with recursive logic.
 This recursion is only possible because the recursive function's typing stays consistent.
-I.e., the effect type doesn't need to change with `and_extend` like it does with `and_then`:
+I.e., the `effect: E` type parameter doesn't need to change with `and_extend` like it does with `and_then`:
 ```rust
 {{#rustdoc_include ../../../examples/sokoban/push.rs:push_logic}}
 # fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }
@@ -159,7 +160,7 @@ I.e., the effect type doesn't need to change with `and_extend` like it does with
 
 This is a bit of a side-note, but notice how this system takes advantage of the fact that we _are not_ actually performing side effects directly when using `Effect`s.
 We create a hypothetical set of entity movements with `push_and_weigh`, but those movements aren't performed until the `affect` system runs.
-So, we can decide to discard them for whatever reason between now and then, in this case the reason being that the total weight is too heavy.
+So, we can decide to discard them for whatever reason between now and then (in this case, the reason being that the total weight is too heavy).
 
 ### `EffectOut::and_then_compose`
 So, [`EffectOut::and_then`](#effectoutand_then) and [`EffectOut::and_extend`](#effectoutand_extend) define two common ways to process output into more effects, and compose those effects.
@@ -172,7 +173,7 @@ Some common effect composition functions are provided in the crate's `effect_com
 ### `EffectOut` iterators
 Often, you will find yourself iterating through queries or event readers, and trying to produce effects during that iteration.
 As you enjoy FP, you'll probably be trying to do this by mapping the iterator to effects.
-If those are really just `Effect`s, then this works well, [you can just collect into a `Vec`](#effect-iterators) and call it a day.
+This works well for mere `Effect`s, [you can just collect into a `Vec`](#effect-iterators) and call it a day.
 However, you may be dealing with `EffectOut`s, and a system returning `Vec<EffectOut>` cannot be piped into `affect`.
 
 The crate provides a simple answer for this issue.
@@ -212,6 +213,7 @@ fn explosion(
             }
         })
         .collect::<EffectOut<_, Vec<_>>>()
+        // this maps the `out` value (functoriality!)
         .map(|sizes| sizes.into_iter().sum())
 }
 
