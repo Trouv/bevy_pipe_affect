@@ -35,11 +35,13 @@ pub use command::{
     CommandQueue,
     CommandRemoveResource,
     CommandSpawnAnd,
+    CommandTrigger,
     command_insert_resource,
     command_queue,
     command_remove_resource,
     command_spawn,
     command_spawn_and,
+    command_trigger,
 };
 
 mod entity_command;
