@@ -28,6 +28,8 @@ jobs:
           key: ${{ runner.os }}-mdbook-publish-${{ hashFiles('**/Cargo.toml') }}
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
+      - name: Install Dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: Install mdbook
         uses: peaceiris/actions-mdbook@v2
         with:
