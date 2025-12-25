@@ -124,6 +124,6 @@ jobs:
         with:
           mdbook-version: '0.4.52'
       - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper@0.5.0
+        run: cargo install mdbook-keeper@0.5.0 --force
       - name: Test mdbook code snippets
         run: bash ./ci/test-book.sh
