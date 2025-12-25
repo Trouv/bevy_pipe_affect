@@ -27,3 +27,7 @@ required-features = ["bevy/default"]
 [[example]]
 name = "relationship"
 required-features = ["bevy/default"]
+
+[[example]]
+name = "sokoban"
+required-features = ["bevy/default"]
