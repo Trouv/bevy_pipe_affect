@@ -10,7 +10,8 @@
       "extra-files": [
         "README.md",
         "book/src/README.md",
-        "book/src/api-reference.md"
+        "book/src/api-reference.md",
+        "src/lib.rs"
       ],
       "changelog-sections": [
         {"type": "feat", "section": "Features"},
