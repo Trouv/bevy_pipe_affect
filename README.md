@@ -31,6 +31,11 @@ Cargo examples are also available in this repository:
 $ cargo run --example example-name --release --features bevy/default
 ```
 
+## Compatibility
+| bevy | bevy_pipe_affect |
+| --- | --- |
+| 0.17 | main |
+
 ## License
 
 Except where noted, all code in this repository is dual-licensed under either:
