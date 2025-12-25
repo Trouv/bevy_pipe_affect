@@ -12,4 +12,4 @@
 - [Spawn a Relationship Synchronously](how-to-guides/spawn-a-relationship-synchronously.md)
 - [Create an Observer]()
 ---
-[API Reference]()
+[API Reference](api-reference.md)
