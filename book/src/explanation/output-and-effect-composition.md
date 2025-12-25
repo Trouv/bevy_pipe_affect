@@ -217,6 +217,10 @@ fn push(
 # fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }
 ```
 
+This is a bit of a side-note, but notice how this system takes advantage of the fact that we _are not_ actually performing side effects directly when using `Effect`s.
+We create a hypothetical set of entity movements with `push_and_weigh`, but those movements aren't performed until the `affect` system runs.
+So, we can decide to discard them for whatever reason between now and then, in this case the reason being that the total weight is too heavy.
+
 ### `EffectOut::and_then_compose`
 
 ### EffectOut iterators
