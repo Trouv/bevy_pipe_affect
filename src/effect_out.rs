@@ -48,7 +48,6 @@ where
     ///
     /// # Examples
     /// ```
-    /// # #[cfg(feature = "derive")] {
     /// use bevy::prelude::*;
     /// use bevy_pipe_affect::prelude::*;
     ///
@@ -62,7 +61,6 @@ where
     ///     mapped,
     ///     effect_out(message_write(MyMessage("4".to_string())), 5)
     /// );
-    /// # }
     /// ```
     pub fn map_effect<E2>(self, f: impl FnOnce(E) -> E2) -> EffectOut<E2, O>
     where
@@ -71,6 +69,33 @@ where
         let EffectOut { effect, out } = self;
         EffectOut {
             effect: f(effect),
+            out,
+        }
+    }
+
+    /// Construct a new `EffectOut` with the given `out` value.
+    ///
+    /// The `effect` value will be the default for its type.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Default, Debug, PartialEq, Eq, Effect)]
+    /// struct MyEffect;
+    ///
+    /// let from_out = EffectOut::<Vec<MyEffect>, _>::from_out(5);
+    ///
+    /// assert_eq!(from_out, effect_out(vec![], 5));
+    /// # }
+    /// ```
+    pub fn from_out(out: O) -> Self
+    where
+        E: Default,
+    {
+        EffectOut {
+            effect: E::default(),
             out,
         }
     }
