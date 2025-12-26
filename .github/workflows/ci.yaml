@@ -98,7 +98,7 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
       - name: Run cargo doc
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps --all-features
 
   # Run mdbook build (tests all code snippets)
   build-test-book:
