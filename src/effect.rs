@@ -5,6 +5,8 @@ use bevy::ecs::system::SystemParam;
 /// Can be returned by `bevy` systems and `pipe`d into [`affect`] to perform the transition.
 ///
 /// # Derive
+/// *Requires the `derive` feature to be enabled.*
+///
 /// More complex effects can be derived for structs and enums whose fields also implement `Effect`,
 /// if the `derive` cargo feature is enabled.
 ///
