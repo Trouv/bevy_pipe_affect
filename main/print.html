@@ -856,6 +856,129 @@ fn spawn_relationship() -&gt; impl Effect {
     })
 }
 <span class="boring">fn main() { bevy::ecs::system::assert_is_system(spawn_relationship.pipe(affect)) }</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="spawn-and-trigger-an-observer"><a class="header" href="#spawn-and-trigger-an-observer">Spawn and Trigger an Observer</a></h1>
+<p>While <code>bevy_pipe_affect</code> effects are somewhat minimal and don't include a <code>command_add_observer</code>, observers still integrate well with effects.</p>
+<p>The following code examples are pulled from the <code>observer</code> cargo example.</p>
+<ol>
+<li>Create an event type (<code>InflateEvent</code> in this example)</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span>#[derive(Event)]
+pub struct InflateEvent;
+<span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() {}</span></code></pre></pre>
+<ol start="2">
+<li>Create a system that accepts an <code>On&lt;InflateEvent&gt;</code> and returns an effect that will be ran by the observer.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span>#[derive(Component)]
+pub struct Inflatable;
+
+fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+        (transform.with_scale(transform.scale * 1.1),)
+    })
+}
+<span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(inflate.pipe(affect)) }</span></code></pre></pre>
+<ol start="3">
+<li>Create a system that spawns an <code>Observer</code> component with <code>command_spawn</code>, using the previous system <code>.pipe(affect)</code>-ed as the observer system.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn spawn_observer() -&gt; impl Effect {
+    command_spawn(Observer::new(inflate.pipe(affect)))
+}
+<span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(spawn_observer.pipe(affect)) }</span></code></pre></pre>
+<ol start="4">
+<li>Trigger your observer with the <code>command_trigger</code> effect.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+    if input.just_pressed(KeyCode::Space) {
+        Some(command_trigger(InflateEvent))
+    } else {
+        None
+    }
+}
+<span class="boring">fn main() { bevy::ecs::system::assert_is_system(trigger_observer.pipe(affect)) }</span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><p><meta http-equiv="Refresh" content="0; url='https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect'" /><!-- x-release-please-version --></p>
 
                     </main>

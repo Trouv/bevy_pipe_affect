@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Spawn a Relationship Synchronously - bevy_pipe_affect Book</title>
+        <title>Spawn and Trigger an Observer - bevy_pipe_affect Book</title>
 
 
         <!-- Custom HTML head -->
@@ -175,52 +175,139 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="spawn-a-relationship-synchronously"><a class="header" href="#spawn-a-relationship-synchronously">Spawn a Relationship Synchronously</a></h1>
-<p>Bevy relationships may be spawned using specialized commands, like <code>with_children</code> or <code>with_related_entities</code>.
-<code>bevy_pipe_affect</code> APIs are more minimal, but these situations can still be handled ergonomically:</p>
+                        <h1 id="spawn-and-trigger-an-observer"><a class="header" href="#spawn-and-trigger-an-observer">Spawn and Trigger an Observer</a></h1>
+<p>While <code>bevy_pipe_affect</code> effects are somewhat minimal and don't include a <code>command_add_observer</code>, observers still integrate well with effects.</p>
+<p>The following code examples are pulled from the <code>observer</code> cargo example.</p>
 <ol>
-<li>Return an effect that spawns the entity that will be the <code>RelationshipTarget</code> with <code>command_spawn_and</code>. In the <code>Parent</code>/<code>ChildOf</code> relationship, this will become the <code>Parent</code> entity. That component does not need to be provided, it will be created by Bevy.</li>
-<li>Provide a closure to the second argument of the <code>command_spawn_and</code> call that returns another <code>command_spawn-</code> effect that will spawn the <code>Relationship</code> entity. In the <code>Parent</code>/<code>ChildOf</code> relationship, this is the <code>ChildOf</code> entity. This time, you do need to provide that component with the <code>Entity</code> provided to the closure (this will be <code>RelationshipTarget</code> <code>Entity</code>, spawned in step 1).</li>
+<li>Create an event type (<code>InflateEvent</code> in this example)</li>
 </ol>
-<p>The <code>relationship</code> example does this, while also bundling some sprites/marker components:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#[derive(Component)] struct Spinny;
-</span>use bevy::prelude::*;
-use bevy_pipe_affect::prelude::*;
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span>#[derive(Event)]
+pub struct InflateEvent;
+<span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() {}</span></code></pre></pre>
+<ol start="2">
+<li>Create a system that accepts an <code>On&lt;InflateEvent&gt;</code> and returns an effect that will be ran by the observer.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span>#[derive(Component)]
+pub struct Inflatable;
 
-fn spawn_relationship() -&gt; impl Effect {
-    // We will give both entities a sprite, which we can load using this effect
-    // We can use its handle to create more effects with a closure
-    asset_server_load_and("player.png", |image_handle| {
-        // Similarly, this effect will spawn our components
-        // Then, we use the resulting Entity to create more effects with a closure
-        command_spawn_and(
-            (
-                Spinny,
-                Sprite::from_image(image_handle.clone()),
-                Transform::from_scale(Vec3::splat(10.0)),
-            ),
-            |parent| {
-                command_spawn((
-                    ChildOf(parent), // This is where the relationship happens!
-                    Spinny,
-                    Sprite::from_image(image_handle),
-                    Transform::from_xyz(20.0, 20.0, 0.0).with_scale(Vec3::splat(0.5)),
-                ))
-            },
-        )
+fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+        (transform.with_scale(transform.scale * 1.1),)
     })
 }
-<span class="boring">fn main() { bevy::ecs::system::assert_is_system(spawn_relationship.pipe(affect)) }</span></code></pre></pre>
+<span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(inflate.pipe(affect)) }</span></code></pre></pre>
+<ol start="3">
+<li>Create a system that spawns an <code>Observer</code> component with <code>command_spawn</code>, using the previous system <code>.pipe(affect)</code>-ed as the observer system.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn spawn_observer() -&gt; impl Effect {
+    command_spawn(Observer::new(inflate.pipe(affect)))
+}
+<span class="boring">
+</span><span class="boring">pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+</span><span class="boring">    if input.just_pressed(KeyCode::Space) {
+</span><span class="boring">        Some(command_trigger(InflateEvent))
+</span><span class="boring">    } else {
+</span><span class="boring">        None
+</span><span class="boring">    }
+</span><span class="boring">}
+</span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(spawn_observer.pipe(affect)) }</span></code></pre></pre>
+<ol start="4">
+<li>Trigger your observer with the <code>command_trigger</code> effect.</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">use bevy::prelude::*;
+</span><span class="boring">use bevy_pipe_affect::prelude::*;
+</span><span class="boring">
+</span><span class="boring">#[derive(Event)]
+</span><span class="boring">pub struct InflateEvent;
+</span><span class="boring">
+</span><span class="boring">#[derive(Component)]
+</span><span class="boring">pub struct Inflatable;
+</span><span class="boring">
+</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
+</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
+</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
+</span><span class="boring">    })
+</span><span class="boring">}
+</span><span class="boring">
+</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
+</span><span class="boring">}
+</span><span class="boring">
+</span>pub fn trigger_observer(input: Res&lt;ButtonInput&lt;KeyCode&gt;&gt;) -&gt; Option&lt;CommandTrigger&lt;InflateEvent&gt;&gt; {
+    if input.just_pressed(KeyCode::Space) {
+        Some(command_trigger(InflateEvent))
+    } else {
+        None
+    }
+}
+<span class="boring">fn main() { bevy::ecs::system::assert_is_system(trigger_observer.pipe(affect)) }</span></code></pre></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../explanation/output-and-effect-composition.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../how-to-guides/spawn-a-relationship-synchronously.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../how-to-guides/spawn-and-trigger-an-observer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../api-reference.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -230,11 +317,11 @@ fn spawn_relationship() -&gt; impl Effect {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../explanation/output-and-effect-composition.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../how-to-guides/spawn-a-relationship-synchronously.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../how-to-guides/spawn-and-trigger-an-observer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../api-reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
