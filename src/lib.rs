@@ -11,6 +11,16 @@
 //!
 //! Cargo examples are also available in this library's
 //! [github repository](https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples). <!-- x-release-please-version -->
+//!
+//! ## Feature flags
+//! This crate provides the following set of [feature flags]:
+//! - `derive`: enables the [`Effect`] derive macro for structs and enums of effects
+//! - `asset_server`: enables the `bevy/bevy_asset` feature and [`AssetServer`-related effects]
+//!
+//! None of these are enabled by default.
+//!
+//! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
+//! [`AssetServer`-related effects]: effects::AssetServerLoadAnd
 #![warn(missing_docs)]
 #![deny(rustdoc::all)]
 
@@ -29,5 +39,7 @@ pub mod effect_composition;
 pub mod prelude;
 
 /// Derive macro for the [`Effect`] trait. See that trait for more details.
+///
+/// *Requires the `derive` feature to be enabled.*
 #[cfg(feature = "derive")]
 pub use bevy_pipe_affect_derive::Effect;

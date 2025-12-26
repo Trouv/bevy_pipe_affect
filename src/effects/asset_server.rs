@@ -9,6 +9,8 @@ use crate::Effect;
 /// effect-producing function to cause another effect.
 ///
 /// Can be constructed with [`asset_server_load_and`].
+///
+/// *Requires the `asset_server` feature to be enabled.*
 pub struct AssetServerLoadAnd<'a, F, A, E>
 where
     F: FnOnce(Handle<A>) -> E,
@@ -41,6 +43,8 @@ where
 }
 
 /// Construct a new [`AssetServerLoadAnd`] [`Effect`], with an extra effect using the `Handle<A>`.
+///
+/// *Requires the `asset_server` feature to be enabled.*
 pub fn asset_server_load_and<'a, P, F, A, E>(path: P, f: F) -> AssetServerLoadAnd<'a, F, A, E>
 where
     P: Into<AssetPath<'a>>,
