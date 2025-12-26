@@ -20,7 +20,7 @@ impl<E, O> EffectOut<E, O>
 where
     E: Effect,
 {
-    /// Maps a `EffectOut<E, O>` to an `EffectOut<E, O2>` by applying a function to the `output`.
+    /// Maps a `EffectOut<E, O>` to an `EffectOut<E, O2>` by applying a function to the `out`.
     ///
     /// # Examples
     /// ```
@@ -41,6 +41,37 @@ where
         EffectOut {
             effect,
             out: f(out),
+        }
+    }
+
+    /// Maps a `EffectOut<E, O>` to an `EffectOut<E2, O>` by applying a function to the `effect`.
+    ///
+    /// # Examples
+    /// ```
+    /// # #[cfg(feature = "derive")] {
+    /// use bevy::prelude::*;
+    /// use bevy_pipe_affect::prelude::*;
+    ///
+    /// #[derive(Debug, PartialEq, Eq, Message)]
+    /// struct MyMessage<T>(T);
+    ///
+    /// let initial = effect_out(message_write(MyMessage(4)), 5);
+    /// let mapped = initial.map_effect(|m| message_write(MyMessage(format!("{}", m.message.0))));
+    ///
+    /// assert_eq!(
+    ///     mapped,
+    ///     effect_out(message_write(MyMessage("4".to_string())), 5)
+    /// );
+    /// # }
+    /// ```
+    pub fn map_effect<E2>(self, f: impl FnOnce(E) -> E2) -> EffectOut<E2, O>
+    where
+        E2: Effect,
+    {
+        let EffectOut { effect, out } = self;
+        EffectOut {
+            effect: f(effect),
+            out,
         }
     }
 
