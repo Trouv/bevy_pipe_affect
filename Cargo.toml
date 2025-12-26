@@ -35,5 +35,9 @@ asset_server = ["bevy/bevy_asset"]
 name = "relationship"
 required-features = ["asset_server"]
 
+[[example]]
+name = "observer"
+required-features = ["asset_server"]
+
 [package.metadata.docs.rs]
 all-features = true
