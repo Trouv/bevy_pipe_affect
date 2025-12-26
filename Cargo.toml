@@ -1,7 +1,14 @@
 [package]
 name = "bevy_pipe_affect"
+description = "Write systems as pure functions."
 version = "0.1.0"
 edition = "2024"
+authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
+repository = "https://github.com/Trouv/bevy_pipe_affect"
+license = "MIT OR Apache-2.0"
+keywords = ["bevy", "game", "gamedev"]
+categories = ["game-development"]
+exclude = ["assets/", "ci/", ".github/"]
 
 [workspace]
 members = ["effect_derive"]
@@ -27,3 +34,6 @@ asset_server = ["bevy/bevy_asset"]
 [[example]]
 name = "relationship"
 required-features = ["asset_server"]
+
+[package.metadata.docs.rs]
+all-features = true
