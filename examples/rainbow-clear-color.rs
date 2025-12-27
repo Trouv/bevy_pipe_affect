@@ -13,7 +13,7 @@ fn main() -> AppExit {
 }
 
 /// This system defines the clear color as a pure function of time.
-fn rainbow_clear_color(time: Res<Time<Real>>) -> ResSet<ClearColor> {
+fn rainbow_clear_color(time: Res<Time>) -> ResSet<ClearColor> {
     let color = Color::hsv(time.elapsed_secs() * 20.0, 0.7, 0.7);
     res_set(ClearColor(color))
 }
@@ -33,9 +33,9 @@ mod tests {
     fn test_rainbow_clear() {
         // Create a Res<Time> for our system
         let mut world = World::new();
-        world.insert_resource(Time::new_with(Real::default()));
+        world.insert_resource::<Time>(Time::default());
 
-        let mut state: SystemState<(Res<Time<Real>>,)> = SystemState::new(&mut world);
+        let mut state: SystemState<(Res<Time>,)> = SystemState::new(&mut world);
         let (time,) = state.get(&mut world);
 
         // Now that we have a Res<Time>, we can run our system and get an output
