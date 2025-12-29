@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/Trouv/bevy_pipe_affect/compare/bevy_pipe_affect-v0.1.0...bevy_pipe_affect-v0.1.1) (2025-12-29)
+
+
+### Example Changes
+
+* add unit test to rainbow-clear-color example ([#99](https://github.com/Trouv/bevy_pipe_affect/issues/99)) ([f837c0f](https://github.com/Trouv/bevy_pipe_affect/commit/f837c0f4d4a1026622837b0f2a3328613211a666))
+
 ## 0.1.0 (2025-12-26)
 
 
