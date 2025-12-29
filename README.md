@@ -34,34 +34,27 @@ fn rainbow_clear_color(time: Res<Time>) -> ResSet<ClearColor> {
     res_set(ClearColor(color))
 }
 
+// One benefit of writing systems as pure function is that testing becomes much easier
 #[cfg(test)]
 mod tests {
+    use bevy::ecs::system::RunSystemOnce;
 
-    use bevy::camera::ClearColor;
-    use bevy::color::Color;
-    use bevy::ecs::system::{Res, SystemState};
-    use bevy::ecs::world::World;
-    use bevy::time::{Real, Time};
-
-    use crate::rainbow_clear_color;
+    use super::*;
 
     #[test]
     fn test_rainbow_clear() {
-        // Create a Res<Time> for our system
+        // Create a world to test against
         let mut world = World::new();
         world.insert_resource::<Time>(Time::default());
 
-        let mut state: SystemState<(Res<Time>,)> = SystemState::new(&mut world);
-        let (time,) = state.get(&mut world);
-
         // Now that we have a Res<Time>, we can run our system and get an output
-        let output = rainbow_clear_color(time);
+        let output = world.run_system_once(rainbow_clear_color).unwrap();
 
-        // Then all we have to do is check that output has the proper value
+        // Then, instead of checking that the world and its resources changed in a particular way,
+        // all we have to do is check that the output is correct
         assert_eq!(output.value.0, Color::hsva(0.0, 0.7, 0.7, 1.0));
     }
 }
-
 ```
 
 ## Documentation
