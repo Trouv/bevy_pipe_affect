@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1](https://github.com/Trouv/bevy_pipe_affect/compare/v0.1.0...v0.1.1) (2026-01-09)
+
+
+### Example Changes
+
+* add unit test to rainbow-clear-color example ([#99](https://github.com/Trouv/bevy_pipe_affect/issues/99)) ([f837c0f](https://github.com/Trouv/bevy_pipe_affect/commit/f837c0f4d4a1026622837b0f2a3328613211a666))
+
+
+### CI Changes
+
+* exclude component in release-please tag ([#105](https://github.com/Trouv/bevy_pipe_affect/issues/105)) ([2d3e16c](https://github.com/Trouv/bevy_pipe_affect/commit/2d3e16c69674d5f7129dcf7a2214221e052642bb)), closes [#94](https://github.com/Trouv/bevy_pipe_affect/issues/94)
+* rename book changelog section to docs ([#106](https://github.com/Trouv/bevy_pipe_affect/issues/106)) ([413b4bc](https://github.com/Trouv/bevy_pipe_affect/commit/413b4bc5d6200e320410a52e37ff97c9c09e90b3))
+
 ## 0.1.0 (2025-12-26)
 
 
