@@ -17,7 +17,7 @@
       "changelog-sections": [
         {"type": "feat", "section": "Features"},
         {"type": "fix", "section": "Bug Fixes"},
-        {"type": "book", "section": "Book Changes"},
+        {"type": "docs", "section": "Documentation Changes"},
         {"type": "example", "section": "Example Changes"},
         {"type": "ci", "section": "CI Changes"},
         {"type": "test", "section": "Test Changes"}
