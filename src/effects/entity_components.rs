@@ -68,7 +68,7 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 ///
 /// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityComponentsSetWith<F, C, Data = ()>
+pub struct EntityComponentsSetWithQueryData<F, C, Data = ()>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
@@ -80,7 +80,7 @@ where
     data: PhantomData<Data>,
 }
 
-impl<F, C, Data> EntityComponentsSetWith<F, C, Data>
+impl<F, C, Data> EntityComponentsSetWithQueryData<F, C, Data>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
@@ -88,7 +88,7 @@ where
 {
     /// Construct a new [`EntityComponentsSetWith`].
     pub fn new(entity: Entity, f: F) -> Self {
-        EntityComponentsSetWith {
+        EntityComponentsSetWithQueryData {
             entity,
             f,
             components: PhantomData,
@@ -101,30 +101,30 @@ where
 pub fn entity_components_set_with<F, C>(
     entity: Entity,
     f: F,
-) -> EntityComponentsSetWith<impl FnOnce(C, ()) -> C + Send + Sync, C>
+) -> EntityComponentsSetWithQueryData<impl FnOnce(C, ()) -> C + Send + Sync, C>
 where
     F: for<'w, 's> FnOnce(C) -> C + Send + Sync,
     C: Clone,
 {
-    EntityComponentsSetWith::new(entity, move |c, _| f(c))
+    EntityComponentsSetWithQueryData::new(entity, move |c, _| f(c))
 }
 
 /// Construct a new [`EntityComponentsSetWith`] [`Effect`], with extra query data.
 pub fn entity_components_set_with_query_data<F, C, Data>(
     entity: Entity,
     f: F,
-) -> EntityComponentsSetWith<F, C, Data>
+) -> EntityComponentsSetWithQueryData<F, C, Data>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    EntityComponentsSetWith::new(entity, f)
+    EntityComponentsSetWithQueryData::new(entity, f)
 }
 
 macro_rules! impl_effect_for_entity_components_set_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Data> Effect for EntityComponentsSetWith<F, ($($C,)*), Data>
+        impl<F, $($C,)* Data> Effect for EntityComponentsSetWithQueryData<F, ($($C,)*), Data>
         where
             F: for<'w, 's> FnOnce(($($C,)*), <Data as QueryData>::Item<'w, 's>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone,)*
