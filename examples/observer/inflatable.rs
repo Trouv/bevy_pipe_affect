@@ -18,7 +18,7 @@ fn inflate(_event: On<InflateEvent>) -> impl Effect + use<> {
 // ANCHOR_END: observer_system
 
 // ANCHOR: spawn_observer
-pub fn spawn_observer() -> impl Effect {
+pub fn spawn_observer() -> CommandSpawn<Observer> {
     command_spawn(Observer::new(inflate.pipe(affect)))
 }
 // ANCHOR_END: spawn_observer

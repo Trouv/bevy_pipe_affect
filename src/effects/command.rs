@@ -111,10 +111,46 @@ where
     }
 }
 
+/// [`Effect`] that queues a command for spawning an entity with the provided `Bundle`.
+///
+/// See [`CommandSpawnAnd`] if you need to produce an extra effect with the spawned `Entity` id.
+///
+/// Can be constructed with [`command_spawn`].
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct CommandSpawn<B>
+where
+    B: Bundle,
+{
+    /// The bundle to spawn.
+    pub bundle: B,
+}
+
+/// Construct a new [`CommandSpawn`] [`Effect`], without an extra effect.
+pub fn command_spawn<B>(bundle: B) -> CommandSpawn<B>
+where
+    B: Bundle,
+{
+    CommandSpawn { bundle }
+}
+
+impl<B> Effect for CommandSpawn<B>
+where
+    B: Bundle,
+{
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param.spawn(self.bundle);
+    }
+}
+
 /// [`Effect`] that queues a command for spawning an entity with the provided `Bundle`, then
 /// supplies the entity id to the provided effect-producing function to cause another effect.
 ///
-/// Can be constructed with [`command_spawn`] or [`command_spawn_and`].
+/// See [`CommandSpawn`] if you do not need to produce an extra effect.
+///
+/// Can be constructed with [`command_spawn_and`].
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CommandSpawnAnd<B, F, E>
@@ -127,14 +163,6 @@ where
     pub bundle: B,
     /// The `Entity -> Effect` function that may cause another effect.
     pub f: F,
-}
-
-/// Construct a new [`CommandSpawnAnd`] [`Effect`], without an extra effect.
-pub fn command_spawn<B>(bundle: B) -> CommandSpawnAnd<B, impl FnOnce(Entity), ()>
-where
-    B: Bundle,
-{
-    command_spawn_and(bundle, |_| ())
 }
 
 /// Construct a new [`CommandSpawnAnd`] [`Effect`], with an extra effect using the `Entity`.

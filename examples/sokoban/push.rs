@@ -68,6 +68,6 @@ pub fn push(
 // ANCHOR_END: push_logic
 
 /// Spawns an observer for the push system.
-pub fn spawn_push_observer() -> impl Effect {
+pub fn spawn_push_observer() -> CommandSpawn<Observer> {
     command_spawn(Observer::new(push.pipe(affect)))
 }

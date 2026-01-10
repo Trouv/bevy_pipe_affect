@@ -7,7 +7,7 @@ use crate::push::{Position, Weight};
 pub const BLOCK_SIZE: Vec2 = Vec2 { x: 32.0, y: 32.0 };
 
 /// Spawns 10 blocks of varying color/weight/position.
-pub fn spawn_blocks() -> Vec<impl Effect> {
+pub fn spawn_blocks() -> Vec<CommandSpawn<(Weight, Position, Sprite)>> {
     (1..=10)
         .map(|block_num| {
             let color_value = (10 - block_num) as f32 / 10.0;
@@ -25,6 +25,6 @@ pub fn spawn_blocks() -> Vec<impl Effect> {
 }
 
 /// Spawns a simple camera entity.
-pub fn spawn_camera() -> impl Effect {
+pub fn spawn_camera() -> CommandSpawn<Camera2d> {
     command_spawn(Camera2d)
 }

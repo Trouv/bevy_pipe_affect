@@ -17,7 +17,7 @@ fn main() {
         .run();
 }
 
-pub fn setup() -> impl Effect {
+pub fn setup() -> (CommandSpawn<Camera2d>, impl Effect) {
     (
         command_spawn(Camera2d::default()),
         asset_server_load_and("player.png", |sprite| {
