@@ -196,7 +196,7 @@ pub struct InflateEvent;
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -226,7 +226,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
     })
 }
 <span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -256,7 +256,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span>pub fn spawn_observer() -&gt; impl Effect {
+</span>pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
     command_spawn(Observer::new(inflate.pipe(affect)))
 }
 <span class="boring">
@@ -286,7 +286,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">

@@ -499,7 +499,7 @@ The <code>affect</code> system will perform their effects from left to right.</p
 </span>#[derive(Resource)]
 struct Score(u32);
 
-fn setup() -&gt; impl Effect {
+fn setup() -&gt; (CommandSpawn&lt;Camera2d&gt;, CommandInsertResource&lt;Score&gt;) {
     (
         command_spawn(Camera2d::default()),
         command_insert_resource(Score(0)),
@@ -748,7 +748,7 @@ pub fn push(
 }
 <span class="boring">
 </span><span class="boring">/// Spawns an observer for the push system.
-</span><span class="boring">pub fn spawn_push_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_push_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(push.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }</span></code></pre></pre>
@@ -877,7 +877,7 @@ pub struct InflateEvent;
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -907,7 +907,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
     })
 }
 <span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -937,7 +937,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span>pub fn spawn_observer() -&gt; impl Effect {
+</span>pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
     command_spawn(Observer::new(inflate.pipe(affect)))
 }
 <span class="boring">
@@ -967,7 +967,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
