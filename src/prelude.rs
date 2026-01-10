@@ -8,6 +8,7 @@ pub use crate::effects::{
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
+    CommandSpawn,
     CommandSpawnAnd,
     CommandTrigger,
     ComponentsSet,
