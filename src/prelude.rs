@@ -18,6 +18,7 @@ pub use crate::effects::{
     EntityCommandQueue,
     EntityCommandRemove,
     EntityComponentsSet,
+    EntityComponentsSetWith,
     EntityComponentsSetWithQueryData,
     MessageWrite,
     ResSet,
