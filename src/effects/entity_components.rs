@@ -449,4 +449,46 @@ mod tests {
 
         app.update();
     }
+
+    #[test]
+    #[should_panic]
+    fn entity_components_set_with_query_data_uses_default_error_handler_panic() {
+        let mut app = App::new();
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with_query_data::<_, _, ()>(entity, |_, ()| {
+                        (NumberComponent::<0>(0),)
+                    })
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    fn entity_components_set_with_query_data_uses_default_error_handler_overridden_doesnt_panic() {
+        let mut app = App::new();
+
+        app.world_mut()
+            .insert_resource(DefaultErrorHandler(bevy::ecs::error::warn));
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with_query_data::<_, _, ()>(entity, |_, ()| {
+                        (NumberComponent::<0>(0),)
+                    })
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
 }
