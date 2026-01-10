@@ -14,7 +14,7 @@ So, if you want a system that has 2 or more effects of heterogenous type, you ca
 #[derive(Resource)]
 struct Score(u32);
 
-fn setup() -> impl Effect {
+fn setup() -> (CommandSpawn<Camera2d>, CommandInsertResource<Score>) {
     (
         command_spawn(Camera2d::default()),
         command_insert_resource(Score(0)),
