@@ -61,12 +61,12 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
 ///
-/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
-///
 /// If an entity with these components cannot be found, handles the `QueryEntityError` with
 /// `bevy`'s `DefaultErrorHandler`.
 ///
-/// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
+/// If you want additional read-only query data, see [`EntityComponentsSetWithQueryData`].
+///
+/// Can be constructed with [`entity_components_set_with`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSetWith<F, C>
 where
@@ -93,7 +93,7 @@ where
     }
 }
 
-/// Construct a new [`EntityComponentsSetWith`] [`Effect`], without extra query data.
+/// Construct a new [`EntityComponentsSetWith`] [`Effect`].
 pub fn entity_components_set_with<F, C>(entity: Entity, f: F) -> EntityComponentsSetWith<F, C>
 where
     F: FnOnce(C) -> C + Send + Sync,
@@ -132,12 +132,13 @@ all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
 ///
-/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
-///
 /// If an entity with these components cannot be found, handles the `QueryEntityError` with
 /// `bevy`'s `DefaultErrorHandler`.
 ///
-/// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
+/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+/// If you do not need this extra query data, see [`EntityComponentsSetWith`].
+///
+/// Can be constructed with [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSetWithQueryData<F, C, Data = ()>
 where
@@ -157,7 +158,7 @@ where
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    /// Construct a new [`EntityComponentsSetWith`].
+    /// Construct a new [`EntityComponentsSetWithQueryData`].
     pub fn new(entity: Entity, f: F) -> Self {
         EntityComponentsSetWithQueryData {
             entity,
@@ -168,7 +169,7 @@ where
     }
 }
 
-/// Construct a new [`EntityComponentsSetWith`] [`Effect`], with extra query data.
+/// Construct a new [`EntityComponentsSetWithQueryData`] [`Effect`].
 pub fn entity_components_set_with_query_data<F, C, Data>(
     entity: Entity,
     f: F,
