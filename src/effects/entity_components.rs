@@ -61,14 +61,86 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
 ///
-/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+/// If an entity with these components cannot be found, handles the `QueryEntityError` with
+/// `bevy`'s `DefaultErrorHandler`.
+///
+/// If you want additional read-only query data, see [`EntityComponentsSetWithQueryData`].
+///
+/// Can be constructed with [`entity_components_set_with`].
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    entity: Entity,
+    f: F,
+    components: PhantomData<C>,
+}
+
+impl<F, C> EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    /// Construct a new [`EntityComponentsSetWith`].
+    pub fn new(entity: Entity, f: F) -> Self {
+        EntityComponentsSetWith {
+            entity,
+            f,
+            components: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`EntityComponentsSetWith`] [`Effect`].
+pub fn entity_components_set_with<F, C>(entity: Entity, f: F) -> EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    EntityComponentsSetWith::new(entity, f)
+}
+
+macro_rules! impl_effect_for_entity_components_set_with {
+    ($(($C:ident, $c:ident, $r:ident)),*) => {
+        impl<F, $($C,)*> Effect for EntityComponentsSetWith<F, ($($C,)*)>
+        where
+            F: for<'w, 's> FnOnce(($($C,)*)) -> ($($C,)*) + Send + Sync,
+            $($C: Component<Mutability = Mutable> + Clone,)*
+        {
+            type MutParam = (Query<'static, 'static, ($(&'static mut $C,)*)>, <Result<(), bevy::ecs::query::QueryEntityError> as Effect>::MutParam);
+
+            fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+                let ($(mut $r,)*) = match param.0.get_mut(self.entity) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        Err::<(), _>(e).affect(&mut param.1);
+                        return ();
+                    }
+                };
+                let cloned = ($($r.clone(),)*);
+                let ($($c,)*) = (self.f)(cloned);
+
+                $(*$r = $c;)*
+            }
+        }
+    };
+}
+
+all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
+
+/// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
 ///
 /// If an entity with these components cannot be found, handles the `QueryEntityError` with
 /// `bevy`'s `DefaultErrorHandler`.
 ///
-/// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
+/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+/// If you do not need this extra query data, see [`EntityComponentsSetWith`].
+///
+/// Can be constructed with [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityComponentsSetWith<F, C, Data = ()>
+pub struct EntityComponentsSetWithQueryData<F, C, Data = ()>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
@@ -80,15 +152,15 @@ where
     data: PhantomData<Data>,
 }
 
-impl<F, C, Data> EntityComponentsSetWith<F, C, Data>
+impl<F, C, Data> EntityComponentsSetWithQueryData<F, C, Data>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    /// Construct a new [`EntityComponentsSetWith`].
+    /// Construct a new [`EntityComponentsSetWithQueryData`].
     pub fn new(entity: Entity, f: F) -> Self {
-        EntityComponentsSetWith {
+        EntityComponentsSetWithQueryData {
             entity,
             f,
             components: PhantomData,
@@ -97,34 +169,22 @@ where
     }
 }
 
-/// Construct a new [`EntityComponentsSetWith`] [`Effect`], without extra query data.
-pub fn entity_components_set_with<F, C>(
-    entity: Entity,
-    f: F,
-) -> EntityComponentsSetWith<impl FnOnce(C, ()) -> C + Send + Sync, C>
-where
-    F: for<'w, 's> FnOnce(C) -> C + Send + Sync,
-    C: Clone,
-{
-    EntityComponentsSetWith::new(entity, move |c, _| f(c))
-}
-
-/// Construct a new [`EntityComponentsSetWith`] [`Effect`], with extra query data.
+/// Construct a new [`EntityComponentsSetWithQueryData`] [`Effect`].
 pub fn entity_components_set_with_query_data<F, C, Data>(
     entity: Entity,
     f: F,
-) -> EntityComponentsSetWith<F, C, Data>
+) -> EntityComponentsSetWithQueryData<F, C, Data>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    EntityComponentsSetWith::new(entity, f)
+    EntityComponentsSetWithQueryData::new(entity, f)
 }
 
-macro_rules! impl_effect_for_entity_components_set_with {
+macro_rules! impl_effect_for_entity_components_set_with_query_data {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Data> Effect for EntityComponentsSetWith<F, ($($C,)*), Data>
+        impl<F, $($C,)* Data> Effect for EntityComponentsSetWithQueryData<F, ($($C,)*), Data>
         where
             F: for<'w, 's> FnOnce(($($C,)*), <Data as QueryData>::Item<'w, 's>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone,)*
@@ -149,7 +209,14 @@ macro_rules! impl_effect_for_entity_components_set_with {
     };
 }
 
-all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
+all_tuples!(
+    impl_effect_for_entity_components_set_with_query_data,
+    1,
+    15,
+    C,
+    c,
+    r
+);
 
 #[cfg(test)]
 mod tests {
@@ -375,6 +442,48 @@ mod tests {
             (|| {
                 command_spawn_and((), |entity| {
                     entity_components_set_with(entity, |_| (NumberComponent::<0>(0),))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    #[should_panic]
+    fn entity_components_set_with_query_data_uses_default_error_handler_panic() {
+        let mut app = App::new();
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with_query_data::<_, _, ()>(entity, |_, ()| {
+                        (NumberComponent::<0>(0),)
+                    })
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+    }
+
+    #[test]
+    fn entity_components_set_with_query_data_uses_default_error_handler_overridden_doesnt_panic() {
+        let mut app = App::new();
+
+        app.world_mut()
+            .insert_resource(DefaultErrorHandler(bevy::ecs::error::warn));
+
+        app.add_systems(
+            Startup,
+            (|| {
+                command_spawn_and((), |entity| {
+                    entity_components_set_with_query_data::<_, _, ()>(entity, |_, ()| {
+                        (NumberComponent::<0>(0),)
+                    })
                 })
             })
             .pipe(affect),

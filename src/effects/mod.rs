@@ -24,6 +24,7 @@ mod entity_components;
 pub use entity_components::{
     EntityComponentsSet,
     EntityComponentsSetWith,
+    EntityComponentsSetWithQueryData,
     entity_components_set,
     entity_components_set_with,
     entity_components_set_with_query_data,
