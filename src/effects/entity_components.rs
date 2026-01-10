@@ -68,6 +68,77 @@ all_tuples!(impl_effect_for_entity_components_set, 1, 15, C, c, r);
 ///
 /// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    entity: Entity,
+    f: F,
+    components: PhantomData<C>,
+}
+
+impl<F, C> EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    /// Construct a new [`EntityComponentsSetWith`].
+    pub fn new(entity: Entity, f: F) -> Self {
+        EntityComponentsSetWith {
+            entity,
+            f,
+            components: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`EntityComponentsSetWith`] [`Effect`], without extra query data.
+pub fn entity_components_set_with<F, C>(entity: Entity, f: F) -> EntityComponentsSetWith<F, C>
+where
+    F: FnOnce(C) -> C + Send + Sync,
+    C: Clone,
+{
+    EntityComponentsSetWith::new(entity, f)
+}
+
+macro_rules! impl_effect_for_entity_components_set_with {
+    ($(($C:ident, $c:ident, $r:ident)),*) => {
+        impl<F, $($C,)*> Effect for EntityComponentsSetWith<F, ($($C,)*)>
+        where
+            F: for<'w, 's> FnOnce(($($C,)*)) -> ($($C,)*) + Send + Sync,
+            $($C: Component<Mutability = Mutable> + Clone,)*
+        {
+            type MutParam = (Query<'static, 'static, ($(&'static mut $C,)*)>, <Result<(), bevy::ecs::query::QueryEntityError> as Effect>::MutParam);
+
+            fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+                let ($(mut $r,)*) = match param.0.get_mut(self.entity) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        Err::<(), _>(e).affect(&mut param.1);
+                        return ();
+                    }
+                };
+                let cloned = ($($r.clone(),)*);
+                let ($($c,)*) = (self.f)(cloned);
+
+                $(*$r = $c;)*
+            }
+        }
+    };
+}
+
+all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
+
+/// [`Effect`] that transforms the `Component`s of the provided entity with the provided function.
+///
+/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+///
+/// If an entity with these components cannot be found, handles the `QueryEntityError` with
+/// `bevy`'s `DefaultErrorHandler`.
+///
+/// Can be constructed with [`entity_components_set_with`] or [`entity_components_set_with_query_data`].
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityComponentsSetWithQueryData<F, C, Data = ()>
 where
     F: for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
@@ -97,18 +168,6 @@ where
     }
 }
 
-/// Construct a new [`EntityComponentsSetWith`] [`Effect`], without extra query data.
-pub fn entity_components_set_with<F, C>(
-    entity: Entity,
-    f: F,
-) -> EntityComponentsSetWithQueryData<impl FnOnce(C, ()) -> C + Send + Sync, C>
-where
-    F: for<'w, 's> FnOnce(C) -> C + Send + Sync,
-    C: Clone,
-{
-    EntityComponentsSetWithQueryData::new(entity, move |c, _| f(c))
-}
-
 /// Construct a new [`EntityComponentsSetWith`] [`Effect`], with extra query data.
 pub fn entity_components_set_with_query_data<F, C, Data>(
     entity: Entity,
@@ -122,7 +181,7 @@ where
     EntityComponentsSetWithQueryData::new(entity, f)
 }
 
-macro_rules! impl_effect_for_entity_components_set_with {
+macro_rules! impl_effect_for_entity_components_set_with_query_data {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
         impl<F, $($C,)* Data> Effect for EntityComponentsSetWithQueryData<F, ($($C,)*), Data>
         where
@@ -149,7 +208,14 @@ macro_rules! impl_effect_for_entity_components_set_with {
     };
 }
 
-all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
+all_tuples!(
+    impl_effect_for_entity_components_set_with_query_data,
+    1,
+    15,
+    C,
+    c,
+    r
+);
 
 #[cfg(test)]
 mod tests {
