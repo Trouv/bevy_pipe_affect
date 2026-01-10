@@ -34,6 +34,7 @@ pub use command::{
     CommandInsertResource,
     CommandQueue,
     CommandRemoveResource,
+    CommandSpawn,
     CommandSpawnAnd,
     CommandTrigger,
     command_insert_resource,

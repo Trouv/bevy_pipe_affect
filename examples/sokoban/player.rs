@@ -39,7 +39,7 @@ pub fn player_input(
 }
 
 /// Spawns the player entity (a block with a Player component).
-pub fn spawn_player() -> impl Effect {
+pub fn spawn_player() -> CommandSpawn<(Player, Weight, Position, Sprite)> {
     command_spawn((
         Player,
         Weight(0),
