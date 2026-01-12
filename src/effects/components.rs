@@ -10,11 +10,46 @@ use crate::Effect;
 
 /// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
 ///
-/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+/// If you want to parameterize the query with a filter, see [`ComponentsSetFiltered`].
 ///
-/// Can be constructed by [`components_set`] or [`components_set_filtered`]
+/// Can be constructed by [`components_set`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsSet<C, Filter = ()>
+pub struct ComponentsSet<C>
+where
+    C: Clone,
+{
+    /// The tuple of component values to set.
+    pub components: C,
+}
+
+/// Construct a new [`ComponentsSet`] [`Effect`], with no filter.
+pub fn components_set<C>(components: C) -> ComponentsSet<C>
+where
+    C: Clone,
+{
+    ComponentsSet { components }
+}
+
+impl<C> Effect for ComponentsSet<C>
+where
+    C: Clone,
+    ComponentsSetFiltered<C>: Effect,
+{
+    type MutParam = <ComponentsSetFiltered<C> as Effect>::MutParam;
+
+    fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
+        components_set_filtered::<_, ()>(self.components).affect(param);
+    }
+}
+
+/// [`Effect`] that sets `Component`s of all entities in a query to the provided `Component` tuple.
+///
+/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+/// If you do not need a filter, see [`ComponentsSet`].
+///
+/// Can be constructed by [`components_set_filtered`]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct ComponentsSetFiltered<C, Filter = ()>
 where
     C: Clone,
     Filter: QueryFilter,
@@ -23,40 +58,32 @@ where
     filter: PhantomData<Filter>,
 }
 
-impl<C, Filter> ComponentsSet<C, Filter>
+impl<C, Filter> ComponentsSetFiltered<C, Filter>
 where
     C: Clone,
     Filter: QueryFilter,
 {
-    /// Construct a new [`ComponentsSet`].
+    /// Construct a new [`ComponentsSetFiltered`].
     pub fn new(components: C) -> Self {
-        ComponentsSet {
+        ComponentsSetFiltered {
             components,
             filter: PhantomData,
         }
     }
 }
 
-/// Construct a new [`ComponentsSet`] [`Effect`], with no filter.
-pub fn components_set<C>(components: C) -> ComponentsSet<C, ()>
-where
-    C: Clone,
-{
-    ComponentsSet::new(components)
-}
-
 /// Construct a new [`ComponentsSet`] [`Effect`], with a custom filter.
-pub fn components_set_filtered<C, Filter>(components: C) -> ComponentsSet<C, Filter>
+pub fn components_set_filtered<C, Filter>(components: C) -> ComponentsSetFiltered<C, Filter>
 where
     C: Clone,
     Filter: QueryFilter,
 {
-    ComponentsSet::new(components)
+    ComponentsSetFiltered::new(components)
 }
 
 macro_rules! impl_effect_for_components_set {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<$($C,)* Filter> Effect for ComponentsSet<($($C,)*), Filter>
+        impl<$($C,)* Filter> Effect for ComponentsSetFiltered<($($C,)*), Filter>
         where
             $($C: Component<Mutability = Mutable> + Clone),*,
             Filter: QueryFilter + 'static,

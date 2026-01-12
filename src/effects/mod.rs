@@ -11,6 +11,7 @@ pub use message::{MessageWrite, message_write};
 mod components;
 pub use components::{
     ComponentsSet,
+    ComponentsSetFiltered,
     ComponentsSetWith,
     components_set,
     components_set_filtered,

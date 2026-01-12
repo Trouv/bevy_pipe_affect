@@ -12,6 +12,7 @@ pub use crate::effects::{
     CommandSpawnAnd,
     CommandTrigger,
     ComponentsSet,
+    ComponentsSetFiltered,
     ComponentsSetWith,
     EntityCommandDespawn,
     EntityCommandInsert,
