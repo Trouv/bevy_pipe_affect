@@ -22,7 +22,7 @@ where
     pub components: C,
 }
 
-/// Construct a new [`ComponentsSet`] [`Effect`], with no filter.
+/// Construct a new [`ComponentsSet`] [`Effect`].
 pub fn components_set<C>(components: C) -> ComponentsSet<C>
 where
     C: Clone,
@@ -47,7 +47,7 @@ where
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 /// If you do not need a filter, see [`ComponentsSet`].
 ///
-/// Can be constructed by [`components_set_filtered`]
+/// Can be constructed by [`components_set_filtered`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetFiltered<C, Filter = ()>
 where
@@ -72,7 +72,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSet`] [`Effect`], with a custom filter.
+/// Construct a new [`ComponentsSetFiltered`] [`Effect`].
 pub fn components_set_filtered<C, Filter>(components: C) -> ComponentsSetFiltered<C, Filter>
 where
     C: Clone,
