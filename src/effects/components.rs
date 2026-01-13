@@ -255,7 +255,33 @@ mod tests {
 
     proptest! {
         #[test]
-        fn components_put_overwrites_initial_state(
+        fn components_set_overwrites_initial_state(
+            test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            put: (NumberComponent<0>, NumberComponent<1>),
+        ) {
+            let mut app = App::new();
+
+            let entities = test_bundles
+                .iter()
+                .copied()
+                .map(|bundle| spawn_bundle_and_mark(app.world_mut(), bundle))
+                .collect::<Vec<_>>();
+
+            app.add_systems(Update, (move || components_set(put)).pipe(affect));
+
+            app.update();
+
+            for entity in entities {
+                let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                prop_assert_eq!(actual0, &put.0);
+                prop_assert_eq!(actual1, &put.1);
+            }
+        }
+
+        #[test]
+        fn components_set_filtered_overwrites_initial_state(
             test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
             put: (NumberComponent<0>, NumberComponent<1>)
         ) {
@@ -293,7 +319,7 @@ mod tests {
         }
 
         #[test]
-        fn components_with_correctly_executes_one_way_function(
+        fn components_set_filtered_with_correctly_executes_one_way_function(
             test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
             f0: OneWayFn,
             f1: OneWayFn
