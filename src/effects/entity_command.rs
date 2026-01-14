@@ -174,7 +174,7 @@ mod tests {
 
             let actual_component = app.world().get_entity(entity).unwrap().get_components::<&NumberComponent<0>>();
 
-            assert!(actual_component.is_none());
+            assert!(actual_component.is_err());
 
             let insert_component_system = move || {
                 EntityCommandQueue::new(entity, move |mut entity_world: EntityWorldMut<'_>| {
