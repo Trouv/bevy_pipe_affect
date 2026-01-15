@@ -1,7 +1,7 @@
 [package]
 name = "bevy_pipe_affect"
 description = "Write systems as pure functions."
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Trevor Lovell <trevorlovelldesign@gmail.com>"]
 repository = "https://github.com/Trouv/bevy_pipe_affect"
@@ -15,7 +15,7 @@ members = ["effect_derive"]
 
 [dependencies]
 bevy = { version = "0.18.0", default-features = false }
-bevy_pipe_affect_derive = { version = "0.1.0", path = "effect_derive", optional = true }
+bevy_pipe_affect_derive = { version = "0.2.0", path = "effect_derive", optional = true }
 
 # bevy with no default features actually depends on both of these, no need to hide them behind flags
 variadics_please = "1.1.0"
