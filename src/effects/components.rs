@@ -290,7 +290,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSetWith`] [`Effect`].
+/// Construct a new [`ComponentsSetFilteredWith`] [`Effect`].
 pub fn components_set_filtered_with<F, C, Filter>(f: F) -> ComponentsSetFilteredWith<F, C, Filter>
 where
     F: Fn(C) -> C + Send + Sync,
