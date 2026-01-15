@@ -108,11 +108,12 @@ all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 ///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 ///
-/// Can be constructed by
-/// - [`components_set_with`]
-/// - [`components_set_filtered_with`]
-/// - [`components_set_with_query_data`]
-/// - [`components_set_filtered_with_query_data`]
+/// For more query parameterization options, see:
+/// - [`ComponentsSetWith`]
+/// - [`ComponentsSetFilteredWith`]
+/// - [`ComponentsSetWithQueryData`]
+///
+/// Can be constructed by [`components_set_filtered_with_query_data`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetFilteredWithQueryData<F, C, Data = (), Filter = ()>
 where
@@ -145,7 +146,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSetFilteredWithQueryData`] [`Effect`], with a custom filter and extra query data.
+/// Construct a new [`ComponentsSetFilteredWithQueryData`] [`Effect`].
 pub fn components_set_filtered_with_query_data<F, C, Data, Filter>(
     f: F,
 ) -> ComponentsSetFilteredWithQueryData<F, C, Data, Filter>
@@ -193,13 +194,12 @@ all_tuples!(
 ///
 /// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
 ///
-/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
+/// For more query parameterization options, see:
+/// - [`ComponentsSetWith`]
+/// - [`ComponentsSetFilteredWith`]
+/// - [`ComponentsSetFilteredWithQueryData`]
 ///
-/// Can be constructed by
-/// - [`components_set_with`]
-/// - [`components_set_filtered_with`]
-/// - [`components_set_with_query_data`]
-/// - [`components_set_filtered_with_query_data`]
+/// Can be constructed by [`components_set_with_query_data`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetWithQueryData<F, C, Data = ()>
 where
@@ -228,7 +228,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSetWithQueryData`] [`Effect`], with extra query data.
+/// Construct a new [`ComponentsSetWithQueryData`] [`Effect`].
 pub fn components_set_with_query_data<F, C, Data>(f: F) -> ComponentsSetWithQueryData<F, C, Data>
 where
     F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
@@ -254,15 +254,14 @@ where
 
 /// [`Effect`] that transforms `Component`s of all entities in a query with the provided function.
 ///
-/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
-///
 /// Can be parameterized by a `QueryFilter` to narrow down the components updated.
 ///
-/// Can be constructed by
-/// - [`components_set_with`]
-/// - [`components_set_filtered_with`]
-/// - [`components_set_with_query_data`]
-/// - [`components_set_filtered_with_query_data`]
+/// For more query parameterization options, see:
+/// - [`ComponentsSetWith`]
+/// - [`ComponentsSetWithQueryData`]
+/// - [`ComponentsSetFilteredWithQueryData`]
+///
+/// Can be constructed by [`components_set_filtered_with`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetFilteredWith<F, C, Filter = ()>
 where
@@ -291,7 +290,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSetWith`] [`Effect`], with a custom filter.
+/// Construct a new [`ComponentsSetWith`] [`Effect`].
 pub fn components_set_filtered_with<F, C, Filter>(f: F) -> ComponentsSetFilteredWith<F, C, Filter>
 where
     F: Fn(C) -> C + Send + Sync,
@@ -326,15 +325,12 @@ all_tuples!(impl_effect_for_components_set_filtered_with, 1, 15, C, c, r);
 
 /// [`Effect`] that transforms `Component`s of all entities in a query with the provided function.
 ///
-/// Can be parameterized by a `ReadOnlyQueryData` to access additional query data in the function.
+/// For more query parameterization options, see:
+/// - [`ComponentsSetFilteredWith`]
+/// - [`ComponentsSetWithQueryData`]
+/// - [`ComponentsSetFilteredWithQueryData`]
 ///
-/// Can be parameterized by a `QueryFilter` to narrow down the components updated.
-///
-/// Can be constructed by
-/// - [`components_set_with`]
-/// - [`components_set_filtered_with`]
-/// - [`components_set_with_query_data`]
-/// - [`components_set_filtered_with_query_data`]
+/// Can be constructed by [`components_set_with`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ComponentsSetWith<F, C>
 where
@@ -359,7 +355,7 @@ where
     }
 }
 
-/// Construct a new [`ComponentsSetWith`] [`Effect`], with no filter or query data.
+/// Construct a new [`ComponentsSetWith`] [`Effect`].
 pub fn components_set_with<F, C>(f: F) -> ComponentsSetWith<F, C>
 where
     F: Fn(C) -> C + Send + Sync,
