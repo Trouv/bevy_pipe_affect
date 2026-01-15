@@ -3,14 +3,14 @@
 //! ## This API Reference
 //! The purpose of this API reference is to describe the API provided by this library.
 //! More explanation-oriented documentation, tutorials, and guides are available in the
-//! [`bevy_pipe_affect` book](https://trouv.github.io/bevy_pipe_affect/v0.1.0). <!-- x-release-please-version -->
+//! [`bevy_pipe_affect` book](https://trouv.github.io/bevy_pipe_affect/v0.2.0). <!-- x-release-please-version -->
 //!
 //! The following are good jumping-off points for beginners:
-//! - [*Motivations* explanation](https://trouv.github.io/bevy_pipe_affect/v0.1.0/explanation/motivations.html) <!-- x-release-please-version -->
+//! - [*Motivations* explanation](https://trouv.github.io/bevy_pipe_affect/v0.2.0/explanation/motivations.html) <!-- x-release-please-version -->
 //! - [*effects* module api reference](effects) (a list of effects and constructors provided by the library)
 //!
 //! Cargo examples are also available in this library's
-//! [github repository](https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples). <!-- x-release-please-version -->
+//! [github repository](https://github.com/Trouv/bevy_pipe_affect/tree/v0.2.0/examples). <!-- x-release-please-version -->
 //!
 //! ## Feature flags
 //! This crate provides the following set of [feature flags]:

@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.2.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.1.0...v0.2.0) (2026-01-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* split ComponentsSetWith into 4 with different generics ([#111](https://github.com/Trouv/bevy_pipe_affect/issues/111))
+* upgrade to bevy 0.18 ([#110](https://github.com/Trouv/bevy_pipe_affect/issues/110))
+* split ComponentsSet into two with and without filter ([#109](https://github.com/Trouv/bevy_pipe_affect/issues/109))
+* split EntityComponentsSetWith into two with and without query data ([#108](https://github.com/Trouv/bevy_pipe_affect/issues/108))
+* return simpler CommandSpawn effect from command_spawn constructor ([#107](https://github.com/Trouv/bevy_pipe_affect/issues/107))
+
+### Features
+
+* return simpler CommandSpawn effect from command_spawn constructor ([#107](https://github.com/Trouv/bevy_pipe_affect/issues/107)) ([4b58dea](https://github.com/Trouv/bevy_pipe_affect/commit/4b58dea13b82c632bedcb56241ea36c1b0206b92))
+* split ComponentsSet into two with and without filter ([#109](https://github.com/Trouv/bevy_pipe_affect/issues/109)) ([b15c1a0](https://github.com/Trouv/bevy_pipe_affect/commit/b15c1a08ced2f5ce3a3e7e9285ed55868e68d1f6))
+* split ComponentsSetWith into 4 with different generics ([#111](https://github.com/Trouv/bevy_pipe_affect/issues/111)) ([4efe59b](https://github.com/Trouv/bevy_pipe_affect/commit/4efe59b216ed8134efef03c5732677416494cec6))
+* split EntityComponentsSetWith into two with and without query data ([#108](https://github.com/Trouv/bevy_pipe_affect/issues/108)) ([b362f45](https://github.com/Trouv/bevy_pipe_affect/commit/b362f456b68758fd127af81c3b1c2c65b79230c3))
+* upgrade to bevy 0.18 ([#110](https://github.com/Trouv/bevy_pipe_affect/issues/110)) ([f12948b](https://github.com/Trouv/bevy_pipe_affect/commit/f12948bed1df3ad9990cb91549fc9adacdd23a8f))
+
+
+### Documentation Changes
+
+* add 0.2 to compatibility chart in README.md ([#114](https://github.com/Trouv/bevy_pipe_affect/issues/114)) ([8a95fac](https://github.com/Trouv/bevy_pipe_affect/commit/8a95fac4f68506ec9935689495a7cabc2dd33823))
+* enable minimal features in mdbook-keeper ([#113](https://github.com/Trouv/bevy_pipe_affect/issues/113)) ([ceb0982](https://github.com/Trouv/bevy_pipe_affect/commit/ceb09820b8f186bc83c88e240b84e3ca980873d4))
+
+
+### Example Changes
+
+* add unit test to rainbow-clear-color example ([#99](https://github.com/Trouv/bevy_pipe_affect/issues/99)) ([f837c0f](https://github.com/Trouv/bevy_pipe_affect/commit/f837c0f4d4a1026622837b0f2a3328613211a666))
+
+
+### CI Changes
+
+* exclude component in release-please tag ([#105](https://github.com/Trouv/bevy_pipe_affect/issues/105)) ([2d3e16c](https://github.com/Trouv/bevy_pipe_affect/commit/2d3e16c69674d5f7129dcf7a2214221e052642bb)), closes [#94](https://github.com/Trouv/bevy_pipe_affect/issues/94)
+* rename book changelog section to docs ([#106](https://github.com/Trouv/bevy_pipe_affect/issues/106)) ([413b4bc](https://github.com/Trouv/bevy_pipe_affect/commit/413b4bc5d6200e320410a52e37ff97c9c09e90b3))
+
 ## 0.1.0 (2025-12-26)
 
 
