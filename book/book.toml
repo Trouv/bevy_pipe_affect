@@ -10,4 +10,5 @@ command = "mdbook-keeper"
 after = ["links"]
 manifest_dir = "."
 externs = ["bevy", "bevy_pipe_affect"]
-build_features = ["asset_server", "bevy/default"]
+# be careful about enabling more features as the test builds quickly exceed github runner disk sizes
+build_features = ["asset_server", "bevy/bevy_camera", "bevy/bevy_sprite", "bevy/bevy_audio"]
