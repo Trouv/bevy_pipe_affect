@@ -483,6 +483,50 @@ mod tests {
         }
 
         #[test]
+        fn components_set_with_correctly_executes_one_way_function(
+            test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            f0: OneWayFn,
+            f1: OneWayFn
+        ) {
+            let mut app = App::new();
+
+            let entities = test_bundles
+                .iter()
+                .copied()
+                .map(|bundle| spawn_bundle_and_mark(app.world_mut(), bundle))
+                .collect::<Vec<_>>();
+
+            app.add_systems(
+                Update,
+                (move || {
+                    components_set_with(
+                        two_number_components_one_way_transform(f0, f1)
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for (
+                BundleToBeMarked {
+                    initial,
+                    ..
+                },
+                entity,
+            ) in test_bundles.into_iter().zip(entities)
+            {
+                let actual0 = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual1 = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                let (expected0, expected1) = two_number_components_one_way_transform(f0, f1)(initial);
+
+                prop_assert_eq!(actual0, &expected0);
+                prop_assert_eq!(actual1, &expected1);
+            }
+        }
+
+        #[test]
         fn components_set_filtered_with_correctly_executes_one_way_function(
             test_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
             f0: OneWayFn,
@@ -531,7 +575,51 @@ mod tests {
         }
 
         #[test]
-        fn read_only_query_data_paramaterizes_components_with_function(
+        fn read_only_query_data_paramaterizes_components_set_with_function(
+            initial_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
+            f: OneWayFn,
+        ) {
+            let mut app = App::new();
+
+            let entities = initial_bundles
+                .iter()
+                .copied()
+                .map(|bundle| spawn_bundle_and_mark(app.world_mut(), bundle))
+                .collect::<Vec<_>>();
+
+            app.add_systems(
+                Update,
+                (move || {
+                    components_set_with_query_data::<_, _, &NumberComponent<0>>(
+                        n0_query_data_to_n1_through_one_way_function(f),
+                    )
+                })
+                .pipe(affect),
+            );
+
+            app.update();
+
+            for (
+                BundleToBeMarked {
+                    initial: (expected_read_component, _),
+                    ..
+                },
+                entity,
+            ) in initial_bundles.into_iter().zip(entities)
+            {
+                let actual_read_component = app.world().get::<NumberComponent<0>>(entity).unwrap();
+                let actual_written_component = app.world().get::<NumberComponent<1>>(entity).unwrap();
+
+                let expected_written_component =
+                    n0_to_n1_through_one_way_function(f)(expected_read_component);
+
+                prop_assert_eq!(actual_read_component, &expected_read_component);
+                prop_assert_eq!(actual_written_component, &expected_written_component);
+            }
+        }
+
+        #[test]
+        fn read_only_query_data_paramaterizes_components_set_filtered_with_function(
             initial_bundles in proptest::collection::vec(any::<BundleToBeMarked<(NumberComponent<0>, NumberComponent<1>)>>(), 0..16),
             f: OneWayFn,
         ) {
