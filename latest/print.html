@@ -194,7 +194,7 @@ All mutability can be <em>piped out</em> of your code.</p>
 <li>how-to guides: recommended solutions to common problems, as well as migration guides</li>
 </ul>
 <p>This book is not an API reference.
-For that, please refer to <code>bevy_pipe_affect</code>'s documentation on <a href="https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect">docs.rs</a>. <!-- x-release-please-version --></p>
+For that, please refer to <code>bevy_pipe_affect</code>'s documentation on <a href="https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect">docs.rs</a>. <!-- x-release-please-version --></p>
 <p>While this book aims to be comprehensive, it should also be easy to maintain and up-to-date.
 This is why, in consort with the API reference, documentation for <code>bevy_pipe_affect</code> aims to satisfy <a href="https://documentation.divio.com/">The Grand Unified Theory of Documentation</a>.
 Furthermore, code snippets in this book are automatically tested by <code>bevy_pipe_affect</code>'s CI wherever possible with the help of <a href="https://github.com/tfpk/mdbook-keeper/">mdBook-Keeper</a>.
@@ -205,13 +205,13 @@ Some chapters are intended to be read while working on your own project, while o
 The following are good jumping-off points for beginners:</p>
 <ul>
 <li><a href="explanation/motivations.html"><em>Motivations</em> explanation</a></li>
-<li><a href="https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect/effects/index.html"><em>effects</em> module api reference</a> (a list of effects and constructors provided by the library) <!-- x-release-please-version --></li>
+<li><a href="https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html"><em>effects</em> module api reference</a> (a list of effects and constructors provided by the library) <!-- x-release-please-version --></li>
 </ul>
 <h2 id="other-resources"><a class="header" href="#other-resources">Other resources</a></h2>
 <p>This book is not suitable documentation for Bevy.
 Some resources for learning Bevy include those listed on the <a href="https://bevyengine.org/learn">Bevy website</a>, as well as the unofficial <a href="https://bevy-cheatbook.github.io/">Bevy Cheat Book</a>.</p>
-<p><code>bevy_pipe_affect</code>'s <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0">source code</a> is available on github. <!-- x-release-please-version -->
-This repository also contains <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.1.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --release --all-features --example example-name</code>. <!-- x-release-please-version -->
+<p><code>bevy_pipe_affect</code>'s <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.2.0">source code</a> is available on github. <!-- x-release-please-version -->
+This repository also contains <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.2.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --release --all-features --example example-name</code>. <!-- x-release-please-version -->
 These examples may be difficult to follow on their own, and many of their strategies are described in this book.
 When viewing these examples, be careful to checkout the correct git tag for the version of the library you are using.
 Some changes may have been made to the library or to the examples on the <code>main</code> branch that are not released yet, and trying to apply these to the version of the library you are using can lead to errors.</p>
@@ -499,7 +499,7 @@ The <code>affect</code> system will perform their effects from left to right.</p
 </span>#[derive(Resource)]
 struct Score(u32);
 
-fn setup() -&gt; impl Effect {
+fn setup() -&gt; (CommandSpawn&lt;Camera2d&gt;, CommandInsertResource&lt;Score&gt;) {
     (
         command_spawn(Camera2d::default()),
         command_insert_resource(Score(0)),
@@ -748,7 +748,7 @@ pub fn push(
 }
 <span class="boring">
 </span><span class="boring">/// Spawns an observer for the push system.
-</span><span class="boring">pub fn spawn_push_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_push_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(push.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">fn main() { bevy::ecs::system::assert_is_system(push.pipe(affect)) }</span></code></pre></pre>
@@ -877,7 +877,7 @@ pub struct InflateEvent;
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -907,7 +907,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
     })
 }
 <span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -937,7 +937,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span>pub fn spawn_observer() -&gt; impl Effect {
+</span>pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
     command_spawn(Observer::new(inflate.pipe(affect)))
 }
 <span class="boring">
@@ -967,7 +967,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">    })
 </span><span class="boring">}
 </span><span class="boring">
-</span><span class="boring">pub fn spawn_observer() -&gt; impl Effect {
+</span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
 </span><span class="boring">    command_spawn(Observer::new(inflate.pipe(affect)))
 </span><span class="boring">}
 </span><span class="boring">
@@ -979,7 +979,7 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
     }
 }
 <span class="boring">fn main() { bevy::ecs::system::assert_is_system(trigger_observer.pipe(affect)) }</span></code></pre></pre>
-<div style="break-before: page; page-break-before: always;"></div><p><meta http-equiv="Refresh" content="0; url='https://docs.rs/bevy_pipe_affect/0.1.0/bevy_pipe_affect'" /><!-- x-release-please-version --></p>
+<div style="break-before: page; page-break-before: always;"></div><p><meta http-equiv="Refresh" content="0; url='https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect'" /><!-- x-release-please-version --></p>
 
                     </main>
 
