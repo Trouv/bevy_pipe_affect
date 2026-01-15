@@ -12,7 +12,10 @@ mod components;
 pub use components::{
     ComponentsSet,
     ComponentsSetFiltered,
+    ComponentsSetFilteredWith,
+    ComponentsSetFilteredWithQueryData,
     ComponentsSetWith,
+    ComponentsSetWithQueryData,
     components_set,
     components_set_filtered,
     components_set_filtered_with,
