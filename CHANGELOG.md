@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/Trouv/bevy_pipe_affect/compare/v0.2.0...v0.2.1) (2026-01-24)
+
+
+### Documentation Changes
+
+* link to other versions of the book in the book ([#115](https://github.com/Trouv/bevy_pipe_affect/issues/115)) ([da0425b](https://github.com/Trouv/bevy_pipe_affect/commit/da0425b137136be167d37b6fac4e9ea75d2bcabc))
+
 ## [0.2.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.1.0...v0.2.0) (2026-01-15)
 
 
