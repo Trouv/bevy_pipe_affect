@@ -39,23 +39,20 @@ where
 /// [`Effect`] that transforms a `Resource` with the provided function.
 ///
 /// Can be constructed by [`res_set_with`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ResSetWith<F, R>
+pub struct ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
-    f: F,
+    f: Box<dyn FnOnce(R) -> R>,
     phantom: PhantomData<R>,
 }
 
-impl<F, R> ResSetWith<F, R>
+impl<R> ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
     /// Construct a new [`ResSetWith`].
-    pub fn new(f: F) -> Self {
+    pub fn new(f: Box<dyn FnOnce(R) -> R>) -> Self {
         ResSetWith {
             f,
             phantom: PhantomData,
@@ -64,17 +61,16 @@ where
 }
 
 /// Construct a new [`ResSetWith`] [`Effect`].
-pub fn res_set_with<F, R>(f: F) -> ResSetWith<F, R>
+pub fn res_set_with<F, R>(f: F) -> ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
+    F: FnOnce(R) -> R + 'static,
     R: Resource + Clone,
 {
-    ResSetWith::new(f)
+    ResSetWith::new(Box::new(f))
 }
 
-impl<F, R> Effect for ResSetWith<F, R>
+impl<R> Effect for ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
     type MutParam = ResMut<'static, R>;
