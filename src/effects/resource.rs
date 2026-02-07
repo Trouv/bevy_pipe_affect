@@ -1,5 +1,5 @@
+use std::any::type_name;
 use std::convert::identity;
-use std::marker::PhantomData;
 
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
@@ -45,22 +45,9 @@ pub struct ResSetWith<R>
 where
     R: Resource + Clone,
 {
-    #[debug("R -> R")]
-    f: Box<dyn FnOnce(R) -> R>,
-    phantom: PhantomData<R>,
-}
-
-impl<R> ResSetWith<R>
-where
-    R: Resource + Clone,
-{
-    /// Construct a new [`ResSetWith`].
-    pub fn new(f: Box<dyn FnOnce(R) -> R>) -> Self {
-        ResSetWith {
-            f,
-            phantom: PhantomData,
-        }
-    }
+    /// The function that maps the resource to its new value.
+    #[debug("{} -> {}", type_name::<R>(), type_name::<R>())]
+    pub f: Box<dyn FnOnce(R) -> R>,
 }
 
 /// Construct a new [`ResSetWith`] [`Effect`].
@@ -69,7 +56,7 @@ where
     F: FnOnce(R) -> R + 'static,
     R: Resource + Clone,
 {
-    ResSetWith::new(Box::new(f))
+    ResSetWith { f: Box::new(f) }
 }
 
 impl<R> Default for ResSetWith<R>
