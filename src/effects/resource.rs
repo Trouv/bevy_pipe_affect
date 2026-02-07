@@ -1,3 +1,4 @@
+use std::convert::identity;
 use std::marker::PhantomData;
 
 use bevy::ecs::system::SystemParam;
@@ -39,10 +40,12 @@ where
 /// [`Effect`] that transforms a `Resource` with the provided function.
 ///
 /// Can be constructed by [`res_set_with`].
+#[derive(derive_more::Debug)]
 pub struct ResSetWith<R>
 where
     R: Resource + Clone,
 {
+    #[debug("R -> R")]
     f: Box<dyn FnOnce(R) -> R>,
     phantom: PhantomData<R>,
 }
@@ -67,6 +70,15 @@ where
     R: Resource + Clone,
 {
     ResSetWith::new(Box::new(f))
+}
+
+impl<R> Default for ResSetWith<R>
+where
+    R: Resource + Clone,
+{
+    fn default() -> Self {
+        res_set_with(identity)
+    }
 }
 
 impl<R> Effect for ResSetWith<R>

@@ -1081,6 +1081,7 @@ dependencies = [
  "bevy",
  "bevy_pipe_affect_derive",
  "blake2",
+ "derive_more",
  "either",
  "proptest",
  "proptest-derive",
