@@ -17,7 +17,8 @@ members = ["effect_derive"]
 bevy = { version = "0.18.0", default-features = false }
 bevy_pipe_affect_derive = { version = "0.2.0", path = "effect_derive", optional = true }
 
-# bevy with no default features actually depends on both of these, no need to hide them behind flags
+# bevy with no default features actually depends on all of these, no need to hide them behind flags
+derive_more = { version = "2.1.1", default-features = false, features = ["debug"] }
 variadics_please = "1.1.0"
 either = "1.15.0"
 

@@ -1,4 +1,5 @@
-use std::marker::PhantomData;
+use std::any::type_name;
+use std::convert::identity;
 
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
@@ -39,42 +40,36 @@ where
 /// [`Effect`] that transforms a `Resource` with the provided function.
 ///
 /// Can be constructed by [`res_set_with`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ResSetWith<F, R>
+#[derive(derive_more::Debug)]
+pub struct ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
     R: Resource + Clone,
 {
-    f: F,
-    phantom: PhantomData<R>,
-}
-
-impl<F, R> ResSetWith<F, R>
-where
-    F: FnOnce(R) -> R,
-    R: Resource + Clone,
-{
-    /// Construct a new [`ResSetWith`].
-    pub fn new(f: F) -> Self {
-        ResSetWith {
-            f,
-            phantom: PhantomData,
-        }
-    }
+    /// The function that maps the resource to its new value.
+    #[debug("{} -> {}", type_name::<R>(), type_name::<R>())]
+    pub f: Box<dyn FnOnce(R) -> R>,
 }
 
 /// Construct a new [`ResSetWith`] [`Effect`].
-pub fn res_set_with<F, R>(f: F) -> ResSetWith<F, R>
+pub fn res_set_with<F, R>(f: F) -> ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
+    F: FnOnce(R) -> R + 'static,
     R: Resource + Clone,
 {
-    ResSetWith::new(f)
+    ResSetWith { f: Box::new(f) }
 }
 
-impl<F, R> Effect for ResSetWith<F, R>
+impl<R> Default for ResSetWith<R>
 where
-    F: FnOnce(R) -> R,
+    R: Resource + Clone,
+{
+    fn default() -> Self {
+        res_set_with(identity)
+    }
+}
+
+impl<R> Effect for ResSetWith<R>
+where
     R: Resource + Clone,
 {
     type MutParam = ResMut<'static, R>;
