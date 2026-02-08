@@ -1,3 +1,4 @@
+use std::convert::identity;
 use std::marker::PhantomData;
 
 use bevy::ecs::component::Mutable;
@@ -262,49 +263,55 @@ where
 /// - [`ComponentsSetFilteredWithQueryData`]
 ///
 /// Can be constructed by [`components_set_filtered_with`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsSetFilteredWith<F, C, Filter = ()>
+#[derive(derive_more::Debug)]
+pub struct ComponentsSetFilteredWith<C, Filter = ()>
 where
-    F: Fn(C) -> C + Send + Sync,
     C: Clone,
     Filter: QueryFilter,
 {
-    f: F,
-    components: PhantomData<C>,
+    #[debug("{0} -> {0}", std::any::type_name::<C>())]
+    f: Box<dyn Fn(C) -> C + Send + Sync>,
     filter: PhantomData<Filter>,
 }
 
-impl<F, C, Filter> ComponentsSetFilteredWith<F, C, Filter>
+impl<C, Filter> ComponentsSetFilteredWith<C, Filter>
 where
-    F: Fn(C) -> C + Send + Sync,
     C: Clone,
     Filter: QueryFilter,
 {
     /// Construct a new [`ComponentsSetFilteredWith`].
-    pub fn new(f: F) -> Self {
+    pub fn new(f: Box<dyn Fn(C) -> C + Send + Sync>) -> Self {
         ComponentsSetFilteredWith {
             f,
-            components: PhantomData,
             filter: PhantomData,
         }
     }
 }
 
 /// Construct a new [`ComponentsSetFilteredWith`] [`Effect`].
-pub fn components_set_filtered_with<F, C, Filter>(f: F) -> ComponentsSetFilteredWith<F, C, Filter>
+pub fn components_set_filtered_with<F, C, Filter>(f: F) -> ComponentsSetFilteredWith<C, Filter>
 where
-    F: Fn(C) -> C + Send + Sync,
+    F: Fn(C) -> C + Send + Sync + 'static,
     C: Clone,
     Filter: QueryFilter,
 {
-    ComponentsSetFilteredWith::new(f)
+    ComponentsSetFilteredWith::new(Box::new(f))
+}
+
+impl<C, Filter> Default for ComponentsSetFilteredWith<C, Filter>
+where
+    C: Clone + 'static,
+    Filter: QueryFilter,
+{
+    fn default() -> Self {
+        components_set_filtered_with(identity)
+    }
 }
 
 macro_rules! impl_effect_for_components_set_filtered_with {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Filter> Effect for ComponentsSetFilteredWith<F, ($($C,)*), Filter>
+        impl<$($C,)* Filter> Effect for ComponentsSetFilteredWith<($($C,)*), Filter>
         where
-            F: Fn(($($C,)*)) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone),*,
             Filter: QueryFilter + 'static,
         {
@@ -331,49 +338,43 @@ all_tuples!(impl_effect_for_components_set_filtered_with, 1, 15, C, c, r);
 /// - [`ComponentsSetFilteredWithQueryData`]
 ///
 /// Can be constructed by [`components_set_with`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsSetWith<F, C>
+#[derive(derive_more::Debug)]
+pub struct ComponentsSetWith<C>
 where
-    F: Fn(C) -> C + Send + Sync,
     C: Clone,
 {
-    f: F,
-    components: PhantomData<C>,
-}
-
-impl<F, C> ComponentsSetWith<F, C>
-where
-    F: Fn(C) -> C + Send + Sync,
-    C: Clone,
-{
-    /// Construct a new [`ComponentsSetWith`].
-    pub fn new(f: F) -> Self {
-        ComponentsSetWith {
-            f,
-            components: PhantomData,
-        }
-    }
+    /// The function that is applied to the components `C`.
+    #[debug("{0} -> {0}", std::any::type_name::<C>())]
+    pub f: Box<dyn Fn(C) -> C + Send + Sync>,
 }
 
 /// Construct a new [`ComponentsSetWith`] [`Effect`].
-pub fn components_set_with<F, C>(f: F) -> ComponentsSetWith<F, C>
+pub fn components_set_with<F, C>(f: F) -> ComponentsSetWith<C>
 where
-    F: Fn(C) -> C + Send + Sync,
+    F: Fn(C) -> C + Send + Sync + 'static,
     C: Clone,
 {
-    ComponentsSetWith::new(f)
+    ComponentsSetWith { f: Box::new(f) }
 }
 
-impl<F, C> Effect for ComponentsSetWith<F, C>
+impl<C> Default for ComponentsSetWith<C>
 where
-    F: Fn(C) -> C + Send + Sync,
-    C: Clone,
-    ComponentsSetFilteredWith<F, C, ()>: Effect,
+    C: Clone + 'static,
 {
-    type MutParam = <ComponentsSetFilteredWith<F, C, ()> as Effect>::MutParam;
+    fn default() -> Self {
+        components_set_with(identity)
+    }
+}
+
+impl<C> Effect for ComponentsSetWith<C>
+where
+    C: Clone,
+    ComponentsSetFilteredWith<C, ()>: Effect,
+{
+    type MutParam = <ComponentsSetFilteredWith<C, ()> as Effect>::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        components_set_filtered_with::<_, _, ()>(self.f).affect(param);
+        ComponentsSetFilteredWith::new(self.f).affect(param);
     }
 }
 
