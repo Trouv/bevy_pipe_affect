@@ -115,33 +115,30 @@ all_tuples!(impl_effect_for_components_set, 1, 15, C, c, r);
 /// - [`ComponentsSetWithQueryData`]
 ///
 /// Can be constructed by [`components_set_filtered_with_query_data`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsSetFilteredWithQueryData<F, C, Data = (), Filter = ()>
+#[derive(derive_more::Debug)]
+pub struct ComponentsSetFilteredWithQueryData<C, Data = (), Filter = ()>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
 {
-    f: F,
-    components: PhantomData<C>,
-    data: PhantomData<Data>,
+    #[debug("{0}, {1} -> {0}", std::any::type_name::<C>(), std::any::type_name::<Data::Item<'static, 'static>>())]
+    #[expect(clippy::type_complexity)]
+    f: Box<dyn for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync>,
     filter: PhantomData<Filter>,
 }
 
-impl<F, C, Data, Filter> ComponentsSetFilteredWithQueryData<F, C, Data, Filter>
+impl<C, Data, Filter> ComponentsSetFilteredWithQueryData<C, Data, Filter>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
 {
     /// Construct a new [`ComponentsSetFilteredWithQueryData`].
-    pub fn new(f: F) -> Self {
+    #[expect(clippy::type_complexity)]
+    pub fn new(f: Box<dyn Fn(C, <Data as QueryData>::Item<'_, '_>) -> C + Send + Sync>) -> Self {
         ComponentsSetFilteredWithQueryData {
             f,
-            components: PhantomData,
-            data: PhantomData,
             filter: PhantomData,
         }
     }
@@ -150,21 +147,31 @@ where
 /// Construct a new [`ComponentsSetFilteredWithQueryData`] [`Effect`].
 pub fn components_set_filtered_with_query_data<F, C, Data, Filter>(
     f: F,
-) -> ComponentsSetFilteredWithQueryData<F, C, Data, Filter>
+) -> ComponentsSetFilteredWithQueryData<C, Data, Filter>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync + 'static,
     C: Clone,
     Data: ReadOnlyQueryData,
     Filter: QueryFilter,
 {
-    ComponentsSetFilteredWithQueryData::new(f)
+    ComponentsSetFilteredWithQueryData::new(Box::new(f))
+}
+
+impl<C, Data, Filter> Default for ComponentsSetFilteredWithQueryData<C, Data, Filter>
+where
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    Filter: QueryFilter,
+{
+    fn default() -> Self {
+        components_set_filtered_with_query_data(|c, _| c)
+    }
 }
 
 macro_rules! impl_effect_for_components_set_filtered_with_query_data {
     ($(($C:ident, $c:ident, $r:ident)),*) => {
-        impl<F, $($C,)* Data, Filter> Effect for ComponentsSetFilteredWithQueryData<F, ($($C,)*), Data, Filter>
+        impl<$($C,)* Data, Filter> Effect for ComponentsSetFilteredWithQueryData<($($C,)*), Data, Filter>
         where
-            F: for<'w, 's> Fn(($($C,)*), <Data as QueryData>::Item<'w, 's>) -> ($($C,)*) + Send + Sync,
             $($C: Component<Mutability = Mutable> + Clone),*,
             Data: ReadOnlyQueryData + 'static,
             Filter: QueryFilter + 'static,
@@ -201,55 +208,48 @@ all_tuples!(
 /// - [`ComponentsSetFilteredWithQueryData`]
 ///
 /// Can be constructed by [`components_set_with_query_data`].
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct ComponentsSetWithQueryData<F, C, Data = ()>
+#[derive(derive_more::Debug)]
+pub struct ComponentsSetWithQueryData<C, Data = ()>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    f: F,
-    components: PhantomData<C>,
-    data: PhantomData<Data>,
-}
-
-impl<F, C, Data> ComponentsSetWithQueryData<F, C, Data>
-where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
-    C: Clone,
-    Data: ReadOnlyQueryData,
-{
-    /// Construct a new [`ComponentsSetWithQueryData`].
-    pub fn new(f: F) -> Self {
-        ComponentsSetWithQueryData {
-            f,
-            components: PhantomData,
-            data: PhantomData,
-        }
-    }
+    /// The function that is applied to the components `C`.
+    #[debug("{0}, {1} -> {0}", std::any::type_name::<C>(), std::any::type_name::<Data::Item<'static, 'static>>())]
+    #[expect(clippy::type_complexity)]
+    pub f: Box<dyn for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync>,
 }
 
 /// Construct a new [`ComponentsSetWithQueryData`] [`Effect`].
-pub fn components_set_with_query_data<F, C, Data>(f: F) -> ComponentsSetWithQueryData<F, C, Data>
+pub fn components_set_with_query_data<F, C, Data>(f: F) -> ComponentsSetWithQueryData<C, Data>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
+    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync + 'static,
     C: Clone,
     Data: ReadOnlyQueryData,
 {
-    ComponentsSetWithQueryData::new(f)
+    ComponentsSetWithQueryData { f: Box::new(f) }
 }
 
-impl<F, C, Data> Effect for ComponentsSetWithQueryData<F, C, Data>
+impl<C, Data> Default for ComponentsSetWithQueryData<C, Data>
 where
-    F: for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync,
     C: Clone,
     Data: ReadOnlyQueryData,
-    ComponentsSetFilteredWithQueryData<F, C, Data, ()>: Effect,
 {
-    type MutParam = <ComponentsSetFilteredWithQueryData<F, C, Data, ()> as Effect>::MutParam;
+    fn default() -> Self {
+        components_set_with_query_data(|c, _| c)
+    }
+}
+
+impl<C, Data> Effect for ComponentsSetWithQueryData<C, Data>
+where
+    C: Clone,
+    Data: ReadOnlyQueryData,
+    ComponentsSetFilteredWithQueryData<C, Data, ()>: Effect,
+{
+    type MutParam = <ComponentsSetFilteredWithQueryData<C, Data, ()> as Effect>::MutParam;
 
     fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        components_set_filtered_with_query_data::<_, _, _, ()>(self.f).affect(param);
+        ComponentsSetFilteredWithQueryData::new(self.f).affect(param);
     }
 }
 
