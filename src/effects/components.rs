@@ -123,6 +123,7 @@ where
     Filter: QueryFilter,
 {
     #[debug("{0}, {1} -> {0}", std::any::type_name::<C>(), std::any::type_name::<Data::Item<'static, 'static>>())]
+    #[expect(clippy::type_complexity)]
     f: Box<dyn for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync>,
     filter: PhantomData<Filter>,
 }
@@ -134,6 +135,7 @@ where
     Filter: QueryFilter,
 {
     /// Construct a new [`ComponentsSetFilteredWithQueryData`].
+    #[expect(clippy::type_complexity)]
     pub fn new(f: Box<dyn Fn(C, <Data as QueryData>::Item<'_, '_>) -> C + Send + Sync>) -> Self {
         ComponentsSetFilteredWithQueryData {
             f,
@@ -214,6 +216,7 @@ where
 {
     /// The function that is applied to the components `C`.
     #[debug("{0}, {1} -> {0}", std::any::type_name::<C>(), std::any::type_name::<Data::Item<'static, 'static>>())]
+    #[expect(clippy::type_complexity)]
     pub f: Box<dyn for<'w, 's> Fn(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync>,
 }
 
