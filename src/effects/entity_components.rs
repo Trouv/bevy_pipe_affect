@@ -125,6 +125,7 @@ all_tuples!(impl_effect_for_entity_components_set_with, 1, 15, C, c, r);
 /// If you do not need this extra query data, see [`EntityComponentsSetWith`].
 ///
 /// Can be constructed with [`entity_components_set_with_query_data`].
+#[derive(derive_more::Debug)]
 pub struct EntityComponentsSetWithQueryData<C, Data = ()>
 where
     C: Clone,
@@ -133,6 +134,8 @@ where
     /// The entity whose component is being set.
     pub entity: Entity,
     /// The function being applied to the component.
+    #[expect(clippy::type_complexity)]
+    #[debug("{0}, {1} -> {0}", std::any::type_name::<C>(), std::any::type_name::<<Data as QueryData>::Item<'static, 'static>>())]
     pub f: Box<dyn for<'w, 's> FnOnce(C, <Data as QueryData>::Item<'w, 's>) -> C + Send + Sync>,
 }
 
