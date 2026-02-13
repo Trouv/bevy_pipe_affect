@@ -145,7 +145,7 @@ mod tests {
     use bevy::ecs::query::QuerySingleError;
 
     use super::*;
-    use crate::effects::{CommandSpawnAnd, EntityCommandInsert, EntityCommandRemove};
+    use crate::effects::{CommandSpawn, EntityCommandInsert, EntityCommandRemove, command_spawn};
     use crate::prelude::affect;
 
     #[derive(Component)]
@@ -156,11 +156,10 @@ mod tests {
 
     fn spawn_blueprint_component(
         processed_blueprints: Query<(), Or<(With<Blueprint>, With<ProcessedBlueprint>)>>,
-    ) -> impl Effect + use<> {
-        processed_blueprints.is_empty().then_some(CommandSpawnAnd {
-            bundle: Blueprint,
-            f: |_| (),
-        })
+    ) -> Option<CommandSpawn<Blueprint>> {
+        processed_blueprints
+            .is_empty()
+            .then_some(command_spawn(Blueprint))
     }
 
     fn process_blueprint_component<F>(
