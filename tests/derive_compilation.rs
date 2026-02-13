@@ -127,8 +127,8 @@ fn effect_with_non_effect_parameter_can_implement_effect() {
 }
 
 #[derive(Effect)]
-struct MyEffectWithFunction<F: Fn(Entity) -> MessageWrite<MessageN<100>>> {
-    effect_with_fn: CommandSpawnAnd<MyComponentResource, F, MessageWrite<MessageN<100>>>,
+struct MyEffectWithFunction {
+    effect_with_fn: CommandSpawnAnd<MyComponentResource, MessageWrite<MessageN<100>>>,
 }
 
 #[test]

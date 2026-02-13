@@ -152,33 +152,48 @@ where
 ///
 /// Can be constructed with [`command_spawn_and`].
 #[doc = include_str!("defer_command_note.md")]
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct CommandSpawnAnd<B, F, E>
+#[derive(derive_more::Debug)]
+pub struct CommandSpawnAnd<B, E>
 where
     B: Bundle,
-    F: FnOnce(Entity) -> E,
     E: Effect,
 {
     /// The bundle to spawn.
     pub bundle: B,
     /// The `Entity -> Effect` function that may cause another effect.
-    pub f: F,
+    #[debug("Entity -> {}", std::any::type_name::<E>())]
+    pub f: Box<dyn FnOnce(Entity) -> E>,
 }
 
 /// Construct a new [`CommandSpawnAnd`] [`Effect`], with an extra effect using the `Entity`.
-pub fn command_spawn_and<B, F, E>(bundle: B, f: F) -> CommandSpawnAnd<B, F, E>
+pub fn command_spawn_and<B, F, E>(bundle: B, f: F) -> CommandSpawnAnd<B, E>
 where
     B: Bundle,
-    F: FnOnce(Entity) -> E,
+    F: FnOnce(Entity) -> E + 'static,
     E: Effect,
 {
-    CommandSpawnAnd { bundle, f }
+    CommandSpawnAnd {
+        bundle,
+        f: Box::new(f),
+    }
 }
 
-impl<B, F, E> Effect for CommandSpawnAnd<B, F, E>
+impl<B, E> Default for CommandSpawnAnd<B, E>
+where
+    B: Bundle + Default,
+    E: Effect + Default,
+{
+    fn default() -> Self {
+        CommandSpawnAnd {
+            bundle: default(),
+            f: Box::new(|_| default()),
+        }
+    }
+}
+
+impl<B, E> Effect for CommandSpawnAnd<B, E>
 where
     B: Bundle,
-    F: FnOnce(Entity) -> E,
     E: Effect,
 {
     type MutParam = (Commands<'static, 'static>, E::MutParam);
