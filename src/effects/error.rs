@@ -32,31 +32,28 @@ use crate::Effect;
 /// Using a plain `Result` as an effect works too, but uses `bevy`'s `DefaultErrorHandler`.
 ///
 /// Can be constructed with [`affect_or_handle`].
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct AffectOrHandle<Ef, Er, Handler>
+pub struct AffectOrHandle<Ef, Er>
 where
     Ef: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
 {
     /// The result to be affected or handled.
     pub result: Result<Ef, Er>,
     /// The handler to use in the `Err` case.
-    pub handler: Handler,
+    pub handler: Box<dyn FnOnce(BevyError, ErrorContext)>,
 }
 
-impl<Ef, Er, Handler> AffectOrHandle<Ef, Er, Handler>
+impl<Ef, Er> AffectOrHandle<Ef, Er>
 where
     Ef: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
 {
     /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, F, H>` by applying a function to
     /// the `result` value.
     pub fn map_result<EfO, ErO>(
         self,
         f: impl FnOnce(Result<Ef, Er>) -> Result<EfO, ErO>,
-    ) -> AffectOrHandle<EfO, ErO, Handler>
+    ) -> AffectOrHandle<EfO, ErO>
     where
         EfO: Effect,
         ErO: Into<BevyError>,
@@ -69,7 +66,7 @@ where
 
     /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, E, H>` by applying a function to
     /// the contained `Ok` value.
-    pub fn map<EO>(self, f: impl FnOnce(Ef) -> EO) -> AffectOrHandle<EO, Er, Handler>
+    pub fn map<EO>(self, f: impl FnOnce(Ef) -> EO) -> AffectOrHandle<EO, Er>
     where
         EO: Effect,
     {
@@ -81,20 +78,22 @@ where
 pub fn affect_or_handle<Ef, Er, Handler>(
     result: Result<Ef, Er>,
     handler: Handler,
-) -> AffectOrHandle<Ef, Er, Handler>
+) -> AffectOrHandle<Ef, Er>
 where
     Ef: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
+    Handler: FnOnce(BevyError, ErrorContext) + 'static,
 {
-    AffectOrHandle { result, handler }
+    AffectOrHandle {
+        result,
+        handler: Box::new(handler),
+    }
 }
 
-impl<Ef, Er, Handler> Effect for AffectOrHandle<Ef, Er, Handler>
+impl<Ef, Er> Effect for AffectOrHandle<Ef, Er>
 where
     Ef: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
 {
     type MutParam = (Ef::MutParam, SystemName, SystemChangeTick);
 
@@ -126,14 +125,14 @@ where
         self,
         (default_error_handler, param): &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>,
     ) {
-        AffectOrHandle {
-            result: self,
-            handler: default_error_handler
+        affect_or_handle(
+            self,
+            default_error_handler
                 .as_deref()
                 .copied()
                 .unwrap_or_default()
                 .0,
-        }
+        )
         .affect(param);
     }
 }
@@ -172,22 +171,23 @@ mod tests {
             EntityCommandInsert<ProcessedBlueprint>,
         ),
         QuerySingleError,
-        F,
     >
     where
-        F: Fn(BevyError, ErrorContext) + Clone,
+        F: Fn(BevyError, ErrorContext) + Clone + 'static,
     {
-        move |blueprints| AffectOrHandle {
-            result: blueprints.single().map(|entity| {
-                (
-                    EntityCommandRemove::<Blueprint>::new(entity),
-                    EntityCommandInsert {
-                        entity,
-                        bundle: ProcessedBlueprint,
-                    },
-                )
-            }),
-            handler: error_handler.clone(),
+        move |blueprints| {
+            affect_or_handle(
+                blueprints.single().map(|entity| {
+                    (
+                        EntityCommandRemove::<Blueprint>::new(entity),
+                        EntityCommandInsert {
+                            entity,
+                            bundle: ProcessedBlueprint,
+                        },
+                    )
+                }),
+                error_handler.clone(),
+            )
         }
     }
 
