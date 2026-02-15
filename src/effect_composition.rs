@@ -284,19 +284,13 @@ where
 /// let composition = lhs_affect_then(|_, _| MyEffect::<2>);
 ///
 /// let affect_effect = composition(
-///     AffectOrHandle {
-///         result: Ok::<_, &str>(MyEffect::<0>),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Ok::<_, &str>(MyEffect::<0>), bevy::ecs::error::warn),
 ///     MyEffect::<1>,
 /// );
 /// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
-///     AffectOrHandle {
-///         result: Err::<MyEffect<0>, _>("snafu"),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Err::<MyEffect<0>, _>("snafu"), bevy::ecs::error::warn),
 ///     MyEffect::<1>,
 /// );
 /// assert!(handle_effect.result.is_err());
@@ -331,19 +325,13 @@ where
 ///
 /// let affect_effect = composition(
 ///     MyEffect::<0>,
-///     AffectOrHandle {
-///         result: Ok::<_, &str>(MyEffect::<1>),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Ok::<_, &str>(MyEffect::<1>), bevy::ecs::error::warn),
 /// );
 /// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
 ///     MyEffect::<0>,
-///     AffectOrHandle {
-///         result: Err::<MyEffect<1>, _>("snafu"),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Err::<MyEffect<1>, _>("snafu"), bevy::ecs::error::warn),
 /// );
 /// assert!(handle_effect.result.is_err());
 /// # }
