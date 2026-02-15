@@ -4,7 +4,7 @@
 //! [`in_and_then_compose`]: crate::system_combinators::in_and_then_compose
 //! [`EffectOut::and_then_compose`]: crate::EffectOut::and_then_compose
 
-use bevy::ecs::error::{BevyError, ErrorContext};
+use bevy::ecs::error::BevyError;
 
 use crate::Effect;
 use crate::effects::AffectOrHandle;
@@ -284,33 +284,26 @@ where
 /// let composition = lhs_affect_then(|_, _| MyEffect::<2>);
 ///
 /// let affect_effect = composition(
-///     AffectOrHandle {
-///         result: Ok::<_, &str>(MyEffect::<0>),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Ok::<_, &str>(MyEffect::<0>), bevy::ecs::error::warn),
 ///     MyEffect::<1>,
 /// );
 /// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
-///     AffectOrHandle {
-///         result: Err::<MyEffect<0>, _>("snafu"),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Err::<MyEffect<0>, _>("snafu"), bevy::ecs::error::warn),
 ///     MyEffect::<1>,
 /// );
 /// assert!(handle_effect.result.is_err());
 /// # }
 /// ```
-pub fn lhs_affect_then<E0, E1, E2, Er, Handler>(
+pub fn lhs_affect_then<E0, E1, E2, Er>(
     composition: impl Fn(E0, E1) -> E2,
-) -> impl Fn(AffectOrHandle<E0, Er, Handler>, E1) -> AffectOrHandle<E2, Er, Handler>
+) -> impl Fn(AffectOrHandle<E0, Er>, E1) -> AffectOrHandle<E2, Er>
 where
     E0: Effect,
     E1: Effect,
     E2: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
 {
     move |affect_or_handle, e1| affect_or_handle.map(|e0| composition(e0, e1))
 }
@@ -332,32 +325,25 @@ where
 ///
 /// let affect_effect = composition(
 ///     MyEffect::<0>,
-///     AffectOrHandle {
-///         result: Ok::<_, &str>(MyEffect::<1>),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Ok::<_, &str>(MyEffect::<1>), bevy::ecs::error::warn),
 /// );
 /// assert_eq!(affect_effect.result, Ok(MyEffect::<2>));
 ///
 /// let handle_effect = composition(
 ///     MyEffect::<0>,
-///     AffectOrHandle {
-///         result: Err::<MyEffect<1>, _>("snafu"),
-///         handler: bevy::ecs::error::warn,
-///     },
+///     affect_or_handle(Err::<MyEffect<1>, _>("snafu"), bevy::ecs::error::warn),
 /// );
 /// assert!(handle_effect.result.is_err());
 /// # }
 /// ```
-pub fn rhs_affect_then<E0, E1, E2, Er, Handler>(
+pub fn rhs_affect_then<E0, E1, E2, Er>(
     composition: impl Fn(E0, E1) -> E2,
-) -> impl Fn(E0, AffectOrHandle<E1, Er, Handler>) -> AffectOrHandle<E2, Er, Handler>
+) -> impl Fn(E0, AffectOrHandle<E1, Er>) -> AffectOrHandle<E2, Er>
 where
     E0: Effect,
     E1: Effect,
     E2: Effect,
     Er: Into<BevyError>,
-    Handler: FnOnce(BevyError, ErrorContext),
 {
     move |e0, affect_or_handle| affect_or_handle.map(|e1| composition(e0, e1))
 }
