@@ -32,6 +32,7 @@ use crate::Effect;
 /// Using a plain `Result` as an effect works too, but uses `bevy`'s `DefaultErrorHandler`.
 ///
 /// Can be constructed with [`affect_or_handle`].
+#[derive(derive_more::Debug)]
 pub struct AffectOrHandle<Ef, Er>
 where
     Ef: Effect,
@@ -40,6 +41,7 @@ where
     /// The result to be affected or handled.
     pub result: Result<Ef, Er>,
     /// The handler to use in the `Err` case.
+    #[debug("BevyError, ErrorContext -> ()")]
     pub handler: Box<dyn FnOnce(BevyError, ErrorContext)>,
 }
 
