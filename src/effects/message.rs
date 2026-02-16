@@ -33,6 +33,61 @@ where
     }
 }
 
+/// [`Effect`] that reads all messages in a `MessageReader`, supplying them to the provided
+/// effect-producing function to cause another effect.
+///
+/// The cursor of the message reader is updated.
+///
+/// Can be constructed with [`messages_read_and`].
+#[derive(derive_more::Debug)]
+pub struct MessagesReadAnd<M, E>
+where
+    M: Message,
+    E: Effect,
+{
+    /// The `&Message -> Effect` function that may cause another effect.
+    #[debug("{0} -> {1}", std::any::type_name::<&M>(), std::any::type_name::<E>())]
+    pub f: Box<dyn FnMut(&M) -> E>,
+}
+
+/// Construct a new [`MessagesReadAnd`] [`Effect`].
+pub fn messages_read_and<M, E, F>(f: F) -> MessagesReadAnd<M, E>
+where
+    M: Message,
+    E: Effect,
+    F: FnMut(&M) -> E + 'static,
+{
+    MessagesReadAnd { f: Box::new(f) }
+}
+
+impl<M, E> Default for MessagesReadAnd<M, E>
+where
+    M: Message,
+    E: Effect + Default,
+{
+    fn default() -> Self {
+        messages_read_and(|_| default())
+    }
+}
+
+impl<M, E> Effect for MessagesReadAnd<M, E>
+where
+    M: Message,
+    E: Effect,
+{
+    type MutParam = (MessageReader<'static, 'static, M>, E::MutParam);
+
+    fn affect(
+        mut self,
+        param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>,
+    ) {
+        param
+            .0
+            .read()
+            .for_each(|message| (self.f)(message).affect(&mut param.1))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
