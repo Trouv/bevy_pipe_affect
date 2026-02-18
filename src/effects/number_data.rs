@@ -54,5 +54,5 @@ pub struct NumberMessage(pub u128);
 pub struct NumberEvent(pub u128);
 
 /// Test `Resource` storing a number.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Resource, Arbitrary, Default)]
 pub struct NumberResource(pub u128);
