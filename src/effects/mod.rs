@@ -54,10 +54,12 @@ mod entity_command;
 pub use entity_command::{
     EntityCommandDespawn,
     EntityCommandInsert,
+    EntityCommandInsertRecursive,
     EntityCommandQueue,
     EntityCommandRemove,
     entity_command_despawn,
     entity_command_insert,
+    entity_command_insert_recursive,
     entity_command_queue,
     entity_command_remove,
 };
