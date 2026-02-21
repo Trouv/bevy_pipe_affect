@@ -214,6 +214,58 @@ where
     }
 }
 
+/// [`Effect`] that removes a component/bundle recursively from an entity and its relationships.
+///
+/// Can be constructed with [`entity_command_remove_recursive`].
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
+pub struct EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    /// The entity that the bundle is removed from recursively.
+    pub entity: Entity,
+    bundle: PhantomData<B>,
+    relationship_target: PhantomData<RT>,
+}
+
+impl<RT, B> EntityCommandRemoveRecursive<RT, B>
+where
+    B: Bundle,
+    RT: RelationshipTarget,
+{
+    /// Construct a new [`EntityCommandRemoveRecursive`].
+    pub fn new(entity: Entity) -> Self {
+        Self {
+            entity,
+            bundle: PhantomData,
+            relationship_target: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`EntityCommandRemoveRecursive`] [`Effect`].
+pub fn entity_command_remove_recursive<RT, B>(entity: Entity) -> EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    EntityCommandRemoveRecursive::new(entity)
+}
+
+impl<RT, B> Effect for EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param.entity(self.entity).remove_recursive::<RT, B>();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
