@@ -156,7 +156,7 @@ impl Effect for EntityCommandDespawn {
     }
 }
 
-/// [`Effect`] that inserts a component recursively on relationship targets.
+/// [`Effect`] that inserts a component/bundle recursively on an entity and its relationships.
 ///
 /// Can be constructed with [`entity_command_insert_recursive`].
 #[doc = include_str!("defer_command_note.md")]
@@ -166,7 +166,9 @@ where
     RT: RelationshipTarget,
     B: Bundle + Clone,
 {
+    /// The entity that is inserted to recursively.
     pub entity: Entity,
+    /// The bundle being inserted on relationship targets.
     pub bundle: B,
     relationship_target: PhantomData<RT>,
 }
@@ -186,7 +188,7 @@ where
     }
 }
 
-/// Construct a new [`EntityCommandInsertRecursive`] [`Effect`]..
+/// Construct a new [`EntityCommandInsertRecursive`] [`Effect`].
 pub fn entity_command_insert_recursive<RT, B>(
     entity: Entity,
     bundle: B,
