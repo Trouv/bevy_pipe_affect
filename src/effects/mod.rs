@@ -57,11 +57,13 @@ pub use entity_command::{
     EntityCommandInsertRecursive,
     EntityCommandQueue,
     EntityCommandRemove,
+    EntityCommandRemoveRecursive,
     entity_command_despawn,
     entity_command_insert,
     entity_command_insert_recursive,
     entity_command_queue,
     entity_command_remove,
+    entity_command_remove_recursive,
 };
 
 #[cfg(feature = "asset_server")]
