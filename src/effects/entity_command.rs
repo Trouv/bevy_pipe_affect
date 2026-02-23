@@ -360,6 +360,75 @@ mod tests {
             assert!(actual_component_0.is_none());
             assert!(actual_component_1.is_none());
         }
+
+        #[test]
+        fn bundle_recursively_commands_correctly_insert_and_remove(component_0 in any::<NumberComponent<0>>(), component_1 in any::<NumberComponent<1>>()) {
+            let mut app = App::new();
+
+            let parent_entity = app.world_mut().spawn(()).id();
+            let child_entity_a = app.world_mut().spawn(ChildOf(parent_entity)).id();
+            let child_entity_b = app.world_mut().spawn(ChildOf(parent_entity)).id();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
+
+            #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+            struct InsertSystem;
+
+            app.add_systems(
+                Update,
+                (move || entity_command_insert_recursive::<Children, _>(parent_entity,  (component_0, component_1))).pipe(affect).in_set(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), Some(&component_1));
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), Some(&component_1));
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), Some(&component_1));
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove_recursive::<Children, (NumberComponent<1>, NumberComponent<2>)>(parent_entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove_recursive::<Children, (NumberComponent<0>, NumberComponent<1>)>(parent_entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
+        }
     }
 
     #[test]
