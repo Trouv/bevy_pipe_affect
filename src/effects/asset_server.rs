@@ -51,6 +51,61 @@ where
     }
 }
 
+/// [`Effect`] that adds an asset to the asset store, then supplies the asset handle to the provided
+/// effect-producing function to cause another effect.
+///
+/// Can be constructed with [`asset_add_and`].
+///
+/// *Requires the `asset_server` feature to be enabled.*
+#[derive(derive_more::Debug)]
+pub struct AssetAddAnd<A, E>
+where
+    A: Asset,
+    E: Effect,
+{
+    /// The asset to be added to the asset store.
+    pub asset: A,
+    /// The `Handle<A> -> Effect` function that may cause another effect.
+    #[debug("{0} -> {1}", std::any::type_name::<Handle<A>>(), std::any::type_name::<E>())]
+    pub f: Box<dyn FnOnce(Handle<A>) -> E>,
+}
+
+/// Construct a new [`AssetAddAnd`] [`Effect`].
+pub fn asset_add_and<A, E, F>(asset: A, f: F) -> AssetAddAnd<A, E>
+where
+    A: Asset,
+    E: Effect,
+    F: FnOnce(Handle<A>) -> E + 'static,
+{
+    AssetAddAnd {
+        asset,
+        f: Box::new(f),
+    }
+}
+
+impl<A, E> Default for AssetAddAnd<A, E>
+where
+    A: Asset + Default,
+    E: Effect + Default,
+{
+    fn default() -> Self {
+        asset_add_and(default(), |_| default())
+    }
+}
+
+impl<A, E> Effect for AssetAddAnd<A, E>
+where
+    A: Asset,
+    E: Effect,
+{
+    type MutParam = (ResMut<'static, Assets<A>>, E::MutParam);
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        let handle = param.0.add(self.asset);
+        (self.f)(handle).affect(&mut param.1);
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
