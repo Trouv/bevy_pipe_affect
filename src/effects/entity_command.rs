@@ -156,6 +156,116 @@ impl Effect for EntityCommandDespawn {
     }
 }
 
+/// [`Effect`] that inserts a component/bundle recursively on an entity and its relationships.
+///
+/// Can be constructed with [`entity_command_insert_recursive`].
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
+pub struct EntityCommandInsertRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle + Clone,
+{
+    /// The entity that is inserted to recursively.
+    pub entity: Entity,
+    /// The bundle being inserted on relationship targets.
+    pub bundle: B,
+    relationship_target: PhantomData<RT>,
+}
+
+impl<RT, B> EntityCommandInsertRecursive<RT, B>
+where
+    B: Bundle + Clone,
+    RT: RelationshipTarget,
+{
+    /// Construct a new [`EntityCommandInsertRecursive`].
+    pub fn new(entity: Entity, bundle: B) -> Self {
+        Self {
+            entity,
+            bundle,
+            relationship_target: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`EntityCommandInsertRecursive`] [`Effect`].
+pub fn entity_command_insert_recursive<RT, B>(
+    entity: Entity,
+    bundle: B,
+) -> EntityCommandInsertRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle + Clone,
+{
+    EntityCommandInsertRecursive::new(entity, bundle)
+}
+
+impl<RT, B> Effect for EntityCommandInsertRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle + Clone,
+{
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param
+            .entity(self.entity)
+            .insert_recursive::<RT>(self.bundle);
+    }
+}
+
+/// [`Effect`] that removes a component/bundle recursively from an entity and its relationships.
+///
+/// Can be constructed with [`entity_command_remove_recursive`].
+#[doc = include_str!("defer_command_note.md")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
+pub struct EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    /// The entity that the bundle is removed from recursively.
+    pub entity: Entity,
+    bundle: PhantomData<B>,
+    relationship_target: PhantomData<RT>,
+}
+
+impl<RT, B> EntityCommandRemoveRecursive<RT, B>
+where
+    B: Bundle,
+    RT: RelationshipTarget,
+{
+    /// Construct a new [`EntityCommandRemoveRecursive`].
+    pub fn new(entity: Entity) -> Self {
+        Self {
+            entity,
+            bundle: PhantomData,
+            relationship_target: PhantomData,
+        }
+    }
+}
+
+/// Construct a new [`EntityCommandRemoveRecursive`] [`Effect`].
+pub fn entity_command_remove_recursive<RT, B>(entity: Entity) -> EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    EntityCommandRemoveRecursive::new(entity)
+}
+
+impl<RT, B> Effect for EntityCommandRemoveRecursive<RT, B>
+where
+    RT: RelationshipTarget,
+    B: Bundle,
+{
+    type MutParam = Commands<'static, 'static>;
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        param.entity(self.entity).remove_recursive::<RT, B>();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proptest::prelude::*;
@@ -249,6 +359,75 @@ mod tests {
 
             assert!(actual_component_0.is_none());
             assert!(actual_component_1.is_none());
+        }
+
+        #[test]
+        fn bundle_recursively_commands_correctly_insert_and_remove(component_0 in any::<NumberComponent<0>>(), component_1 in any::<NumberComponent<1>>()) {
+            let mut app = App::new();
+
+            let parent_entity = app.world_mut().spawn(()).id();
+            let child_entity_a = app.world_mut().spawn(ChildOf(parent_entity)).id();
+            let child_entity_b = app.world_mut().spawn(ChildOf(parent_entity)).id();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
+
+            #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+            struct InsertSystem;
+
+            app.add_systems(
+                Update,
+                (move || entity_command_insert_recursive::<Children, _>(parent_entity,  (component_0, component_1))).pipe(affect).in_set(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), Some(&component_1));
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), Some(&component_1));
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), Some(&component_1));
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove_recursive::<Children, (NumberComponent<1>, NumberComponent<2>)>(parent_entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), Some(&component_0));
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove_recursive::<Children, (NumberComponent<0>, NumberComponent<1>)>(parent_entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(parent_entity).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_a).get::<NumberComponent<1>>(), None);
+
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<0>>(), None);
+            assert_eq!(app.world().entity(child_entity_b).get::<NumberComponent<1>>(), None);
         }
     }
 
