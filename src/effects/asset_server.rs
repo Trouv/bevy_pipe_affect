@@ -146,4 +146,34 @@ mod tests {
             Some(LoadState::Loading)
         ));
     }
+
+    #[test]
+    fn asset_add_and_adds_asset() {
+        let mut app = App::new();
+
+        let image = Image::default();
+
+        let image_clone = image.clone();
+
+        app.add_plugins((
+            MinimalPlugins,
+            AssetPlugin::default(),
+            ImagePlugin::default_linear(),
+        ))
+        .add_systems(
+            Startup,
+            (move || {
+                asset_add_and(image_clone.clone(), |handle| {
+                    command_insert_resource(PlayerSprite(handle))
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+        let player_sprite_handle = &app.world().resource::<PlayerSprite>().0;
+
+        let assets = app.world().resource::<Assets<Image>>();
+        assert_eq!(assets.get(player_sprite_handle), Some(&image));
+    }
 }
