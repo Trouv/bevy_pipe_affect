@@ -5,6 +5,8 @@
 mod resource;
 pub use resource::{ResSet, ResSetWith, res_set, res_set_with};
 
+mod local;
+
 mod message;
 pub use message::{MessageWrite, MessagesReadAnd, message_write, messages_read_and};
 
