@@ -3,12 +3,20 @@ use bevy::prelude::*;
 
 use crate::{Effect, EffectOut};
 
+/// [`Effect`] that transforms a `Local<T>` parameter with the provided function, and can
+/// potentially produce another effect `E`.
+///
+/// Note: the local parameter read/written to in this effect is local to this effect. It cannot be
+/// read/written anywhere outside of `f`. E.g., the system that produces this effect cannot read it
+/// with its own `Local<T>`, it will instead be an additional, independent local parameter.
 #[derive(derive_more::Debug)]
 pub struct LocalSetAnd<T, E>
 where
     T: FromWorld + Send + 'static,
     E: Effect,
 {
+    /// The function taking the current value of the parameter and returning its new value and
+    /// another effect `E`.
     pub f: Box<dyn FnOnce(&T) -> EffectOut<E, T>>,
 }
 
