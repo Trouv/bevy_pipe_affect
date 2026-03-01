@@ -58,3 +58,51 @@ where
         effect.affect(&mut param.1);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effect_out;
+    use crate::effects::number_data::NumberResource;
+    use crate::effects::one_way_fn::OneWayFn;
+    use crate::effects::res_set;
+    use crate::prelude::affect;
+
+    proptest! {
+        #[test]
+        fn local_set_and_sets_value_and_produces_effect(one_way_fn: OneWayFn) {
+            let mut app = App::new();
+
+            app.init_resource::<NumberResource>().add_systems(
+                Update,
+                (move |non_effect_local: Local<u128>| {
+                    // locals outside the effect are not affected.
+                    assert_eq!(*non_effect_local, 0);
+
+                    local_set_and(move |x: &u128| {
+                        let new_value = x + 1;
+
+                        // the resource value is a one way fn of the local value.
+                        // so, asserting against it proves that it wasn't merely updated as a fn of
+                        // its own state.
+                        let resource_value = one_way_fn.call(new_value);
+                        effect_out(res_set(NumberResource(resource_value)), new_value)
+                    })
+                })
+                .pipe(affect),
+            );
+
+            assert_eq!(app.world().resource::<NumberResource>().0, 0);
+
+            for i in 1..10u128 {
+                app.update();
+                assert_eq!(
+                    app.world().resource::<NumberResource>().0,
+                    one_way_fn.call(i)
+                );
+            }
+        }
+    }
+}
