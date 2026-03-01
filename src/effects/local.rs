@@ -17,6 +17,7 @@ where
 {
     /// The function taking the current value of the parameter and returning its new value and
     /// another effect `E`.
+    #[expect(clippy::type_complexity)]
     pub f: Box<dyn FnOnce(&T) -> EffectOut<E, T>>,
 }
 
