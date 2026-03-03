@@ -18,6 +18,7 @@ where
     /// The function taking the current value of the parameter and returning its new value and
     /// another effect `E`.
     #[expect(clippy::type_complexity)]
+    #[debug("{0} -> {1}", std::any::type_name::<&T>(), std::any::type_name::<EffectOut<E, T>>())]
     pub f: Box<dyn FnOnce(&T) -> EffectOut<E, T>>,
 }
 
