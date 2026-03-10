@@ -1,7 +1,5 @@
-use std::marker::PhantomData;
-
 use bevy::ecs::component::Mutable;
-use bevy::ecs::query::{QueryData, QueryFilter, ReadOnlyQueryData};
+use bevy::ecs::query::QueryData;
 use bevy::prelude::*;
 use variadics_please::all_tuples;
 
