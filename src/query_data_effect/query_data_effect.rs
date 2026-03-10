@@ -74,36 +74,6 @@ macro_rules! impl_query_data_effect_for_components_set {
 
 all_tuples!(impl_query_data_effect_for_components_set, 1, 15, C, q, c);
 
-pub struct QueryDataMap<QueryDataIn, QueryDataE>
-where
-    QueryDataIn: ReadOnlyQueryData,
-    QueryDataE: QueryDataEffect,
-{
-    pub f: Box<dyn for<'w, 's> Fn(&QueryDataIn::Item<'w, 's>) -> QueryDataE>,
-}
-
-pub fn query_data_map<F, QueryDataIn, QueryDataE>(f: F) -> QueryDataMap<QueryDataIn, QueryDataE>
-where
-    QueryDataIn: ReadOnlyQueryData,
-    QueryDataE: QueryDataEffect,
-    F: for<'w, 's> Fn(&QueryDataIn::Item<'w, 's>) -> QueryDataE + 'static,
-{
-    QueryDataMap { f: Box::new(f) }
-}
-
-impl<QueryDataIn, QueryDataE> QueryDataEffect for QueryDataMap<QueryDataIn, QueryDataE>
-where
-    QueryDataIn: ReadOnlyQueryData,
-    QueryDataE: QueryDataEffect,
-{
-    type MutQueryData = (QueryDataIn, QueryDataE::MutQueryData);
-    type Filter = QueryDataE::Filter;
-
-    fn affect(self, query_data: &mut <Self::MutQueryData as QueryData>::Item<'_, '_>) {
-        (self.f)(&query_data.0).affect(&mut query_data.1);
-    }
-}
-
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,

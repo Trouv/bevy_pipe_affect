@@ -65,12 +65,10 @@ pub use crate::query_data_effect::{
     ComponentsSet,
     QueryAffect,
     QueryDataEffect,
-    QueryDataMap,
     QueryMap,
     component_set,
     components_set,
     query_affect,
-    query_data_map,
     query_map,
 };
 pub use crate::system_combinators::{
