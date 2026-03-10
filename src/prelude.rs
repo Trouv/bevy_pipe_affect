@@ -11,7 +11,6 @@ pub use crate::effects::{
     CommandSpawn,
     CommandSpawnAnd,
     CommandTrigger,
-    ComponentsSet,
     ComponentsSetFiltered,
     ComponentsSetFilteredWith,
     ComponentsSetFilteredWithQueryData,
@@ -39,7 +38,6 @@ pub use crate::effects::{
     command_spawn,
     command_spawn_and,
     command_trigger,
-    components_set,
     components_set_filtered,
     components_set_filtered_with,
     components_set_filtered_with_query_data,
@@ -62,6 +60,19 @@ pub use crate::effects::{
 };
 #[cfg(feature = "asset_server")]
 pub use crate::effects::{AssetAddAnd, AssetServerLoadAnd, asset_add_and, asset_server_load_and};
+pub use crate::query_data_effect::{
+    ComponentSet,
+    ComponentsSet,
+    QueryAffect,
+    QueryDataEffect,
+    QueryDataMap,
+    QueryMap,
+    component_set,
+    components_set,
+    query_affect,
+    query_data_map,
+    query_map,
+};
 pub use crate::system_combinators::{
     affect,
     in_and_extend,
