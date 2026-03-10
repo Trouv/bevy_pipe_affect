@@ -28,6 +28,8 @@ pub use crate::effects::{
     LocalSetAnd,
     MessageWrite,
     MessagesReadAnd,
+    QueryAffect,
+    QueryMap,
     ResSet,
     ResSetWith,
     affect_many,
@@ -55,6 +57,8 @@ pub use crate::effects::{
     local_set_and,
     message_write,
     messages_read_and,
+    query_affect,
+    query_map,
     res_set,
     res_set_with,
 };
@@ -63,13 +67,9 @@ pub use crate::effects::{AssetAddAnd, AssetServerLoadAnd, asset_add_and, asset_s
 pub use crate::query_data_effect::{
     ComponentSet,
     ComponentsSet,
-    QueryAffect,
     QueryDataEffect,
-    QueryMap,
     component_set,
     components_set,
-    query_affect,
-    query_map,
 };
 pub use crate::system_combinators::{
     affect,

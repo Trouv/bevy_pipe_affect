@@ -69,6 +69,9 @@ pub use entity_command::{
     entity_command_remove_recursive,
 };
 
+mod query;
+pub use query::{QueryAffect, QueryMap, query_affect, query_map};
+
 #[cfg(feature = "asset_server")]
 mod asset_server;
 #[cfg(feature = "asset_server")]
