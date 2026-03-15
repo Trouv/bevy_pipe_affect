@@ -12,7 +12,7 @@ where
     Filter: QueryFilter,
 {
     pub query_data_effect: QueryDataE,
-    pub filter: PhantomData<Filter>,
+    filter: PhantomData<Filter>,
 }
 
 pub fn query_affect<QueryDataE, Filter>(
