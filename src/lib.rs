@@ -32,6 +32,8 @@ pub use effect_out::{EffectOut, effect_out};
 
 pub mod effects;
 
+pub mod query_data_effect;
+
 pub mod system_combinators;
 
 pub mod effect_composition;
