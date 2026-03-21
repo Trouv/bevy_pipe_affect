@@ -75,3 +75,54 @@ macro_rules! impl_query_data_effect_for_components_set {
 }
 
 all_tuples!(impl_query_data_effect_for_components_set, 1, 15, C, q, c);
+
+#[cfg(test)]
+mod tests {
+    use proptest::*;
+
+    use super::*;
+    use crate::effects::number_data::NumberComponent;
+
+    proptest! {
+        fn component_set_affect_updates_query_data(initial: NumberComponent<0>, component: NumberComponent<0>) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(initial).id();
+
+            let component_set = component_set(component);
+
+            app.world_mut()
+                .query::<<ComponentSet<NumberComponent<0>> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| component_set.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &component
+            );
+        }
+
+        fn components_set_affect_updates_query_data(initial: (NumberComponent<0>, NumberComponent<1>), components: (NumberComponent<0>, NumberComponent<1>)) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(initial).id();
+
+            let components_set = components_set(components);
+
+            app.world_mut()
+                .query::<<ComponentsSet<(NumberComponent<0>, NumberComponent<1>)> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| components_set.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &components.0
+            );
+
+            assert_eq!(
+                app.world().get::<NumberComponent<1>>(entity).unwrap(),
+                &components.1
+            );
+        }
+    }
+}
