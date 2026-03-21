@@ -62,7 +62,6 @@ pub use crate::effects::{
 };
 #[cfg(feature = "asset_server")]
 pub use crate::effects::{AssetAddAnd, AssetServerLoadAnd, asset_add_and, asset_server_load_and};
-pub use crate::query_data_effect::QueryDataEffect;
 pub use crate::system_combinators::{
     affect,
     in_and_extend,
@@ -70,4 +69,4 @@ pub use crate::system_combinators::{
     in_and_then_compose,
     pure,
 };
-pub use crate::{Effect, EffectOut, effect_out};
+pub use crate::{Effect, EffectOut, QueryDataEffect, effect_out};

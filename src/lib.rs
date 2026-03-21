@@ -32,7 +32,8 @@ pub use effect_out::{EffectOut, effect_out};
 
 pub mod effects;
 
-pub mod query_data_effect;
+mod query_data_effect;
+pub use query_data_effect::QueryDataEffect;
 
 pub mod system_combinators;
 
