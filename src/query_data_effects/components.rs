@@ -51,10 +51,7 @@ pub struct ComponentsSet<Cs> {
 }
 
 /// Constructs a [`ComponentsSet`] [`QueryDataEffect`].
-pub fn components_set<Cs>(components: Cs) -> ComponentsSet<Cs>
-where
-    Cs: Component<Mutability = Mutable>,
-{
+pub fn components_set<Cs>(components: Cs) -> ComponentsSet<Cs> {
     ComponentsSet { components }
 }
 
