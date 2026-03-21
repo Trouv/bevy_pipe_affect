@@ -69,4 +69,4 @@ pub use crate::system_combinators::{
     in_and_then_compose,
     pure,
 };
-pub use crate::{Effect, EffectOut, effect_out};
+pub use crate::{Effect, EffectOut, QueryDataEffect, effect_out};
