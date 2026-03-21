@@ -5,14 +5,21 @@ use variadics_please::all_tuples;
 
 use crate::QueryDataEffect;
 
+/// [`QueryDataEffect`] that sets a component to the given value.
+///
+/// If you want to set multiple components, see [`ComponentsSet`].
+///
+/// Can be constructed by [`component_set`].
 #[derive(Debug, Default, PartialEq, Eq, Copy, Clone)]
 pub struct ComponentSet<C>
 where
     C: Component<Mutability = Mutable>,
 {
+    /// The value to set the component to.
     pub component: C,
 }
 
+/// Constructs a [`ComponentSet`] [`QueryDataEffect`].
 pub fn component_set<C>(component: C) -> ComponentSet<C>
 where
     C: Component<Mutability = Mutable>,
@@ -32,11 +39,18 @@ where
     }
 }
 
+/// [`QueryDataEffect`] that sets multiple (up to 15) components to the given values.
+///
+/// If you want to set single component, see [`ComponentSet`].
+///
+/// Can be constructed by [`components_set`].
 #[derive(Debug, Default, PartialEq, Eq, Copy, Clone)]
 pub struct ComponentsSet<Cs> {
+    /// The values to set the components to.
     pub components: Cs,
 }
 
+/// Constructs a [`ComponentsSet`] [`QueryDataEffect`].
 pub fn components_set<Cs>(components: Cs) -> ComponentsSet<Cs>
 where
     Cs: Component<Mutability = Mutable>,
