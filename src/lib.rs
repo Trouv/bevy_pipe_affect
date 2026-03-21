@@ -35,6 +35,8 @@ pub mod effects;
 mod query_data_effect;
 pub use query_data_effect::QueryDataEffect;
 
+pub mod query_data_effects;
+
 pub mod system_combinators;
 
 pub mod effect_composition;
