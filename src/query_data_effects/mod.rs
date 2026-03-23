@@ -4,3 +4,5 @@
 
 mod components;
 pub use components::{ComponentSet, ComponentsSet, component_set, components_set};
+
+mod algebra;
