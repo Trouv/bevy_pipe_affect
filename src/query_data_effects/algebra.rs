@@ -62,3 +62,111 @@ where
         as_either.affect(query_data);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::*;
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::number_data::NumberComponent;
+    use crate::query_data_effects::{ComponentSet, component_set};
+
+    proptest! {
+        #[test]
+        fn pair_of_effects_affects_both(initial: (NumberComponent<0>, NumberComponent<1>), components: (NumberComponent<0>, NumberComponent<1>)) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(initial).id();
+
+            let component_sets = (component_set(components.0), component_set(components.1));
+
+            app.world_mut()
+                .query::<<(ComponentSet<NumberComponent<0>>, ComponentSet<NumberComponent<1>>) as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| component_sets.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &components.0
+            );
+
+            assert_eq!(
+                app.world().get::<NumberComponent<1>>(entity).unwrap(),
+                &components.1
+            );
+        }
+
+        #[test]
+        fn either_of_effects_affects_one(initial: (NumberComponent<0>, NumberComponent<1>), components: (NumberComponent<0>, NumberComponent<1>)) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(initial).id();
+
+            let either_component_set: Either<ComponentSet<NumberComponent<0>>, ComponentSet<NumberComponent<1>>> = Either::Left(component_set(components.0));
+
+            app.world_mut()
+                .query::<<Either<ComponentSet<NumberComponent<0>>, ComponentSet<NumberComponent<1>>> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| either_component_set.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &components.0
+            );
+
+            assert_eq!(
+                app.world().get::<NumberComponent<1>>(entity).unwrap(),
+                &initial.1
+            );
+
+            let either_component_set: Either<ComponentSet<NumberComponent<0>>, ComponentSet<NumberComponent<1>>> = Either::Right(component_set(components.1));
+
+            app.world_mut()
+                .query::<<Either<ComponentSet<NumberComponent<0>>, ComponentSet<NumberComponent<1>>> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| either_component_set.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &components.0
+            );
+
+            assert_eq!(
+                app.world().get::<NumberComponent<1>>(entity).unwrap(),
+                &components.1
+            );
+        }
+
+        #[test]
+        fn option_of_effects_may_or_may_not_affect(initial: NumberComponent<0>, component: NumberComponent<0>) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(initial).id();
+
+            let component_set_none: Option<ComponentSet<NumberComponent<0>>> = None;
+
+            app.world_mut()
+                .query::<<Option<ComponentSet<NumberComponent<0>>> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| component_set_none.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &initial
+            );
+
+            let component_set_some = Some(component_set(component));
+
+            app.world_mut()
+                .query::<<Option<ComponentSet<NumberComponent<0>>> as QueryDataEffect>::MutQueryData>()
+                .iter_mut(app.world_mut())
+                .for_each(|mut query_data| component_set_some.affect(&mut query_data));
+
+            assert_eq!(
+                app.world().get::<NumberComponent<0>>(entity).unwrap(),
+                &component
+            );
+        }
+    }
+}
