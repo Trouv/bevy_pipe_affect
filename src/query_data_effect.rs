@@ -9,7 +9,7 @@ use bevy::ecs::query::{QueryData, QueryFilter};
 /// - `Option<T>` (where `T` is [`QueryDataEffect`])
 /// - `Either<L, R>` where (`L` and `R` are [`QueryDataEffect`]s)
 /// - `()` (no-op effect)
-/// - Tuples of [`QueryDataEffect`]s up to size 15.
+/// - Tuples of [`QueryDataEffect`]s.
 ///
 /// When combining effets with `Either` or tuples, you will find that bevy's typical borrowing
 /// rules for query data will still apply. I.e., you can't use something like:
