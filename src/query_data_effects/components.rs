@@ -84,6 +84,7 @@ mod tests {
     use crate::effects::number_data::NumberComponent;
 
     proptest! {
+        #[test]
         fn component_set_affect_updates_query_data(initial: NumberComponent<0>, component: NumberComponent<0>) {
             let mut app = App::new();
 
@@ -102,6 +103,7 @@ mod tests {
             );
         }
 
+        #[test]
         fn components_set_affect_updates_query_data(initial: (NumberComponent<0>, NumberComponent<1>), components: (NumberComponent<0>, NumberComponent<1>)) {
             let mut app = App::new();
 
