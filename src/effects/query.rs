@@ -15,6 +15,19 @@ where
     filter: PhantomData<Filter>,
 }
 
+impl<QueryDataE, Filter> QueryAffect<QueryDataE, Filter>
+where
+    QueryDataE: QueryDataEffect,
+    Filter: QueryFilter,
+{
+    pub fn new(query_data_effect: QueryDataE) -> Self {
+        QueryAffect {
+            query_data_effect,
+            filter: PhantomData,
+        }
+    }
+}
+
 pub fn query_affect<QueryDataE, Filter>(
     query_data_effect: QueryDataE,
 ) -> QueryAffect<QueryDataE, Filter>
@@ -22,10 +35,7 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
-    QueryAffect {
-        query_data_effect,
-        filter: PhantomData,
-    }
+    QueryAffect::new(query_data_effect)
 }
 
 impl<QueryDataE, Filter> Effect for QueryAffect<QueryDataE, Filter>
@@ -53,6 +63,20 @@ where
     filter: PhantomData<Filter>,
 }
 
+impl<QueryDataIn, QueryDataE, Filter> QueryMap<QueryDataIn, QueryDataE, Filter>
+where
+    QueryDataIn: ReadOnlyQueryData,
+    QueryDataE: QueryDataEffect,
+    Filter: QueryFilter,
+{
+    pub fn new(f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>) -> Self {
+        QueryMap {
+            f,
+            filter: PhantomData,
+        }
+    }
+}
+
 pub fn query_map<QueryDataIn, QueryDataE, Filter, F>(
     f: F,
 ) -> QueryMap<QueryDataIn, QueryDataE, Filter>
@@ -62,10 +86,7 @@ where
     Filter: QueryFilter,
     F: for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE + 'static,
 {
-    QueryMap {
-        f: Box::new(f),
-        filter: PhantomData,
-    }
+    QueryMap::new(Box::new(f))
 }
 
 impl<QueryDataIn, QueryDataE, Filter> Effect for QueryMap<QueryDataIn, QueryDataE, Filter>
@@ -111,6 +132,23 @@ where
     filter: PhantomData<Filter>,
 }
 
+impl<QueryDataIn, E, QueryDataE, Filter> QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
+where
+    QueryDataIn: ReadOnlyQueryData,
+    E: Effect,
+    QueryDataE: QueryDataEffect,
+    Filter: QueryFilter,
+{
+    pub fn new(
+        f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
+    ) -> Self {
+        QueryMapAnd {
+            f,
+            filter: PhantomData,
+        }
+    }
+}
+
 pub fn query_map_and<QueryDataIn, E, QueryDataE, Filter, F>(
     f: F,
 ) -> QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
@@ -121,10 +159,7 @@ where
     Filter: QueryFilter,
     F: for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE> + 'static,
 {
-    QueryMapAnd {
-        f: Box::new(f),
-        filter: PhantomData,
-    }
+    QueryMapAnd::new(Box::new(f))
 }
 
 impl<QueryDataIn, E, QueryDataE, Filter> Effect for QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
