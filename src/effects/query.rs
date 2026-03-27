@@ -214,6 +214,8 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// The `QueryData -> QueryDataEffect` function that is applied to all entities in the query.
+    #[expect(clippy::type_complexity)]
     pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>,
     filter: PhantomData<Filter>,
 }
@@ -224,6 +226,8 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// Construct a new [`QueryMap`].
+    #[expect(clippy::type_complexity)]
     pub fn new(f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>) -> Self {
         QueryMap {
             f,
@@ -232,6 +236,7 @@ where
     }
 }
 
+/// Construct a new [`QueryMap`] [`Effect`].
 pub fn query_map<QueryDataIn, QueryDataE, Filter, F>(
     f: F,
 ) -> QueryMap<QueryDataIn, QueryDataE, Filter>
