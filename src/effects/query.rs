@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
+use bevy::ecs::query::{QueryData, QueryFilter, ReadOnlyQueryData};
 use bevy::prelude::*;
 
 use crate::query_data_effect::QueryDataEffect;
@@ -130,6 +130,10 @@ where
     }
 }
 
+/// Type alias for the mapping function in [`QueryMap`].
+pub type BoxedQueryMapFn<QueryDataIn, QueryDataE> =
+    Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> QueryDataE>;
+
 /// [`Effect`] that applies a mapping of `QueryData` to [`QueryDataEffect`] to all entities in a
 /// query.
 ///
@@ -215,8 +219,7 @@ where
     Filter: QueryFilter,
 {
     /// The `QueryData -> QueryDataEffect` function that is applied to all entities in the query.
-    #[expect(clippy::type_complexity)]
-    pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>,
+    pub f: BoxedQueryMapFn<QueryDataIn, QueryDataE>,
     filter: PhantomData<Filter>,
 }
 
@@ -227,8 +230,7 @@ where
     Filter: QueryFilter,
 {
     /// Construct a new [`QueryMap`].
-    #[expect(clippy::type_complexity)]
-    pub fn new(f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>) -> Self {
+    pub fn new(f: BoxedQueryMapFn<QueryDataIn, QueryDataE>) -> Self {
         QueryMap {
             f,
             filter: PhantomData,
