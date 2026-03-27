@@ -80,6 +80,7 @@ use crate::{Effect, EffectOut, effect_out};
 /// Not shown...
 /// - other [`QueryDataEffect`]s are available
 /// - the `Filter` parameter can be omitted
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
@@ -212,6 +213,7 @@ pub type BoxedQueryMapFn<QueryDataIn, QueryDataE> =
 /// - other [`QueryDataEffect`]s are available
 /// - any `QueryData` (including single components) can be input to the map function
 /// - a filter can be applied using the `Filter` generic parameter.
+#[derive(derive_more::Debug)]
 pub struct QueryMap<QueryDataIn, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -219,6 +221,7 @@ where
     Filter: QueryFilter,
 {
     /// The `QueryData -> QueryDataEffect` function that is applied to all entities in the query.
+    #[debug("{0} -> {1}", std::any::type_name::<QueryDataIn>(), std::any::type_name::<QueryDataE>())]
     pub f: BoxedQueryMapFn<QueryDataIn, QueryDataE>,
     filter: PhantomData<Filter>,
 }
@@ -293,6 +296,7 @@ pub type BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE> =
 /// The query can be filtered with the `Filter` generic.
 ///
 /// Can be constructed by [`query_map_and`].
+#[derive(derive_more::Debug)]
 pub struct QueryMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -302,6 +306,7 @@ where
 {
     /// The `QueryData -> EffectOut<Effect, QueryDataEffect>` function that applies to all entities
     /// in the query.
+    #[debug("{0} -> {1}", std::any::type_name::<QueryDataIn>(), std::any::type_name::<EffectOut<E, QueryDataE>>())]
     pub f: BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE>,
     filter: PhantomData<Filter>,
 }
