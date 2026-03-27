@@ -77,7 +77,9 @@ use crate::{Effect, EffectOut, effect_out};
 /// # }
 /// ```
 ///
-/// Note that other [`QueryDataEffect`]s are available, and the filter parameter can be omitted.
+/// Not shown...
+/// - other [`QueryDataEffect`]s are available
+/// - the `Filter` parameter can be omitted
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
