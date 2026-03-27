@@ -6,11 +6,87 @@ use bevy::prelude::*;
 use crate::query_data_effect::QueryDataEffect;
 use crate::{Effect, EffectOut, effect_out};
 
+/// [`Effect`] that applies a [`QueryDataEffect`] to all entities in a query.
+///
+/// The query can be filtered with the `Filter` generic.
+///
+/// Can be constructed with [`query_affect`].
+///
+/// # Example
+/// In this example, a system is written that sets all `NumberComponent`s in the world to
+/// `NumberComponent(2)`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct NumberComponent(u32);
+///
+/// // Pure system using effects.
+/// fn set_value_to_2_for_all_entities_pure() -> QueryAffect<ComponentSet<NumberComponent>> {
+///     query_affect(component_set(NumberComponent(2)))
+/// }
+///
+/// // Equivalent impure system.
+/// fn set_value_to_2_for_all_entities_impure(mut query: Query<&mut NumberComponent>) {
+///     for (mut number_component) in query.iter_mut() {
+///         *number_component = NumberComponent(2);
+///     }
+/// }
+/// # fn app_setup() -> (App, [Entity; 2]) {
+/// #     let mut app = App::new();
+/// #     let entity_0 = app.world_mut().spawn(NumberComponent(0)).id();
+/// #     let entity_1 = app.world_mut().spawn(NumberComponent(1)).id();
+/// #     (app, [entity_0, entity_1])
+/// # }
+/// # fn main() {
+/// #     let (mut app_pure, entities_pure) = app_setup();
+/// #     app_pure.add_systems(Update, set_value_to_2_for_all_entities_pure.pipe(affect));
+/// #     let (mut app_impure, entities_impure) = app_setup();
+/// #     app_impure.add_systems(Update, set_value_to_2_for_all_entities_pure.pipe(affect));
+/// #     entities_pure
+/// #         .iter()
+/// #         .zip(&entities_impure)
+/// #         .for_each(|(entity_pure, entity_impure)| {
+/// #             let component_pure = app_pure
+/// #                 .world()
+/// #                 .get::<NumberComponent>(*entity_pure)
+/// #                 .unwrap();
+/// #             let component_impure = app_impure
+/// #                 .world()
+/// #                 .get::<NumberComponent>(*entity_impure)
+/// #                 .unwrap();
+/// #             assert_ne!(component_pure.0, 2);
+/// #             assert_ne!(component_impure.0, 2);
+/// #             assert_eq!(component_pure, component_impure);
+/// #         });
+/// #     app_pure.update();
+/// #     app_impure.update();
+/// #     entities_pure
+/// #         .iter()
+/// #         .zip(&entities_impure)
+/// #         .for_each(|(entity_pure, entity_impure)| {
+/// #             let component_pure = app_pure
+/// #                 .world()
+/// #                 .get::<NumberComponent>(*entity_pure)
+/// #                 .unwrap();
+/// #             let component_impure = app_impure
+/// #                 .world()
+/// #                 .get::<NumberComponent>(*entity_impure)
+/// #                 .unwrap();
+/// #             assert_eq!(component_pure.0, 2);
+/// #             assert_eq!(component_impure.0, 2);
+/// #         });
+/// # }
+/// ```
+///
+/// Note that other [`QueryDataEffect`]s are available.
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// The [`QueryDataEffect`] that is applied to all entities in the query.
     pub query_data_effect: QueryDataE,
     filter: PhantomData<Filter>,
 }
@@ -20,6 +96,7 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// Construct a new [`QueryAffect`].
     pub fn new(query_data_effect: QueryDataE) -> Self {
         QueryAffect {
             query_data_effect,
@@ -28,6 +105,7 @@ where
     }
 }
 
+/// Construct a new [`QueryAffect`] [`Effect`].
 pub fn query_affect<QueryDataE, Filter>(
     query_data_effect: QueryDataE,
 ) -> QueryAffect<QueryDataE, Filter>
