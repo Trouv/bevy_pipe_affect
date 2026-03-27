@@ -283,6 +283,10 @@ where
     }
 }
 
+/// Type alias for the mapping function in [`QueryMapAnd`].
+pub type BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE> =
+    Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> EffectOut<E, QueryDataE>>;
+
 pub struct QueryMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -290,7 +294,9 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
-    pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
+    /// The `QueryData -> EffectOut<Effect, QueryDataEffect>` function that applies to all entities
+    /// in the query.
+    pub f: BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE>,
     filter: PhantomData<Filter>,
 }
 
@@ -301,9 +307,8 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
-    pub fn new(
-        f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
-    ) -> Self {
+    /// Construct a new [`QueryMapAnd`].
+    pub fn new(f: BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE>) -> Self {
         QueryMapAnd {
             f,
             filter: PhantomData,
