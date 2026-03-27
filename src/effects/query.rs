@@ -287,6 +287,12 @@ where
 pub type BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE> =
     Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> EffectOut<E, QueryDataE>>;
 
+/// [`Effect`] that applies a mapping from `QueryData` to a [`QueryDataEffect`] + [`Effect`] (as an
+/// `EffectOut<Effect, QueryDataEffect>`) to all entities in a query.
+///
+/// The query can be filtered with the `Filter` generic.
+///
+/// Can be constructed by [`query_map_and`].
 pub struct QueryMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -316,6 +322,7 @@ where
     }
 }
 
+/// Construct a new [`QueryMapAnd`] [`Effect`].
 pub fn query_map_and<QueryDataIn, E, QueryDataE, Filter, F>(
     f: F,
 ) -> QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
