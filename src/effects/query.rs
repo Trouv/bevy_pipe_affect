@@ -296,6 +296,122 @@ pub type BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE> =
 /// The query can be filtered with the `Filter` generic.
 ///
 /// Can be constructed by [`query_map_and`].
+///
+/// # Example
+/// In this example, a system is written that lowers all entities' `Health` by their `DamageTaken`
+/// (if they do not have an `Invincible` component). It also despawns the entities if their health
+/// is 0.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct DamageTaken(u32);
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Health(u32);
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Invincible;
+///
+/// /// Pure system using effects.
+/// fn health_and_death_pure() -> QueryMapAnd<
+///     (Entity, &'static DamageTaken, &'static Health),
+///     Option<EntityCommandDespawn>,
+///     ComponentSet<Health>,
+///     Without<Invincible>,
+/// > {
+///     query_map_and(
+///         |(entity, damage_taken, health): (Entity, &DamageTaken, &Health)| {
+///             let new_health = health.0.saturating_sub(damage_taken.0);
+///
+///             let despawn_command = (new_health == 0).then_some(entity_command_despawn(entity));
+///
+///             effect_out(despawn_command, component_set(Health(new_health)))
+///         },
+///     )
+/// }
+///
+/// /// Equivalent impure system
+/// fn health_and_death_impure(
+///     mut query: Query<(Entity, &DamageTaken, &mut Health), Without<Invincible>>,
+///     mut commands: Commands,
+/// ) {
+///     for (entity, damage_taken, mut health) in query.iter_mut() {
+///         let new_health = health.0.saturating_sub(damage_taken.0);
+///
+///         health.0 = new_health;
+///
+///         if new_health == 0 {
+///             commands.entity(entity).despawn();
+///         }
+///     }
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(
+/// #     component_table: Vec<(Option<DamageTaken>, Option<Health>, Option<Invincible>)>,
+/// # ) -> App {
+/// #     let mut app = App::new();
+/// #     component_table
+/// #         .into_iter()
+/// #         .for_each(|(damage_taken, health, invincible)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #             if let Some(damage_taken) = damage_taken {
+/// #                 entity.insert(damage_taken);
+/// #             }
+/// #             if let Some(health) = health {
+/// #                 entity.insert(health);
+/// #             }
+/// #             if let Some(invincible) = invincible {
+/// #                 entity.insert(invincible);
+/// #             }
+/// #         });
+/// #
+/// #     app
+/// # }
+/// # fn query_state(
+/// #     world: &mut World,
+/// # ) -> Vec<(
+/// #     Entity,
+/// #     Option<&DamageTaken>,
+/// #     Option<&Health>,
+/// #     Option<&Invincible>,
+/// # )> {
+/// #     let mut query = world.query::<(
+/// #         Entity,
+/// #         Option<&DamageTaken>,
+/// #         Option<&Health>,
+/// #         Option<&Invincible>,
+/// #     )>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<DamageTaken>, Option<Health>, Option<Invincible>)>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, health_and_death_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone());
+/// #         impure_app.add_systems(Update, health_and_death_impure);
+/// #
+/// #         for _ in 0..20 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - other [`QueryDataEffect`]s are available
+/// - any `QueryData` (including single components) can be input to the map function
+/// - other [`Effect`]s are available
+/// - the `Filter` generic can be omitted
 #[derive(derive_more::Debug)]
 pub struct QueryMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
