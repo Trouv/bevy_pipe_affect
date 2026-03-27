@@ -13,74 +13,71 @@ use crate::{Effect, EffectOut, effect_out};
 /// Can be constructed with [`query_affect`].
 ///
 /// # Example
-/// In this example, a system is written that sets all `NumberComponent`s in the world to
-/// `NumberComponent(2)`.
+/// In this example, a system is written that sets all entities' `Speed` to 0 if they have a
+/// `Brake` component.
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
-/// struct NumberComponent(u32);
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Speed(f32);
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Brake;
 ///
 /// // Pure system using effects.
-/// fn set_value_to_2_for_all_entities_pure() -> QueryAffect<ComponentSet<NumberComponent>> {
-///     query_affect(component_set(NumberComponent(2)))
+/// fn stop_all_pure() -> QueryAffect<ComponentSet<Speed>, With<Brake>> {
+///     query_affect(component_set(Speed(0.0)))
 /// }
 ///
 /// // Equivalent impure system.
-/// fn set_value_to_2_for_all_entities_impure(mut query: Query<&mut NumberComponent>) {
+/// fn stop_all_impure(mut query: Query<&mut Speed, With<Brake>>) {
 ///     for (mut number_component) in query.iter_mut() {
-///         *number_component = NumberComponent(2);
+///         *number_component = Speed(0.0);
 ///     }
 /// }
-/// # fn app_setup() -> (App, [Entity; 2]) {
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<(Option<Speed>, Option<Brake>)>) -> App {
 /// #     let mut app = App::new();
-/// #     let entity_0 = app.world_mut().spawn(NumberComponent(0)).id();
-/// #     let entity_1 = app.world_mut().spawn(NumberComponent(1)).id();
-/// #     (app, [entity_0, entity_1])
+/// #     component_table.into_iter().for_each(|(speed, brake)| {
+/// #         let mut entity = app.world_mut().spawn_empty();
+/// #         if let Some(speed) = speed {
+/// #             entity.insert(speed);
+/// #         }
+/// #         if let Some(brake) = brake {
+/// #             entity.insert(brake);
+/// #         }
+/// #     });
+/// #
+/// #     app
 /// # }
-/// # fn main() {
-/// #     let (mut app_pure, entities_pure) = app_setup();
-/// #     app_pure.add_systems(Update, set_value_to_2_for_all_entities_pure.pipe(affect));
-/// #     let (mut app_impure, entities_impure) = app_setup();
-/// #     app_impure.add_systems(Update, set_value_to_2_for_all_entities_pure.pipe(affect));
-/// #     entities_pure
-/// #         .iter()
-/// #         .zip(&entities_impure)
-/// #         .for_each(|(entity_pure, entity_impure)| {
-/// #             let component_pure = app_pure
-/// #                 .world()
-/// #                 .get::<NumberComponent>(*entity_pure)
-/// #                 .unwrap();
-/// #             let component_impure = app_impure
-/// #                 .world()
-/// #                 .get::<NumberComponent>(*entity_impure)
-/// #                 .unwrap();
-/// #             assert_ne!(component_pure.0, 2);
-/// #             assert_ne!(component_impure.0, 2);
-/// #             assert_eq!(component_pure, component_impure);
-/// #         });
-/// #     app_pure.update();
-/// #     app_impure.update();
-/// #     entities_pure
-/// #         .iter()
-/// #         .zip(&entities_impure)
-/// #         .for_each(|(entity_pure, entity_impure)| {
-/// #             let component_pure = app_pure
-/// #                 .world()
-/// #                 .get::<NumberComponent>(*entity_pure)
-/// #                 .unwrap();
-/// #             let component_impure = app_impure
-/// #                 .world()
-/// #                 .get::<NumberComponent>(*entity_impure)
-/// #                 .unwrap();
-/// #             assert_eq!(component_pure.0, 2);
-/// #             assert_eq!(component_impure.0, 2);
-/// #         });
+/// #
+/// # fn query_state(world: &mut World) -> Vec<(Entity, Option<&Speed>, Option<&Brake>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Speed>, Option<&Brake>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<Speed>, Option<Brake>)>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, stop_all_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone());
+/// #         impure_app.add_systems(Update, stop_all_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
 /// # }
 /// ```
 ///
-/// Note that other [`QueryDataEffect`]s are available.
+/// Note that other [`QueryDataEffect`]s are available, and the filter parameter can be omitted.
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
