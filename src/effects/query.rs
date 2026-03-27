@@ -130,6 +130,84 @@ where
     }
 }
 
+/// [`Effect`] that applies a mapping of `QueryData` to [`QueryDataEffect`] to all entities in a
+/// query.
+///
+/// This query can be filtered with the `Filter` generic.
+///
+/// Can be constructed with [`query_map`].
+///
+/// # Example
+/// In this example, a system is written that updates all entities' `Speed` component according to
+/// their `Acceleration` component.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Default, Debug, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Acceleration(f32);
+///
+/// #[derive(Copy, Clone, Default, Debug, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Speed(f32);
+///
+/// // Pure system using effects.
+/// fn accelerate_pure() -> QueryMap<(&'static Acceleration, &'static Speed), ComponentSet<Speed>> {
+///     query_map(move |(acceleration, speed): (&Acceleration, &Speed)| {
+///         component_set(Speed(speed.0 + acceleration.0))
+///     })
+/// }
+///
+/// // Equivalent impure system.
+/// fn accelerate_impure(mut query: Query<(&Acceleration, &mut Speed)>) {
+///     for (acceleration, mut speed) in query.iter_mut() {
+///         speed.0 += acceleration.0
+///     }
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<(Option<Acceleration>, Option<Speed>)>) -> App {
+/// #     let mut app = App::new();
+/// #     component_table.into_iter().for_each(|(acceleration, speed)| {
+/// #         let mut entity = app.world_mut().spawn_empty();
+/// #         if let Some(acceleration) = acceleration {
+/// #             entity.insert(acceleration);
+/// #         }
+/// #         if let Some(speed) = speed {
+/// #             entity.insert(speed);
+/// #         }
+/// #     });
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn query_state(world: &mut World) -> Vec<(Entity, Option<&Acceleration>, Option<&Speed>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Acceleration>, Option<&Speed>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<Acceleration>, Option<Speed>)>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, accelerate_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone());
+/// #         impure_app.add_systems(Update, accelerate_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - other [`QueryDataEffect`]s are available
+/// - any `QueryData` (including single components) can be input to the map function
+/// - a filter can be applied using the `Filter` generic parameter.
 pub struct QueryMap<QueryDataIn, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
