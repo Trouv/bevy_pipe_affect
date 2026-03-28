@@ -24,6 +24,21 @@ where
     filter: PhantomData<Filter>,
 }
 
+impl<QueryDataE, Filter> QueryEntityAffect<QueryDataE, Filter>
+where
+    QueryDataE: QueryDataEffect,
+    Filter: QueryFilter,
+{
+    /// Construct a new [`QueryEntityAffect`] [`Effect`].
+    pub fn new(entity: Entity, query_data_effect: QueryDataE) -> Self {
+        QueryEntityAffect {
+            entity,
+            query_data_effect,
+            filter: PhantomData,
+        }
+    }
+}
+
 /// Construct a new [`QueryEntityAffect`] [`Effect`].
 pub fn query_entity_affect<QueryDataE, Filter>(
     entity: Entity,
@@ -33,11 +48,7 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
-    QueryEntityAffect {
-        entity,
-        query_data_effect,
-        filter: PhantomData,
-    }
+    QueryEntityAffect::new(entity, query_data_effect)
 }
 
 impl<QueryDataE, Filter> Effect for QueryEntityAffect<QueryDataE, Filter>
