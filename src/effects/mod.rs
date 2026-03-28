@@ -11,22 +11,6 @@ pub use local::{LocalSetAnd, local_set_and};
 mod message;
 pub use message::{MessageWrite, MessagesReadAnd, message_write, messages_read_and};
 
-mod components;
-pub use components::{
-    ComponentsSet,
-    ComponentsSetFiltered,
-    ComponentsSetFilteredWith,
-    ComponentsSetFilteredWithQueryData,
-    ComponentsSetWith,
-    ComponentsSetWithQueryData,
-    components_set,
-    components_set_filtered,
-    components_set_filtered_with,
-    components_set_filtered_with_query_data,
-    components_set_with,
-    components_set_with_query_data,
-};
-
 mod entity_components;
 pub use entity_components::{
     EntityComponentsSet,
