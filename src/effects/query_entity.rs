@@ -6,16 +6,25 @@ use bevy::prelude::*;
 use crate::query_data_effect::QueryDataEffect;
 use crate::{Effect, EffectOut};
 
+/// [`Effect`] that applies the given [`QueryDataEffect`] to the given entity.
+///
+/// Produces an error (handled by `bevy`'s `DefaultErrorHandler`) if the entity does not exist in
+/// the [`QueryDataEffect::Filter`] (and the optional `Filter` generic).
+///
+/// Can be constructed by [`query_entity_affect`].
 pub struct QueryEntityAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// The entity to apply the [`QueryDataEffect`] to.
     pub entity: Entity,
+    /// The [`QueryDataEffect`] to apply to the entity.
     pub query_data_effect: QueryDataE,
     filter: PhantomData<Filter>,
 }
 
+/// Construct a new [`QueryEntityAffect`] [`Effect`].
 pub fn query_entity_affect<QueryDataE, Filter>(
     entity: Entity,
     query_data_effect: QueryDataE,
