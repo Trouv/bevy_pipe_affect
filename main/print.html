@@ -871,10 +871,10 @@ pub struct InflateEvent;
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -901,10 +901,10 @@ pub struct InflateEvent;
 </span>#[derive(Component)]
 pub struct Inflatable;
 
-fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-        (transform.with_scale(transform.scale * 1.1),)
-    })
+fn inflate(
+    _event: On&lt;InflateEvent&gt;,
+) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 }
 <span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -931,10 +931,10 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span>pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -961,10 +961,10 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
