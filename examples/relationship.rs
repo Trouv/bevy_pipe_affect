@@ -36,10 +36,10 @@ fn spawn_relationship() -> impl Effect {
 // ANCHOR_END: spawn_relationship
 
 // This system defines the rotation of entities with a Spinny component to be a function of time.
-fn spin(time: Res<Time>) -> impl Effect + use<> {
+fn spin(time: Res<Time>) -> QueryMap<&'static Transform, ComponentSet<Transform>, With<Spinny>> {
     let theta = time.elapsed_secs();
-    components_set_filtered_with::<_, _, With<Spinny>>(move |(transform,): (Transform,)| {
-        (transform.with_rotation(Quat::from_axis_angle(Vec3::Z, theta)),)
+    query_map(move |transform: &Transform| {
+        component_set(transform.with_rotation(Quat::from_axis_angle(Vec3::Z, theta)))
     })
 }
 

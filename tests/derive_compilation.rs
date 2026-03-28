@@ -116,7 +116,7 @@ struct MyComponentResource;
 #[derive(Effect)]
 struct SetResAndComponent<C: Clone + Resource + Component<Mutability = Mutable>> {
     resource: ResSet<C>,
-    components: ComponentsSet<(C,)>,
+    components: QueryAffect<ComponentSet<C>>,
 }
 
 #[test]

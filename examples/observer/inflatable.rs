@@ -10,10 +10,10 @@ pub struct InflateEvent;
 #[derive(Component)]
 pub struct Inflatable;
 
-fn inflate(_event: On<InflateEvent>) -> impl Effect + use<> {
-    components_set_filtered_with::<_, _, With<Inflatable>>(|(transform,): (Transform,)| {
-        (transform.with_scale(transform.scale * 1.1),)
-    })
+fn inflate(
+    _event: On<InflateEvent>,
+) -> QueryMap<&'static Transform, ComponentSet<Transform>, With<Inflatable>> {
+    query_map(|transform: &Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 }
 // ANCHOR_END: observer_system
 
