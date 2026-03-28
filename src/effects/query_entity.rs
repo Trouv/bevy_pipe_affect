@@ -4,7 +4,7 @@ use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
 use bevy::prelude::*;
 
 use crate::query_data_effect::QueryDataEffect;
-use crate::{Effect, EffectOut, effect_out};
+use crate::{Effect, EffectOut};
 
 pub struct QueryEntityAffect<QueryDataE, Filter = ()>
 where
