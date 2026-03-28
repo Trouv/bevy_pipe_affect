@@ -167,6 +167,26 @@ where
     filter: PhantomData<Filter>,
 }
 
+impl<QueryDataIn, E, QueryDataE, Filter> QueryEntityMapAnd<QueryDataIn, E, QueryDataE, Filter>
+where
+    QueryDataIn: ReadOnlyQueryData,
+    E: Effect,
+    QueryDataE: QueryDataEffect,
+    Filter: QueryFilter,
+{
+    /// Construct a new [`QueryEntityMapAnd`] [`Effect`].
+    pub fn new(
+        entity: Entity,
+        f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
+    ) -> Self {
+        QueryEntityMapAnd {
+            entity,
+            f,
+            filter: PhantomData,
+        }
+    }
+}
+
 pub fn query_entity_map_and<QueryDataIn, E, QueryDataE, Filter, F>(
     entity: Entity,
     f: F,
@@ -178,11 +198,7 @@ where
     Filter: QueryFilter,
     F: for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE> + 'static,
 {
-    QueryEntityMapAnd {
-        entity,
-        f: Box::new(f),
-        filter: PhantomData,
-    }
+    QueryEntityMapAnd::new(entity, Box::new(f))
 }
 
 impl<QueryDataIn, E, QueryDataE, Filter> Effect
