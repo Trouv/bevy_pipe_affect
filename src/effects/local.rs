@@ -3,6 +3,9 @@ use bevy::prelude::*;
 
 use crate::{Effect, EffectOut};
 
+/// Type alias for the transforming function used in [`LocalSetAnd`].
+pub type BoxedLocalSetAndFn<T, E> = Box<dyn FnOnce(&T) -> EffectOut<E, T>>;
+
 /// [`Effect`] that transforms a `Local<T>` parameter with the provided function, and can
 /// potentially produce another effect `E`.
 ///
@@ -17,9 +20,8 @@ where
 {
     /// The function taking the current value of the parameter and returning its new value and
     /// another effect `E`.
-    #[expect(clippy::type_complexity)]
     #[debug("{0} -> {1}", std::any::type_name::<&T>(), std::any::type_name::<EffectOut<E, T>>())]
-    pub f: Box<dyn FnOnce(&T) -> EffectOut<E, T>>,
+    pub f: BoxedLocalSetAndFn<T, E>,
 }
 
 /// Construct a new [`LocalSetAnd`] [`Effect`].
