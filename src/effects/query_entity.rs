@@ -47,7 +47,7 @@ where
             Ok(d) => d,
             Err(e) => {
                 Err::<(), _>(e).affect(&mut param.1);
-                return ();
+                return;
             }
         };
 
@@ -110,7 +110,7 @@ where
             Ok(d) => d,
             Err(e) => {
                 Err::<(), _>(e).affect(&mut result_param);
-                return ();
+                return;
             }
         };
 
@@ -180,7 +180,7 @@ where
             Ok(d) => d,
             Err(e) => {
                 Err::<(), _>(e).affect(&mut result_param);
-                return ();
+                return;
             }
         };
 
