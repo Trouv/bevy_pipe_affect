@@ -14,68 +14,48 @@ use crate::{Effect, EffectOut};
 /// Can be constructed by [`query_entity_affect`].
 ///
 /// # Example
-/// In this example, a system is written that sets all `ImmovableObject` entities' parent's `Speed`
-/// to 0.
+/// In this example, a system is written that nerfs the `TopPlayer` by setting her `Defense` to 0.5.
 /// ```
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
-/// #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Component)]
-/// # #[derive(proptest_derive::Arbitrary)]
-/// struct ImmovableObject;
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq, Resource)]
+/// struct TopPlayer(Entity);
 ///
 /// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
 /// # #[derive(proptest_derive::Arbitrary)]
-/// struct Speed(f32);
+/// struct Defense(f32);
 ///
 /// /// Pure system using effects.
-/// fn stop_immovable_carriers_pure(
-///     query: Query<&ChildOf, With<ImmovableObject>>,
-/// ) -> Vec<QueryEntityAffect<ComponentSet<Speed>>> {
-///     query
-///         .iter()
-///         .map(|child_of| query_entity_affect(child_of.parent(), component_set(Speed(0.0))))
-///         .collect()
+/// fn nerf_top_player_pure(
+///     top_player: Res<TopPlayer>
+/// )  -> QueryEntityAffect<ComponentSet<Defense>> {
+///     query_entity_affect(top_player.0, component_set(Defense(0.5)))
 /// }
 ///
-/// /// Equivalent impure system (apart from error handling).
-/// fn stop_immovable_carriers_impure(
-///     immovable_query: Query<&ChildOf, With<ImmovableObject>>,
-///     mut speed_query: Query<&mut Speed>,
-/// ) {
-///     for child_of in immovable_query.iter() {
-///         if let Ok(mut speed) = speed_query.get_mut(child_of.parent()) {
-///             speed.0 = 0.0;
-///         }
-///     }
+/// /// Equivalent impure system.
+/// fn nerf_top_player_impure(
+///     top_player: Res<TopPlayer>,
+///     mut query: Query<&mut Defense>,
+/// ) -> Result<(), BevyError> {
+///     query.get_mut(top_player.0)?.0 = 0.5;
+///     Ok(())
 /// }
-/// #
-/// # use bevy::ecs::error::{DefaultErrorHandler, ignore};
+/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
 /// # use proptest::prelude::*;
-/// # #[derive(Debug, Copy, Clone, proptest_derive::Arbitrary)]
-/// # struct ChildOfIndex(usize);
 /// #
-/// # fn app_setup(
-/// #     entity_table: Vec<(Option<Speed>, Option<ImmovableObject>, Option<ChildOfIndex>)>,
-/// # ) -> App {
+/// # fn app_setup(entity_table: Vec<Option<Defense>>, top_player_index: usize) -> App {
 /// #     let mut app = App::new();
 /// #
 /// #     app.insert_resource(DefaultErrorHandler(ignore));
 /// #
-/// #     entity_table.into_iter().fold(
+/// #     let entities = entity_table.into_iter().fold(
 /// #         vec![app.world_mut().spawn_empty().id()],
-/// #         |mut entities, (speed, immovable, child_of)| {
+/// #         |mut entities, defense| {
 /// #             let mut entity = app.world_mut().spawn_empty();
 /// #
-/// #             if let Some(speed) = speed {
-/// #                 entity.insert(speed);
-/// #             }
-/// #             if let Some(immovable) = immovable {
-/// #                 entity.insert(immovable);
-/// #             }
-/// #
-/// #             if let Some(ChildOfIndex(index)) = child_of {
-/// #                 entity.insert(ChildOf(entities[index % entities.len()]));
+/// #             if let Some(defense) = defense {
+/// #                 entity.insert(defense);
 /// #             }
 /// #
 /// #             entities.push(entity.id());
@@ -83,32 +63,23 @@ use crate::{Effect, EffectOut};
 /// #         },
 /// #     );
 /// #
+/// #     app.insert_resource(TopPlayer(entities[top_player_index % entities.len()]));
+/// #
 /// #     app
 /// # }
 /// #
-/// # fn query_state(
-/// #     world: &mut World,
-/// # ) -> Vec<(
-/// #     Entity,
-/// #     Option<&Speed>,
-/// #     Option<&ImmovableObject>,
-/// #     Option<&ChildOf>,
-/// # )> {
-/// #     let mut query = world.query::<(
-/// #         Entity,
-/// #         Option<&Speed>,
-/// #         Option<&ImmovableObject>,
-/// #         Option<&ChildOf>,
-/// #     )>();
+/// # fn query_state(world: &mut World) -> Vec<(Entity, Option<&Defense>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Defense>)>();
 /// #     query.iter(world).collect()
 /// # }
-/// # proptest! {
-/// #     fn main(entity_table: Vec<(Option<Speed>, Option<ImmovableObject>, Option<ChildOfIndex>)>) {
-/// #         let mut pure_app = app_setup(entity_table.clone());
-/// #         pure_app.add_systems(Update, stop_immovable_carriers_pure.pipe(affect));
 /// #
-/// #         let mut impure_app = app_setup(entity_table.clone());
-/// #         impure_app.add_systems(Update, stop_immovable_carriers_impure);
+/// # proptest! {
+/// #     fn main(entity_table: Vec<Option<Defense>>, top_player_index: usize) {
+/// #         let mut pure_app = app_setup(entity_table.clone(), top_player_index);
+/// #         pure_app.add_systems(Update, nerf_top_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(entity_table.clone(), top_player_index);
+/// #         impure_app.add_systems(Update, nerf_top_player_impure);
 /// #
 /// #         for _ in 0..3 {
 /// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
