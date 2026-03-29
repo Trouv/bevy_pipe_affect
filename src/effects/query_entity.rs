@@ -12,6 +12,112 @@ use crate::{Effect, EffectOut};
 /// the [`QueryDataEffect::Filter`] (and the optional `Filter` generic).
 ///
 /// Can be constructed by [`query_entity_affect`].
+///
+/// # Example
+/// In this example, a system is written that sets all `ImmovableObject` entities' parent's `Speed`
+/// to 0.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct ImmovableObject;
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Speed(f32);
+///
+/// /// Pure system using effects.
+/// fn stop_immovable_carriers_pure(
+///     query: Query<&ChildOf, With<ImmovableObject>>,
+/// ) -> Vec<QueryEntityAffect<ComponentSet<Speed>>> {
+///     query
+///         .iter()
+///         .map(|child_of| query_entity_affect(child_of.parent(), component_set(Speed(0.0))))
+///         .collect()
+/// }
+///
+/// /// Equivalent impure system (apart from error handling).
+/// fn stop_immovable_carriers_impure(
+///     immovable_query: Query<&ChildOf, With<ImmovableObject>>,
+///     mut speed_query: Query<&mut Speed>,
+/// ) {
+///     for child_of in immovable_query.iter() {
+///         if let Ok(mut speed) = speed_query.get_mut(child_of.parent()) {
+///             speed.0 = 0.0;
+///         }
+///     }
+/// }
+/// #
+/// # use bevy::ecs::error::{DefaultErrorHandler, ignore};
+/// # use proptest::prelude::*;
+/// # #[derive(Debug, Copy, Clone, proptest_derive::Arbitrary)]
+/// # struct ChildOfIndex(usize);
+/// #
+/// # fn app_setup(
+/// #     entity_table: Vec<(Option<Speed>, Option<ImmovableObject>, Option<ChildOfIndex>)>,
+/// # ) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #
+/// #     entity_table.into_iter().fold(
+/// #         vec![app.world_mut().spawn_empty().id()],
+/// #         |mut entities, (speed, immovable, child_of)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(speed) = speed {
+/// #                 entity.insert(speed);
+/// #             }
+/// #             if let Some(immovable) = immovable {
+/// #                 entity.insert(immovable);
+/// #             }
+/// #
+/// #             if let Some(ChildOfIndex(index)) = child_of {
+/// #                 entity.insert(ChildOf(entities[index % entities.len()]));
+/// #             }
+/// #
+/// #             entities.push(entity.id());
+/// #             entities
+/// #         },
+/// #     );
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn query_state(
+/// #     world: &mut World,
+/// # ) -> Vec<(
+/// #     Entity,
+/// #     Option<&Speed>,
+/// #     Option<&ImmovableObject>,
+/// #     Option<&ChildOf>,
+/// # )> {
+/// #     let mut query = world.query::<(
+/// #         Entity,
+/// #         Option<&Speed>,
+/// #         Option<&ImmovableObject>,
+/// #         Option<&ChildOf>,
+/// #     )>();
+/// #     query.iter(world).collect()
+/// # }
+/// # proptest! {
+/// #     fn main(entity_table: Vec<(Option<Speed>, Option<ImmovableObject>, Option<ChildOfIndex>)>) {
+/// #         let mut pure_app = app_setup(entity_table.clone());
+/// #         pure_app.add_systems(Update, stop_immovable_carriers_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(entity_table.clone());
+/// #         impure_app.add_systems(Update, stop_immovable_carriers_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 pub struct QueryEntityAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
