@@ -3,7 +3,7 @@ use std::marker::PhantomData;
 use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
 use bevy::prelude::*;
 
-use crate::effects::query::BoxedQueryMapFn;
+use crate::effects::query::{BoxedQueryMapAndFn, BoxedQueryMapFn};
 use crate::query_data_effect::QueryDataEffect;
 use crate::{Effect, EffectOut};
 
