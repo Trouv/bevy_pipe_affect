@@ -1,3 +1,4 @@
+//! [`Effect`]s that modify `MessageReader`s and `MessageWriter`s.
 use bevy::prelude::*;
 
 use crate::Effect;
@@ -94,7 +95,7 @@ mod tests {
 
     use super::*;
     use crate::effects::number_data::{NumberMessage, NumberResource};
-    use crate::effects::res_set_with;
+    use crate::effects::resource::res_set_with;
     use crate::prelude::affect;
 
     proptest! {

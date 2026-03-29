@@ -1,3 +1,4 @@
+//! [`Effect`]s that modify resources.
 use std::any::type_name;
 use std::convert::identity;
 

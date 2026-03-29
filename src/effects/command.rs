@@ -1,3 +1,4 @@
+//! [`Effect`]s that queue `Commands`.
 use std::marker::PhantomData;
 
 use bevy::prelude::*;

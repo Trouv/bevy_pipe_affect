@@ -20,7 +20,7 @@
 //! None of these are enabled by default.
 //!
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
-//! [`AssetServer`-related effects]: effects::AssetServerLoadAnd
+//! [`AssetServer`-related effects]: effects::asset_server
 #![warn(missing_docs)]
 #![deny(rustdoc::all)]
 

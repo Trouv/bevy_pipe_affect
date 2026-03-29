@@ -1,3 +1,4 @@
+//! [`Effect`]s that queue entity-specific `Commands`.
 use std::marker::PhantomData;
 
 use bevy::ecs::error::CommandWithEntity;
@@ -271,8 +272,8 @@ mod tests {
     use proptest::prelude::*;
 
     use super::*;
+    use crate::effects::command::{command_insert_resource, command_spawn_and};
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{command_insert_resource, command_spawn_and};
     use crate::prelude::affect;
 
     proptest! {

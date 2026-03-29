@@ -1,3 +1,8 @@
+//! [`Effect`] implementations for generic iterators.
+//!
+//! On top of the types shown here, this implements [`Effect`] for...
+//! - `Vec<T>` where `T: Effect`
+//! - `Option<T>` where `T: Effect`
 use crate::Effect;
 
 /// [`Effect`] that causes all effects in the provided iterator.
@@ -89,8 +94,10 @@ mod tests {
     use bevy::prelude::*;
     use proptest::prelude::*;
 
+    use crate::effects::command::command_spawn;
+    use crate::effects::message::message_write;
     use crate::effects::number_data::NumberComponent;
-    use crate::effects::{command_spawn, message_write, res_set};
+    use crate::effects::resource::res_set;
     use crate::prelude::affect;
 
     proptest! {
