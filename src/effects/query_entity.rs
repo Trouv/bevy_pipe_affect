@@ -136,7 +136,7 @@ where
 
 impl<QueryDataE, Filter> Effect for QueryEntityAffect<QueryDataE, Filter>
 where
-    QueryDataE: QueryDataEffect + Clone,
+    QueryDataE: QueryDataEffect,
     QueryDataE::MutQueryData: 'static,
     Filter: QueryFilter + 'static,
 {
@@ -154,7 +154,7 @@ where
             }
         };
 
-        self.query_data_effect.clone().affect(&mut query_data);
+        self.query_data_effect.affect(&mut query_data);
     }
 }
 
