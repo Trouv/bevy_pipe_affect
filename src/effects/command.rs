@@ -117,7 +117,7 @@ where
 ///
 /// Can be constructed with [`command_spawn`].
 #[doc = include_str!("defer_command_note.md")]
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandSpawn<B>
 where
     B: Bundle,
