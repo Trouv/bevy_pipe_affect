@@ -90,6 +90,10 @@ use crate::{Effect, EffectOut};
 /// #     }
 /// # }
 /// ```
+///
+/// Not shown...
+/// - Other [`QueryDataEffect`]s are available
+/// - a filter can be applied using the `Filter` generic parameter.
 pub struct QueryEntityAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
@@ -246,6 +250,11 @@ where
 /// #     }
 /// # }
 /// ```
+///
+/// Not shown...
+/// - other [`QueryDataEffect`]s are available
+/// - any `QueryData` (including component tuples), can be input to the map function
+/// - a filter can be applied using the `Filter` generic parameter.
 pub struct QueryEntityMap<QueryDataIn, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -426,6 +435,12 @@ where
 /// #     }
 /// # }
 /// ```
+///
+/// Not shown...
+/// - other [`QueryDataEffect`]s are available
+/// - any `QueryData` (including component tuples), can be input to the map function
+/// - other [`Effect`]s are available
+/// - a filter can be applied using the `Filter` generic parameter.
 pub struct QueryEntityMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
