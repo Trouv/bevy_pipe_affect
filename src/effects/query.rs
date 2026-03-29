@@ -131,7 +131,9 @@ where
     }
 }
 
-/// Type alias for the mapping function in [`QueryMap`].
+/// Type alias for the mapping function in [`QueryMap`] and [`QueryEntityMap`].
+///
+/// [`QueryEntityMap`]: crate::effects::QueryEntityMap
 pub type BoxedQueryMapFn<QueryDataIn, QueryDataE> =
     Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> QueryDataE>;
 
