@@ -33,7 +33,7 @@ use bevy::ecs::system::SystemParam;
 /// enum HealthProcessEffect<T: Effect> {
 ///     Died(DeathEffect<T>),
 ///     Regenerating {
-///         new_health: EntityComponentsSet<(Health,)>,
+///         new_health: QueryEntityAffect<ComponentSet<Health>>,
 ///     },
 ///     // Unit structs/variants will do nothing.
 ///     HealthFull,
