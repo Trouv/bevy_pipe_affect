@@ -334,6 +334,98 @@ where
 /// `QueryDataIn`'s or `QueryDataE`'s filters or the optional `Filter` generic.
 ///
 /// Can be constructed by [`query_entity_map_and`].
+///
+/// # Example
+/// In this example, a system is written that lowers the `Health` of the `CursedPlayer`, and
+/// despawns it if its health goes to 0.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq, Resource)]
+/// struct CursedPlayer(Entity);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Health(u8);
+///
+/// fn damage_cursed_player_pure(
+///     cursed: Res<CursedPlayer>,
+/// ) -> QueryEntityMapAnd<&'static Health, Option<EntityCommandDespawn>, ComponentSet<Health>>
+/// {
+///     let cursed_entity = cursed.0;
+///     query_entity_map_and(cursed_entity, move |health: &Health| {
+///         let new_health = health.0.saturating_sub(10);
+///
+///         let despawn = (new_health == 0).then_some(entity_command_despawn(cursed_entity));
+///
+///         effect_out(despawn, component_set(Health(new_health)))
+///     })
+/// }
+///
+/// fn damage_cursed_player_impure(
+///     cursed: Res<CursedPlayer>,
+///     mut query: Query<&mut Health>,
+///     mut commands: Commands,
+/// ) -> Result<(), BevyError> {
+///     let cursed_entity = cursed.0;
+///     let mut health = query.get_mut(cursed_entity)?;
+///
+///     health.0 = health.0.saturating_sub(10);
+///
+///     if health.0 == 0 {
+///         commands.entity(cursed_entity).despawn();
+///     }
+///     Ok(())
+/// }
+/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(entity_table: Vec<Option<Health>>, cursed_player_index: usize) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #
+/// #     let entities = entity_table.into_iter().fold(
+/// #         vec![app.world_mut().spawn_empty().id()],
+/// #         |mut entities, health| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(health) = health {
+/// #                 entity.insert(health);
+/// #             }
+/// #
+/// #             entities.push(entity.id());
+/// #             entities
+/// #         },
+/// #     );
+/// #
+/// #     app.insert_resource(CursedPlayer(entities[cursed_player_index % entities.len()]));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn query_state(world: &mut World) -> Vec<(Entity, Option<&Health>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Health>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(entity_table: Vec<(Option<Health>)>, cursed_player_index: usize) {
+/// #         let mut pure_app = app_setup(entity_table.clone(), cursed_player_index);
+/// #         pure_app.add_systems(Update, damage_cursed_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(entity_table.clone(), cursed_player_index);
+/// #         impure_app.add_systems(Update, damage_cursed_player_impure);
+/// #
+/// #         for _ in 0..20 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 pub struct QueryEntityMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
