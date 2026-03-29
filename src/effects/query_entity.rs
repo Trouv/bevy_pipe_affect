@@ -344,7 +344,7 @@ where
     /// The entity that the mapping is being applied to.
     pub entity: Entity,
     /// The `QueryData -> EffectOut<Effect, QueryDataEffect>` function that applies to the entity.
-    pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
+    pub f: BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE>,
     filter: PhantomData<Filter>,
 }
 
@@ -356,10 +356,7 @@ where
     Filter: QueryFilter,
 {
     /// Construct a new [`QueryEntityMapAnd`] [`Effect`].
-    pub fn new(
-        entity: Entity,
-        f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
-    ) -> Self {
+    pub fn new(entity: Entity, f: BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE>) -> Self {
         QueryEntityMapAnd {
             entity,
             f,
