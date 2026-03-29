@@ -160,6 +160,92 @@ where
 /// `QueryDataIn`'s or `QueryDataE`'s filters or the optional `Filter` generic.
 ///
 /// Can be constructed by [`query_entity_map`].
+///
+/// # Example
+/// In this example, a system is written that buffs the `BottomPlayer` by making their
+/// `AttackMultiplier` inversely proportional to their `Health`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq, Resource)]
+/// struct BottomPlayer(Entity);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Health(f32);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct AttackMultiplier(f32);
+///
+/// fn buff_bottom_player_pure(
+///     bottom_player: Res<BottomPlayer>,
+/// ) -> QueryEntityMap<&'static Health, ComponentSet<AttackMultiplier>> {
+///     query_entity_map(bottom_player.0, |health: &Health| {
+///         component_set(AttackMultiplier(1.0 + ((100.0 - health.0) / 100.0)))
+///     })
+/// }
+///
+/// fn buff_bottom_player_impure(
+///     bottom_player: Res<BottomPlayer>,
+///     mut query: Query<(&Health, &mut AttackMultiplier)>,
+/// ) -> Result<(), BevyError> {
+///     let (health, mut attack_multiplier) = query.get_mut(bottom_player.0)?;
+///     attack_multiplier.0 = 1.0 + ((100.0 - health.0) / 100.0);
+///     Ok(())
+/// }
+/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(entity_table: Vec<(Option<Health>, Option<AttackMultiplier>)>, bottom_player_index: usize) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #
+/// #     let entities = entity_table.into_iter().fold(
+/// #         vec![app.world_mut().spawn_empty().id()],
+/// #         |mut entities, (health, attack_multiplier)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(health) = health {
+/// #                 entity.insert(health);
+/// #             }
+/// #             if let Some(attack_multiplier) = attack_multiplier {
+/// #                 entity.insert(attack_multiplier);
+/// #             }
+/// #
+/// #             entities.push(entity.id());
+/// #             entities
+/// #         },
+/// #     );
+/// #
+/// #     app.insert_resource(BottomPlayer(entities[bottom_player_index % entities.len()]));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn query_state(world: &mut World) -> Vec<(Entity, Option<&Health>, Option<&AttackMultiplier>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Health>, Option<&AttackMultiplier>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(entity_table: Vec<(Option<Health>, Option<AttackMultiplier>)>, top_player_index: usize) {
+/// #         let mut pure_app = app_setup(entity_table.clone(), top_player_index);
+/// #         pure_app.add_systems(Update, buff_bottom_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(entity_table.clone(), top_player_index);
+/// #         impure_app.add_systems(Update, buff_bottom_player_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             assert_eq!(query_state(pure_app.world_mut()), query_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 pub struct QueryEntityMap<QueryDataIn, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
