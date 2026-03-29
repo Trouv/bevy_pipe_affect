@@ -231,11 +231,11 @@ where
 /// # }
 /// #
 /// # proptest! {
-/// #     fn main(entity_table: Vec<(Option<Health>, Option<AttackMultiplier>)>, top_player_index: usize) {
-/// #         let mut pure_app = app_setup(entity_table.clone(), top_player_index);
+/// #     fn main(entity_table: Vec<(Option<Health>, Option<AttackMultiplier>)>, bottom_player_index: usize) {
+/// #         let mut pure_app = app_setup(entity_table.clone(), bottom_player_index);
 /// #         pure_app.add_systems(Update, buff_bottom_player_pure.pipe(affect));
 /// #
-/// #         let mut impure_app = app_setup(entity_table.clone(), top_player_index);
+/// #         let mut impure_app = app_setup(entity_table.clone(), bottom_player_index);
 /// #         impure_app.add_systems(Update, buff_bottom_player_impure);
 /// #
 /// #         for _ in 0..3 {
