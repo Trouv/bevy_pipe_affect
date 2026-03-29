@@ -1,3 +1,4 @@
+//! [`Effect`]s that modify `Local` parameters.
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 
@@ -71,7 +72,7 @@ mod tests {
     use crate::effect_out;
     use crate::effects::number_data::NumberResource;
     use crate::effects::one_way_fn::OneWayFn;
-    use crate::effects::res_set;
+    use crate::effects::resource::res_set;
     use crate::prelude::affect;
 
     proptest! {

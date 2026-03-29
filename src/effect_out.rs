@@ -347,7 +347,7 @@ mod tests {
     use proptest::prelude::*;
 
     use super::*;
-    use crate::effects::message_write;
+    use crate::effects::message::message_write;
     use crate::effects::number_data::NumberMessage;
 
     proptest! {

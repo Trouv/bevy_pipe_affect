@@ -1,3 +1,4 @@
+//! [`Effect`]s that modify `Query` data.
 use std::marker::PhantomData;
 
 use bevy::ecs::query::{QueryData, QueryFilter, ReadOnlyQueryData};
@@ -143,7 +144,7 @@ where
 
 /// Type alias for the mapping function in [`QueryMap`] and [`QueryEntityMap`].
 ///
-/// [`QueryEntityMap`]: crate::effects::QueryEntityMap
+/// [`QueryEntityMap`]: crate::prelude::QueryEntityMap
 pub type BoxedQueryMapFn<QueryDataIn, QueryDataE> =
     Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> QueryDataE>;
 
@@ -311,7 +312,7 @@ where
 
 /// Type alias for the mapping function in [`QueryMapAnd`] and [`QueryEntityMapAnd`].
 ///
-/// [`QueryEntityMapAnd`]: crate::effects::QueryEntityMapAnd
+/// [`QueryEntityMapAnd`]: crate::prelude::QueryEntityMapAnd
 pub type BoxedQueryMapAndFn<QueryDataIn, E, QueryDataE> =
     Box<dyn for<'w, 's> Fn(<QueryDataIn as QueryData>::Item<'w, 's>) -> EffectOut<E, QueryDataE>>;
 

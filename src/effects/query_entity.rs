@@ -1,3 +1,4 @@
+//! [`Effect`]s that modify `Query` data for particular entities.
 use std::marker::PhantomData;
 
 use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};

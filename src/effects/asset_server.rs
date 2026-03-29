@@ -1,3 +1,4 @@
+//! [`Effect`]s that operate on `Assets` stores and the `AssetServer`.
 use bevy::asset::{AssetPath, InvalidGenerationError};
 use bevy::prelude::*;
 
@@ -247,7 +248,7 @@ mod tests {
     use bevy::asset::LoadState;
 
     use super::*;
-    use crate::effects::command_insert_resource;
+    use crate::effects::command::command_insert_resource;
     use crate::prelude::affect;
 
     #[derive(Resource)]

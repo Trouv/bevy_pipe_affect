@@ -2,79 +2,28 @@
 //!
 //! [`Effect`]: crate::Effect
 
-mod resource;
-pub use resource::{ResSet, ResSetWith, res_set, res_set_with};
+pub mod resource;
 
-mod local;
-pub use local::{LocalSetAnd, local_set_and};
+pub mod local;
 
-mod message;
-pub use message::{MessageWrite, MessagesReadAnd, message_write, messages_read_and};
+pub mod message;
 
-mod command;
-pub use command::{
-    CommandInsertResource,
-    CommandQueue,
-    CommandRemoveResource,
-    CommandSpawn,
-    CommandSpawnAnd,
-    CommandTrigger,
-    command_insert_resource,
-    command_queue,
-    command_remove_resource,
-    command_spawn,
-    command_spawn_and,
-    command_trigger,
-};
+pub mod command;
 
-mod entity_command;
-pub use entity_command::{
-    EntityCommandDespawn,
-    EntityCommandInsert,
-    EntityCommandInsertRecursive,
-    EntityCommandQueue,
-    EntityCommandRemove,
-    EntityCommandRemoveRecursive,
-    entity_command_despawn,
-    entity_command_insert,
-    entity_command_insert_recursive,
-    entity_command_queue,
-    entity_command_remove,
-    entity_command_remove_recursive,
-};
+pub mod entity_command;
 
-mod query;
-pub use query::{QueryAffect, QueryMap, QueryMapAnd, query_affect, query_map, query_map_and};
+pub mod query;
 
-mod query_entity;
-pub use query_entity::{
-    QueryEntityAffect,
-    QueryEntityMap,
-    QueryEntityMapAnd,
-    query_entity_affect,
-    query_entity_map,
-    query_entity_map_and,
-};
+pub mod query_entity;
 
 #[cfg(feature = "asset_server")]
-mod asset_server;
-#[cfg(feature = "asset_server")]
-pub use asset_server::{
-    AssetAddAnd,
-    AssetInsert,
-    AssetServerLoadAnd,
-    asset_add_and,
-    asset_insert,
-    asset_server_load_and,
-};
+pub mod asset_server;
 
-mod algebra;
+pub mod algebra;
 
-mod iter;
-pub use iter::{AffectMany, affect_many};
+pub mod iter;
 
-mod error;
-pub use error::{AffectOrHandle, affect_or_handle};
+pub mod error;
 
 #[cfg(test)]
 mod one_way_fn;

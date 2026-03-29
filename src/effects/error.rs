@@ -1,3 +1,7 @@
+//! [`Effect`]s for error handling.
+//!
+//! On top of the types shown here, this implements [`Effect`] for...
+//! - `Result<T, E>` where `T: Effect` and `E: Into<BevyError>`
 use bevy::ecs::error::{DefaultErrorHandler, ErrorContext};
 use bevy::ecs::system::{SystemChangeTick, SystemName};
 use bevy::prelude::*;
@@ -146,7 +150,8 @@ mod tests {
     use bevy::ecs::query::QuerySingleError;
 
     use super::*;
-    use crate::effects::{CommandSpawn, EntityCommandInsert, EntityCommandRemove, command_spawn};
+    use crate::effects::command::{CommandSpawn, command_spawn};
+    use crate::effects::entity_command::{EntityCommandInsert, EntityCommandRemove};
     use crate::prelude::affect;
 
     #[derive(Component)]
