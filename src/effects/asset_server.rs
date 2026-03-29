@@ -106,7 +106,8 @@ where
     }
 }
 
-/// [`Effect`] that inserts an `Asset` to the asset store with the given `Handle<A>`.
+/// [`Effect`] that inserts an `Asset` to the asset store with the given `Handle<A>` (overwriting
+/// any existing asset at that handle).
 ///
 /// Can be constructed with [`asset_insert`].
 ///
@@ -116,7 +117,9 @@ pub struct AssetInsert<A>
 where
     A: Asset,
 {
+    /// The handle to assign the `Asset` in the asset store.
     pub handle: Handle<A>,
+    /// The `Asset` to insert at the handle.
     pub asset: A,
 }
 
