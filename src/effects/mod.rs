@@ -69,7 +69,14 @@ pub use query_entity::{
 #[cfg(feature = "asset_server")]
 mod asset_server;
 #[cfg(feature = "asset_server")]
-pub use asset_server::{AssetAddAnd, AssetServerLoadAnd, asset_add_and, asset_server_load_and};
+pub use asset_server::{
+    AssetAddAnd,
+    AssetInsert,
+    AssetServerLoadAnd,
+    asset_add_and,
+    asset_insert,
+    asset_server_load_and,
+};
 
 mod algebra;
 

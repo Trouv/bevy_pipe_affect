@@ -1,4 +1,4 @@
-use bevy::asset::AssetPath;
+use bevy::asset::{AssetPath, InvalidGenerationError};
 use bevy::prelude::*;
 
 use crate::Effect;
@@ -103,6 +103,42 @@ where
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
         let handle = param.0.add(self.asset);
         (self.f)(handle).affect(&mut param.1);
+    }
+}
+
+/// [`Effect`] that inserts an `Asset` to the asset store with the given `Handle<A>`.
+///
+/// Can be constructed with [`asset_insert`].
+///
+/// *Requires the `asset_server` feature to be enabled.
+#[derive(Default, Debug, PartialEq, Eq, Clone)]
+pub struct AssetInsert<A>
+where
+    A: Asset,
+{
+    pub handle: Handle<A>,
+    pub asset: A,
+}
+
+/// Construct a new [`AssetInsert`] [`Effect`].
+pub fn asset_insert<A: Asset>(handle: Handle<A>, asset: A) -> AssetInsert<A> {
+    AssetInsert { handle, asset }
+}
+
+impl<A> Effect for AssetInsert<A>
+where
+    A: Asset,
+{
+    type MutParam = (
+        ResMut<'static, Assets<A>>,
+        <Result<(), InvalidGenerationError> as Effect>::MutParam,
+    );
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        match param.0.insert(&self.handle, self.asset) {
+            Ok(()) => (),
+            e => e.affect(&mut param.1),
+        }
     }
 }
 
