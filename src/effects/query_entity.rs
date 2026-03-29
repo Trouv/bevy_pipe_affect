@@ -183,6 +183,7 @@ where
 /// # #[derive(proptest_derive::Arbitrary)]
 /// struct AttackMultiplier(f32);
 ///
+/// /// Pure system using effects.
 /// fn buff_bottom_player_pure(
 ///     bottom_player: Res<BottomPlayer>,
 /// ) -> QueryEntityMap<&'static Health, ComponentSet<AttackMultiplier>> {
@@ -191,6 +192,7 @@ where
 ///     })
 /// }
 ///
+/// /// Equivalent impure system.
 /// fn buff_bottom_player_impure(
 ///     bottom_player: Res<BottomPlayer>,
 ///     mut query: Query<(&Health, &mut AttackMultiplier)>,
@@ -358,6 +360,7 @@ where
 /// # #[derive(proptest_derive::Arbitrary)]
 /// struct Health(u8);
 ///
+/// /// Pure system using effects.
 /// fn damage_cursed_player_pure(
 ///     cursed: Res<CursedPlayer>,
 /// ) -> QueryEntityMapAnd<&'static Health, Option<EntityCommandDespawn>, ComponentSet<Health>>
@@ -372,6 +375,7 @@ where
 ///     })
 /// }
 ///
+/// /// Equivalent impure system.
 /// fn damage_cursed_player_impure(
 ///     cursed: Res<CursedPlayer>,
 ///     mut query: Query<&mut Health>,
