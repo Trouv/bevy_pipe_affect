@@ -55,7 +55,14 @@ pub use crate::effects::{
     res_set_with,
 };
 #[cfg(feature = "asset_server")]
-pub use crate::effects::{AssetAddAnd, AssetServerLoadAnd, asset_add_and, asset_server_load_and};
+pub use crate::effects::{
+    AssetAddAnd,
+    AssetInsert,
+    AssetServerLoadAnd,
+    asset_add_and,
+    asset_insert,
+    asset_server_load_and,
+};
 pub use crate::query_data_effects::{ComponentSet, ComponentsSet, component_set, components_set};
 pub use crate::system_combinators::{
     affect,
