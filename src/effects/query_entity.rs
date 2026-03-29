@@ -326,6 +326,14 @@ where
     }
 }
 
+/// [`Effect`] that applies the given mapping of `QueryData` to [`QueryDataEffect`] + [`Effect`]
+/// (as an `EffectOut<Effect, QueryDataEffect>` to the given entity, and applies the
+/// [`QueryDataEffect`] + [`Effect`].
+///
+/// Produces an error (handled by `bevy`'s `DefaultErrorHandler`) if the entity isn't selected by
+/// `QueryDataIn`'s or `QueryDataE`'s filters or the optional `Filter` generic.
+///
+/// Can be constructed by [`query_entity_map_and`].
 pub struct QueryEntityMapAnd<QueryDataIn, E, QueryDataE, Filter = ()>
 where
     QueryDataIn: ReadOnlyQueryData,
@@ -333,7 +341,9 @@ where
     QueryDataE: QueryDataEffect,
     Filter: QueryFilter,
 {
+    /// The entity that the mapping is being applied to.
     pub entity: Entity,
+    /// The `QueryData -> EffectOut<Effect, QueryDataEffect>` function that applies to the entity.
     pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE>>,
     filter: PhantomData<Filter>,
 }
@@ -358,6 +368,7 @@ where
     }
 }
 
+/// Construct a new [`QueryEntityMapAnd`] [`Effect`].
 pub fn query_entity_map_and<QueryDataIn, E, QueryDataE, Filter, F>(
     entity: Entity,
     f: F,
