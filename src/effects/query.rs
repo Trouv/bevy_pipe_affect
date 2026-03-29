@@ -80,7 +80,7 @@ use crate::{Effect, EffectOut, effect_out};
 /// Not shown...
 /// - other [`QueryDataEffect`]s are available
 /// - the `Filter` parameter can be omitted
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct QueryAffect<QueryDataE, Filter = ()>
 where
     QueryDataE: QueryDataEffect,
@@ -114,6 +114,16 @@ where
     Filter: QueryFilter,
 {
     QueryAffect::new(query_data_effect)
+}
+
+impl<QueryDataE, Filter> Default for QueryAffect<QueryDataE, Filter>
+where
+    QueryDataE: QueryDataEffect + Default,
+    Filter: QueryFilter,
+{
+    fn default() -> Self {
+        query_affect(default())
+    }
 }
 
 impl<QueryDataE, Filter> Effect for QueryAffect<QueryDataE, Filter>
@@ -254,6 +264,17 @@ where
     F: for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE + 'static,
 {
     QueryMap::new(Box::new(f))
+}
+
+impl<QueryDataIn, QueryDataE, Filter> Default for QueryMap<QueryDataIn, QueryDataE, Filter>
+where
+    QueryDataIn: ReadOnlyQueryData,
+    QueryDataE: QueryDataEffect + Default,
+    Filter: QueryFilter,
+{
+    fn default() -> Self {
+        query_map(|_| default())
+    }
 }
 
 impl<QueryDataIn, QueryDataE, Filter> Effect for QueryMap<QueryDataIn, QueryDataE, Filter>
@@ -459,6 +480,18 @@ where
     F: for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> EffectOut<E, QueryDataE> + 'static,
 {
     QueryMapAnd::new(Box::new(f))
+}
+
+impl<QueryDataIn, E, QueryDataE, Filter> Default for QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
+where
+    QueryDataIn: ReadOnlyQueryData,
+    E: Effect + Default,
+    QueryDataE: QueryDataEffect + Default,
+    Filter: QueryFilter,
+{
+    fn default() -> Self {
+        query_map_and(|_| default())
+    }
 }
 
 impl<QueryDataIn, E, QueryDataE, Filter> Effect for QueryMapAnd<QueryDataIn, E, QueryDataE, Filter>
