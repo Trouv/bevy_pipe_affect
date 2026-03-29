@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use bevy::ecs::query::{QueryFilter, ReadOnlyQueryData};
 use bevy::prelude::*;
 
+use crate::effects::query::BoxedQueryMapFn;
 use crate::query_data_effect::QueryDataEffect;
 use crate::{Effect, EffectOut};
 
@@ -168,7 +169,7 @@ where
     /// The entity that the mapping is applied to.
     pub entity: Entity,
     /// The `QueryData -> QueryDataEffect` function that is applied to the entity.
-    pub f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>,
+    pub f: BoxedQueryMapFn<QueryDataIn, QueryDataE>,
     filter: PhantomData<Filter>,
 }
 
@@ -179,10 +180,7 @@ where
     Filter: QueryFilter,
 {
     /// Construct a new [`QueryEntityMap`] [`Effect`].
-    pub fn new(
-        entity: Entity,
-        f: Box<dyn for<'w, 's> Fn(QueryDataIn::Item<'w, 's>) -> QueryDataE>,
-    ) -> Self {
+    pub fn new(entity: Entity, f: BoxedQueryMapFn<QueryDataIn, QueryDataE>) -> Self {
         QueryEntityMap {
             entity,
             f,
