@@ -106,10 +106,10 @@ where
     }
 }
 
-/// [`Effect`] that inserts an `Asset` to the asset store with the given `Handle<A>` (overwriting
-/// any existing asset at that handle).
+/// [`Effect`] that inserts an `Asset` to the asset store with the given `AssetId` (overwriting any
+/// existing asset at that id).
 ///
-/// Can be constructed with [`asset_insert`].
+/// Can be constructed with [`asset_insert`], which can conveniently convert from a `&Handle<A>`.
 ///
 /// *Requires the `asset_server` feature to be enabled.
 #[derive(Default, Debug, PartialEq, Eq, Clone)]
@@ -117,15 +117,22 @@ pub struct AssetInsert<A>
 where
     A: Asset,
 {
-    /// The handle to assign the `Asset` in the asset store.
-    pub handle: Handle<A>,
-    /// The `Asset` to insert at the handle.
+    /// The id to assign the `Asset` in the asset store.
+    pub id: AssetId<A>,
+    /// The `Asset` to insert at the id.
     pub asset: A,
 }
 
 /// Construct a new [`AssetInsert`] [`Effect`].
-pub fn asset_insert<A: Asset>(handle: Handle<A>, asset: A) -> AssetInsert<A> {
-    AssetInsert { handle, asset }
+pub fn asset_insert<IntoAssetId, A>(id: IntoAssetId, asset: A) -> AssetInsert<A>
+where
+    IntoAssetId: Into<AssetId<A>>,
+    A: Asset,
+{
+    AssetInsert {
+        id: id.into(),
+        asset,
+    }
 }
 
 impl<A> Effect for AssetInsert<A>
@@ -138,7 +145,7 @@ where
     );
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        match param.0.insert(&self.handle, self.asset) {
+        match param.0.insert(self.id, self.asset) {
             Ok(()) => (),
             e => e.affect(&mut param.1),
         }
