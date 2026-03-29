@@ -56,6 +56,16 @@ pub use entity_command::{
 mod query;
 pub use query::{QueryAffect, QueryMap, QueryMapAnd, query_affect, query_map, query_map_and};
 
+mod query_entity;
+pub use query_entity::{
+    QueryEntityAffect,
+    QueryEntityMap,
+    QueryEntityMapAnd,
+    query_entity_affect,
+    query_entity_map,
+    query_entity_map_and,
+};
+
 #[cfg(feature = "asset_server")]
 mod asset_server;
 #[cfg(feature = "asset_server")]
