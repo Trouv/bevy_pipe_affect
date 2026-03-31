@@ -16,8 +16,8 @@ pub mod query;
 
 pub mod query_entity;
 
-#[cfg(feature = "asset_server")]
-pub mod asset_server;
+#[cfg(feature = "asset")]
+pub mod asset;
 
 pub mod algebra;
 

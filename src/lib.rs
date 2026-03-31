@@ -15,12 +15,12 @@
 //! ## Feature flags
 //! This crate provides the following set of [feature flags]:
 //! - `derive`: enables the [`Effect`] derive macro for structs and enums of effects
-//! - `asset_server`: enables the `bevy/bevy_asset` feature and [`AssetServer`-related effects]
+//! - `asset`: enables the `bevy/bevy_asset` feature and [`Asset`-related effects]
 //!
 //! None of these are enabled by default.
 //!
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/features.html#the-features-section
-//! [`AssetServer`-related effects]: effects::asset_server
+//! [`Asset`-related effects]: effects::asset
 #![warn(missing_docs)]
 #![deny(rustdoc::all)]
 
