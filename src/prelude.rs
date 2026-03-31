@@ -56,14 +56,14 @@ pub use crate::effects::query_entity::{
     query_entity_map_and,
 };
 pub use crate::effects::resource::{ResSet, ResSetWith, res_set, res_set_with};
-#[cfg(feature = "asset_server")]
+#[cfg(feature = "asset")]
 pub use crate::effects::{
-    asset_server::AssetAddAnd,
-    asset_server::AssetInsert,
-    asset_server::AssetServerLoadAnd,
-    asset_server::asset_add_and,
-    asset_server::asset_insert,
-    asset_server::asset_server_load_and,
+    asset::AssetAddAnd,
+    asset::AssetInsert,
+    asset::AssetServerLoadAnd,
+    asset::asset_add_and,
+    asset::asset_insert,
+    asset::asset_server_load_and,
 };
 pub use crate::query_data_effects::{ComponentSet, ComponentsSet, component_set, components_set};
 pub use crate::system_combinators::{

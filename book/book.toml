@@ -11,4 +11,4 @@ after = ["links"]
 manifest_dir = "."
 externs = ["bevy", "bevy_pipe_affect"]
 # be careful about enabling more features as the test builds quickly exceed github runner disk sizes
-build_features = ["asset_server", "bevy/bevy_camera", "bevy/bevy_sprite", "bevy/bevy_audio"]
+build_features = ["asset", "bevy/bevy_camera", "bevy/bevy_sprite", "bevy/bevy_audio"]

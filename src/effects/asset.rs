@@ -9,7 +9,7 @@ use crate::Effect;
 ///
 /// Can be constructed with [`asset_server_load_and`].
 ///
-/// *Requires the `asset_server` feature to be enabled.*
+/// *Requires the `asset` feature to be enabled.*
 #[derive(derive_more::Debug)]
 pub struct AssetServerLoadAnd<'a, A, E>
 where
@@ -25,7 +25,7 @@ where
 
 /// Construct a new [`AssetServerLoadAnd`] [`Effect`], with an extra effect using the `Handle<A>`.
 ///
-/// *Requires the `asset_server` feature to be enabled.*
+/// *Requires the `asset` feature to be enabled.*
 pub fn asset_server_load_and<'a, P, F, A, E>(path: P, f: F) -> AssetServerLoadAnd<'a, A, E>
 where
     P: Into<AssetPath<'a>>,
@@ -57,7 +57,7 @@ where
 ///
 /// Can be constructed with [`asset_add_and`].
 ///
-/// *Requires the `asset_server` feature to be enabled.*
+/// *Requires the `asset` feature to be enabled.*
 #[derive(derive_more::Debug)]
 pub struct AssetAddAnd<A, E>
 where
@@ -112,7 +112,7 @@ where
 ///
 /// Can be constructed with [`asset_insert`], which can conveniently convert from a `&Handle<A>`.
 ///
-/// *Requires the `asset_server` feature to be enabled.*
+/// *Requires the `asset` feature to be enabled.*
 ///
 /// # Example
 /// In this example, we have a custom `AnimationMap` asset for storing animation indices by name,
