@@ -13,6 +13,67 @@ pub type BoxedLocalSetAndFn<T, E> = Box<dyn FnOnce(&T) -> EffectOut<E, T>>;
 /// Note: the local parameter read/written to in this effect is local to this effect. It cannot be
 /// read/written anywhere outside of `f`. E.g., the system that produces this effect cannot read it
 /// with its own `Local<T>`, it will instead be an additional, independent local parameter.
+///
+/// # Example
+/// In this example, a system is written that updates a resource to the next fibonacci value,
+/// relying on a local parameter to store the previous fibonacci value.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Resource)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct FibonacciNumber(u32);
+///
+/// /// Pure system using effects.
+/// fn next_fib_pure(
+///     current_fib: Res<FibonacciNumber>,
+/// ) -> LocalSetAnd<u32, ResSet<FibonacciNumber>> {
+///     let current_fib = current_fib.0;
+///     local_set_and(move |last_fib| {
+///         let next_fib = FibonacciNumber(current_fib.saturating_add(*last_fib));
+///         effect_out(res_set(next_fib), current_fib)
+///     })
+/// }
+///
+/// /// Equivalent impure system.
+/// fn next_fib_impure(mut current_fib: ResMut<FibonacciNumber>, mut last_fib: Local<u32>) {
+///     let next_fib = current_fib.0.saturating_add(*last_fib);
+///     *last_fib = current_fib.0;
+///     current_fib.0 = next_fib;
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(fib_number: FibonacciNumber) -> App {
+/// #     let mut app = App::new();
+/// #     app.insert_resource(fib_number);
+/// #     app
+/// # }
+/// #
+/// # fn resource_state(world: &World) -> &FibonacciNumber {
+/// #     world.get_resource::<FibonacciNumber>().unwrap()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(fib_number: FibonacciNumber) {
+/// #         let mut pure_app = app_setup(fib_number);
+/// #         pure_app.add_systems(Update, next_fib_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(fib_number);
+/// #         impure_app.add_systems(Update, next_fib_impure);
+/// #
+/// #         for _ in 0..20 {
+/// #              prop_assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
+/// #              pure_app.update();
+/// #              impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - Other [`Effect`]s can be used for the `E` parameter.
 #[derive(derive_more::Debug)]
 pub struct LocalSetAnd<T, E>
 where
