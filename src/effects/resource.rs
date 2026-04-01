@@ -52,7 +52,7 @@ use crate::effect::Effect;
 /// #         impure_app.add_systems(Update, reset_score_impure);
 /// #
 /// #         for _ in 0..3 {
-/// #              assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
+/// #              prop_assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
 /// #              pure_app.update();
 /// #              impure_app.update();
 /// #         }
@@ -132,7 +132,7 @@ where
 /// #         impure_app.add_systems(Update, increment_updates_impure);
 /// #
 /// #         for _ in 0..20 {
-/// #              assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
+/// #              prop_assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
 /// #              pure_app.update();
 /// #              impure_app.update();
 /// #         }
