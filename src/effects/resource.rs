@@ -87,9 +87,58 @@ where
     }
 }
 
-/// [`Effect`] that transforms a `Resource` with the provided function.
+/// [`Effect`] that transforms a `Resource` with the provided `R -> R` function.
 ///
 /// Can be constructed by [`res_set_with`].
+///
+/// # Example
+/// In this example, a system is written that increments the `Updates` by 1.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Resource)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Updates(u32);
+///
+/// /// Pure system using effects.
+/// fn increment_updates_pure() -> ResSetWith<Updates> {
+///     res_set_with(|Updates(n)| Updates(n + 1))
+/// }
+///
+/// /// Equivalent impure system.
+/// fn increment_updates_impure(mut updates: ResMut<Updates>) {
+///     updates.0 += 1;
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(updates: Updates) -> App {
+/// #     let mut app = App::new();
+/// #     app.insert_resource(updates);
+/// #     app
+/// # }
+/// #
+/// # fn resource_state(world: &World) -> &Updates {
+/// #     world.get_resource::<Updates>().unwrap()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(updates: Updates) {
+/// #         let mut pure_app = app_setup(updates);
+/// #         pure_app.add_systems(Update, increment_updates_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(updates);
+/// #         impure_app.add_systems(Update, increment_updates_impure);
+/// #
+/// #         for _ in 0..20 {
+/// #              assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
+/// #              pure_app.update();
+/// #              impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[derive(derive_more::Debug)]
 pub struct ResSetWith<R>
 where
