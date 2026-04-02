@@ -144,7 +144,7 @@ mod tests {
                         (|| {
                             messages_read_and(move |m: &NumberMessage| {
                                 let m = m.0;
-                                res_set_with(move |n: NumberResource| NumberResource(n.0.wrapping_add(m)))
+                                res_set_with(move |n: &NumberResource| NumberResource(n.0.wrapping_add(m)))
                             })
                         })
                         .pipe(affect),
