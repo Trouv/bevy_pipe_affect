@@ -110,7 +110,7 @@ where
 /// [`effect_composition`]: crate::effect_composition
 pub fn in_and_then_compose<IntoEffectOut1, E1, O1, System, Marker, IntoEffectOut2, E2, O2, E3>(
     mut s: System,
-    compose_fn: impl Fn(E1, E2) -> E3 + Clone,
+    compose_fn: impl Fn(E1, E2) -> E3,
 ) -> impl FnMut(In<IntoEffectOut1>, StaticSystemParam<System::Param>) -> EffectOut<E3, O2>
 where
     System: SystemParamFunction<Marker, Out = IntoEffectOut2>,
@@ -122,10 +122,9 @@ where
     for<'a> System::In: SystemInput<Inner<'a> = O1>,
 {
     move |In(into_effect_out), params| {
-        into_effect_out.into().and_then_compose(
-            |input| s.run(input, params.into_inner()),
-            compose_fn.clone(),
-        )
+        into_effect_out
+            .into()
+            .and_then_compose(|input| s.run(input, params.into_inner()), &compose_fn)
     }
 }
 
