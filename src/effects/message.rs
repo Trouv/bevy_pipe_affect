@@ -6,6 +6,73 @@ use crate::Effect;
 /// [`Effect`] that sends a message `M` to the corresponding `MessageWriter`.
 ///
 /// Can be constructed with [`message_write`].
+///
+/// # Example
+/// In this example, a system is written that writes a `Winner` message if any entity has a score
+/// above 100.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Score(u8);
+///
+/// #[derive(Copy, Clone, Debug, PartialEq, Eq, Message)]
+/// struct Winner(Entity);
+///
+/// /// Pure system using effects.
+/// fn declare_winner_pure(query: Query<(Entity, &Score)>) -> Option<MessageWrite<Winner>> {
+///     query
+///         .iter()
+///         .find(|(_, score)| score.0 >= 100)
+///         .map(|(entity, _)| message_write(Winner(entity)))
+/// }
+///
+/// /// Equivalent impure system.
+/// fn declare_winner_impure(query: Query<(Entity, &Score)>, mut writer: MessageWriter<Winner>) {
+///     if let Some((entity, _)) = query.iter().find(|(_, score)| score.0 >= 100) {
+///         writer.write(Winner(entity));
+///     }
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<Option<Score>>) -> App {
+/// #     let mut app = App::new();
+/// #     app.add_message::<Winner>();
+/// #     component_table.into_iter().for_each(|score| {
+/// #         let mut entity = app.world_mut().spawn_empty();
+/// #         if let Some(score) = score {
+/// #             entity.insert(score);
+/// #         }
+/// #     });
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &World) -> Vec<&Winner> {
+/// #     world
+/// #         .resource::<Messages<Winner>>()
+/// #         .iter_current_update_messages()
+/// #         .collect::<Vec<_>>()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<Option<Score>>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, declare_winner_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone());
+/// #         impure_app.add_systems(Update, declare_winner_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct MessageWrite<M>
 where
@@ -40,6 +107,104 @@ where
 /// The cursor of the message reader is updated.
 ///
 /// Can be constructed with [`messages_read_and`].
+///
+/// # Example
+/// In this example, a system is written that increments an entity's `Wins` counter if they are
+/// declared a winner by the `Winner` message.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Wins(u8);
+///
+/// #[derive(Copy, Clone, Debug, PartialEq, Eq, Message)]
+/// struct Winner(Entity);
+///
+/// /// Pure system using effects.
+/// fn tally_wins_pure() -> MessagesReadAnd<Winner, QueryEntityMap<&'static Wins, ComponentSet<Wins>>> {
+///     messages_read_and(|&Winner(entity)| {
+///         query_entity_map(entity, |&Wins(n)| component_set(Wins(n.saturating_add(1))))
+///     })
+/// }
+///
+/// /// Equivalent impure system.
+/// fn tally_wins_impure(mut query: Query<&mut Wins>, mut reader: MessageReader<Winner>) {
+///     reader.read().for_each(|Winner(entity)| {
+///         if let Ok(mut wins) = query.get_mut(*entity) {
+///             wins.0 = wins.0.saturating_add(1);
+///         }
+///     });
+/// }
+/// #
+/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(
+/// #     component_table: Vec<Option<Wins>>,
+/// #     mut winner_indices_per_update: Vec<Vec<usize>>,
+/// # ) -> App {
+/// #     let mut app = App::new();
+/// #     app.add_message::<Winner>()
+/// #         .insert_resource(DefaultErrorHandler(ignore));
+/// #
+/// #     let entities = component_table
+/// #         .into_iter()
+/// #         .map(|wins| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #             if let Some(wins) = wins {
+/// #                 entity.insert(wins);
+/// #             }
+/// #
+/// #             entity.id()
+/// #         })
+/// #         .collect::<Vec<_>>();
+/// #
+/// #     app.add_systems(
+/// #         PreUpdate,
+/// #         (move || {
+/// #             winner_indices_per_update.pop().map(|winner_indices| {
+/// #                 winner_indices
+/// #                     .into_iter()
+/// #                     .map(|winner_index| {
+/// #                         message_write(Winner(entities[winner_index % entities.len()]))
+/// #                     })
+/// #                     .collect::<Vec<_>>()
+/// #             })
+/// #         })
+/// #         .pipe(affect),
+/// #     );
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Wins>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Wins>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table in proptest::collection::vec(any::<Option<Wins>>(), 1..64), winner_indices: Vec<Vec<usize>>) {
+/// #         let mut pure_app = app_setup(component_table.clone(), winner_indices.clone());
+/// #         pure_app.add_systems(Update, tally_wins_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone(), winner_indices.clone());
+/// #         impure_app.add_systems(Update, tally_wins_impure);
+/// #
+/// #         for _ in 0..winner_indices.len() + 1 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - in this example, [`QueryEntityMap`] is used as the [`Effect`], but any other effect could be produced.
+///
+/// [`QueryEntityMap`]: crate::prelude::QueryEntityMap
 #[derive(derive_more::Debug)]
 pub struct MessagesReadAnd<M, E>
 where
