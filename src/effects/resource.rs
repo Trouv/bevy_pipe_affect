@@ -1,6 +1,5 @@
 //! [`Effect`]s that modify resources.
 use std::any::type_name;
-use std::convert::identity;
 
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
@@ -142,18 +141,18 @@ where
 #[derive(derive_more::Debug)]
 pub struct ResSetWith<R>
 where
-    R: Resource + Clone,
+    R: Resource,
 {
     /// The function that maps the resource to its new value.
-    #[debug("{} -> {}", type_name::<R>(), type_name::<R>())]
-    pub f: Box<dyn FnOnce(R) -> R>,
+    #[debug("{} -> {}", type_name::<&R>(), type_name::<R>())]
+    pub f: Box<dyn FnOnce(&R) -> R>,
 }
 
 /// Construct a new [`ResSetWith`] [`Effect`].
 pub fn res_set_with<F, R>(f: F) -> ResSetWith<R>
 where
-    F: FnOnce(R) -> R + 'static,
-    R: Resource + Clone,
+    F: FnOnce(&R) -> R + 'static,
+    R: Resource,
 {
     ResSetWith { f: Box::new(f) }
 }
@@ -163,18 +162,18 @@ where
     R: Resource + Clone,
 {
     fn default() -> Self {
-        res_set_with(identity)
+        res_set_with(|r: &R| r.clone())
     }
 }
 
 impl<R> Effect for ResSetWith<R>
 where
-    R: Resource + Clone,
+    R: Resource,
 {
     type MutParam = ResMut<'static, R>;
 
     fn affect(self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        **param = (self.f)(param.clone());
+        **param = (self.f)(param);
     }
 }
 
@@ -212,7 +211,7 @@ mod tests {
 
             app.insert_resource(initial.clone()).add_systems(
                 Update,
-                (move || res_set_with(move |NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
+                (move || res_set_with(move |&NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
             );
 
             prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
