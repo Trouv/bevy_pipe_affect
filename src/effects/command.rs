@@ -7,7 +7,87 @@ use crate::Effect;
 
 /// [`Effect`] that pushes a generic command to the command queue.
 ///
+/// This effect is mostly intended to "fill the gaps" of `bevy_pipe_affect`, as not all commands or
+/// world mutations provided by bevy have an equivalent effect.
+/// Using this typically requires writing some impure code anyway, so users should also consider
+/// writing their own custom [`Effect`] instead.
+/// (Then, if it's general-purpose enough, consider contributing it upstream!)
+///
 /// Can be constructed with [`command_queue`].
+///
+/// # Example
+/// In this example, a system is written that gives all `Player`s a `Score` of 0 if they do not
+/// already have a score.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Player;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Score(u32);
+///
+/// #[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// struct InitScores(Vec<Entity>);
+///
+/// impl Command for InitScores {
+///     fn apply(self, world: &mut World) {
+///         world.insert_batch_if_new(self.0.into_iter().map(|entity| (entity, Score(0))));
+///     }
+/// }
+///
+/// /// Pure-ish system using effects.
+/// fn init_player_score_pureish(query: Query<Entity, With<Player>>) -> CommandQueue<InitScores> {
+///     command_queue(InitScores(query.iter().collect()))
+/// }
+///
+/// /// Equivalent impure system.
+/// fn init_player_score_impure(query: Query<Entity, With<Player>>, mut commands: Commands) {
+///     commands.queue(InitScores(query.iter().collect()));
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<(Option<Player>, Option<Score>)>) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     component_table.into_iter().for_each(|(player, score)| {
+/// #         let mut entity = app.world_mut().spawn_empty();
+/// #         if let Some(player) = player {
+/// #             entity.insert(player);
+/// #         }
+/// #         if let Some(score) = score {
+/// #             entity.insert(score);
+/// #         }
+/// #     });
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Player>, Option<&Score>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Player>, Option<&Score>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<Player>, Option<Score>)>) {
+/// #          let mut pure_app = app_setup(component_table.clone());
+/// #          pure_app.add_systems(Update, init_player_score_pureish.pipe(affect));
+/// #
+/// #          let mut impure_app = app_setup(component_table.clone());
+/// #          impure_app.add_systems(Update, init_player_score_impure);
+/// #
+/// #          for _ in 0..3 {
+/// #              prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #              pure_app.update();
+/// #              impure_app.update();
+/// #          }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandQueue<C>
@@ -40,6 +120,58 @@ where
 /// [`Effect`] that queues a command for inserting the provided `Resource` in the `World`.
 ///
 /// Can be constucted with [`command_insert_resource`].
+///
+/// # Example
+/// In this example, a sysstem is written that inserts a `Score` of 0.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Resource)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Score(u32);
+///
+/// /// Pure system using effects.
+/// fn init_score_pure() -> CommandInsertResource<Score> {
+///     command_insert_resource(Score(0))
+/// }
+///
+/// /// Equivalent impure system.
+/// fn init_score_impure(mut commands: Commands) {
+///     commands.insert_resource(Score(0))
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(score: Option<Score>) -> App {
+/// #     let mut app = App::new();
+/// #     if let Some(score) = score {
+/// #         app.insert_resource(score);
+/// #     }
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn resource_state(world: &World) -> Option<&Score> {
+/// #     world.get_resource::<Score>()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(score: Option<Score>) {
+/// #         let mut pure_app = app_setup(score);
+/// #         pure_app.add_systems(Update, init_score_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(score);
+/// #         impure_app.add_systems(Update, init_score_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #              prop_assert_eq!(resource_state(pure_app.world_mut()), resource_state(impure_app.world_mut()));
+/// #              pure_app.update();
+/// #              impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandInsertResource<R>
@@ -72,6 +204,58 @@ where
 /// [`Effect`] that queues a command for removing a `Resource` from the `World`.
 ///
 /// Can be constructed with [`command_remove_resource`].
+///
+/// # Example
+/// In this example, a system is written that removes the `GoToLevel` resource (presumably, after
+/// some level transition has completed).
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Resource)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct GoToLevel(usize);
+///
+/// fn complete_level_transition_pure() -> CommandRemoveResource<GoToLevel> {
+///     command_remove_resource::<GoToLevel>()
+/// }
+///
+/// fn complete_level_transition_impure(mut commands: Commands) {
+///     commands.remove_resource::<GoToLevel>()
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(resource: Option<GoToLevel>) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     if let Some(resource) = resource {
+/// #         app.insert_resource(resource);
+/// #     }
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &World) -> Option<&GoToLevel> {
+/// #     world.get_resource::<GoToLevel>()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(resource: Option<GoToLevel>) {
+/// #         let mut pure_app = app_setup(resource);
+/// #         pure_app.add_systems(Update, complete_level_transition_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(resource);
+/// #         impure_app.add_systems(Update, complete_level_transition_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #              prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #              pure_app.update();
+/// #              impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandRemoveResource<R>
@@ -117,6 +301,52 @@ where
 /// See [`CommandSpawnAnd`] if you need to produce an extra effect with the spawned `Entity` id.
 ///
 /// Can be constructed with [`command_spawn`].
+///
+/// # Example
+/// In this example, a system is written that spawns an `Enemy`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Enemy;
+///
+/// /// Pure system using effects.
+/// fn spawn_enemy_pure() -> CommandSpawn<Enemy> {
+///     command_spawn(Enemy)
+/// }
+///
+/// /// Equivalent impure system.
+/// fn spawn_enemy_impure(mut commands: Commands) {
+///     commands.spawn(Enemy);
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     App::new()
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Enemy>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Enemy>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, spawn_enemy_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, spawn_enemy_impure);
+/// #
+/// #     for _ in 0..32 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandSpawn<B>
@@ -152,6 +382,67 @@ where
 /// See [`CommandSpawn`] if you do not need to produce an extra effect.
 ///
 /// Can be constructed with [`command_spawn_and`].
+///
+/// # Example
+/// In this example, a system is written that spawns a `Player`, and a `Sword` as a child of the
+/// player.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Player;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Sword;
+///
+/// /// Pure system using effects.
+/// fn spawn_armed_player_pure() -> CommandSpawnAnd<Player, CommandSpawn<(Sword, ChildOf)>> {
+///     command_spawn_and(Player, |player_entity| {
+///         command_spawn((Sword, ChildOf(player_entity)))
+///     })
+/// }
+///
+/// /// Equivalent impure system.
+/// fn spawn_armed_player_impure(mut commands: Commands) {
+///     commands.spawn(Player).with_children(|parent| {
+///         parent.spawn(Sword);
+///     });
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     App::new()
+/// # }
+/// #
+/// # fn test_state(
+/// #     world: &mut World,
+/// # ) -> Vec<(Entity, Option<&Player>, Option<&Sword>, Option<&ChildOf>)> {
+/// #     let mut query =
+/// #         world.query::<(Entity, Option<&Player>, Option<&Sword>, Option<&ChildOf>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, spawn_armed_player_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, spawn_armed_player_impure);
+/// #
+/// #     for _ in 0..32 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - In this example, [`CommandSpawn`] is used as the additional [`Effect`], but any other effect
+/// could be produced.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(derive_more::Debug)]
 pub struct CommandSpawnAnd<B, E>
@@ -209,6 +500,79 @@ where
 /// [`Effect`] that queues a command for triggering the given event.
 ///
 /// Can be constructed with [`command_trigger`].
+///
+/// # Example
+/// In this example, a system is written that triggers a `Winner` event if any entity has a score
+/// above 100.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Score(u8);
+///
+/// #[derive(Copy, Clone, Debug, PartialEq, Eq, Event)]
+/// struct Winner(Entity);
+///
+/// /// Pure system using effects.
+/// fn declare_winner_pure(query: Query<(Entity, &Score)>) -> Option<CommandTrigger<Winner>> {
+///     query
+///         .iter()
+///         .find(|(_, score)| score.0 >= 100)
+///         .map(|(entity, _)| command_trigger(Winner(entity)))
+/// }
+///
+/// /// Equivalent impure system.
+/// fn declare_winner_impure(query: Query<(Entity, &Score)>, mut commands: Commands) {
+///     if let Some((entity, _)) = query.iter().find(|(_, score)| score.0 >= 100) {
+///         commands.trigger(Winner(entity))
+///     }
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # fn reset_winner_score(winner: On<Winner>) -> QueryEntityAffect<ComponentSet<Score>> {
+/// #     query_entity_affect(winner.0, component_set(Score(0)))
+/// # }
+/// #
+/// # fn app_setup(component_table: Vec<Option<Score>>) -> App {
+/// #     let mut app = App::new();
+/// #     app.add_systems(
+/// #         Update,
+/// #         (|| command_spawn(Observer::new(reset_winner_score.pipe(affect)))).pipe(affect),
+/// #     );
+/// #     component_table.into_iter().for_each(|score| {
+/// #         let mut entity = app.world_mut().spawn_empty();
+/// #         if let Some(score) = score {
+/// #             entity.insert(score);
+/// #         }
+/// #     });
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Score>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Score>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<Option<Score>>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, declare_winner_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone());
+/// #         impure_app.add_systems(Update, declare_winner_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandTrigger<E>
