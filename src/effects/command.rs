@@ -382,6 +382,67 @@ where
 /// See [`CommandSpawn`] if you do not need to produce an extra effect.
 ///
 /// Can be constructed with [`command_spawn_and`].
+///
+/// # Example
+/// In this example, a system is written that spawns a `Player`, and a `Sword` as a child of the
+/// player.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Player;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Sword;
+///
+/// /// Pure system using effects.
+/// fn spawn_armed_player_pure() -> CommandSpawnAnd<Player, CommandSpawn<(Sword, ChildOf)>> {
+///     command_spawn_and(Player, |player_entity| {
+///         command_spawn((Sword, ChildOf(player_entity)))
+///     })
+/// }
+///
+/// /// Equivalent impure system.
+/// fn spawn_armed_player_impure(mut commands: Commands) {
+///     commands.spawn(Player).with_children(|parent| {
+///         parent.spawn(Sword);
+///     });
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     App::new()
+/// # }
+/// #
+/// # fn test_state(
+/// #     world: &mut World,
+/// # ) -> Vec<(Entity, Option<&Player>, Option<&Sword>, Option<&ChildOf>)> {
+/// #     let mut query =
+/// #         world.query::<(Entity, Option<&Player>, Option<&Sword>, Option<&ChildOf>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, spawn_armed_player_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, spawn_armed_player_impure);
+/// #
+/// #     for _ in 0..32 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - In this example, [`CommandSpawn`] is used as the additional [`Effect`], but any other effect
+/// could be produced.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(derive_more::Debug)]
 pub struct CommandSpawnAnd<B, E>
