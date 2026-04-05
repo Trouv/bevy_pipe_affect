@@ -301,6 +301,52 @@ where
 /// See [`CommandSpawnAnd`] if you need to produce an extra effect with the spawned `Entity` id.
 ///
 /// Can be constructed with [`command_spawn`].
+///
+/// # Example
+/// In this example, a system is written that spawns an `Enemy`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component)]
+/// struct Enemy;
+///
+/// /// Pure system using effects.
+/// fn spawn_enemy_pure() -> CommandSpawn<Enemy> {
+///     command_spawn(Enemy)
+/// }
+///
+/// /// Equivalent impure system.
+/// fn spawn_enemy_impure(mut commands: Commands) {
+///     commands.spawn(Enemy);
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     App::new()
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Enemy>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Enemy>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, spawn_enemy_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, spawn_enemy_impure);
+/// #
+/// #     for _ in 0..32 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct CommandSpawn<B>
