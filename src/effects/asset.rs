@@ -17,12 +17,14 @@ use crate::Effect;
 /// use bevy::prelude::*;
 /// use bevy_pipe_affect::prelude::*;
 ///
+/// /// Pure system using effects.
 /// fn spawn_player_pure() -> AssetServerLoadAnd<'static, Image, CommandSpawn<Sprite>> {
 ///     asset_server_load_and("player.png", |handle| {
 ///         command_spawn(Sprite::from_image(handle))
 ///     })
 /// }
 ///
+/// /// Equivalent impure system.
 /// fn spawn_player_impure(asset_server: Res<AssetServer>, mut commands: Commands) {
 ///     let handle = asset_server.load("player.png");
 ///     commands.spawn(Sprite::from_image(handle));

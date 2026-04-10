@@ -28,12 +28,12 @@ use crate::{Effect, EffectOut, effect_out};
 /// # #[derive(proptest_derive::Arbitrary)]
 /// struct Brake;
 ///
-/// // Pure system using effects.
+/// /// Pure system using effects.
 /// fn stop_all_pure() -> QueryAffect<ComponentSet<Speed>, With<Brake>> {
 ///     query_affect(component_set(Speed(0.0)))
 /// }
 ///
-/// // Equivalent impure system.
+/// /// Equivalent impure system.
 /// fn stop_all_impure(mut query: Query<&mut Speed, With<Brake>>) {
 ///     for (mut number_component) in query.iter_mut() {
 ///         *number_component = Speed(0.0);
@@ -170,14 +170,14 @@ pub type BoxedQueryMapFn<QueryDataIn, QueryDataE> =
 /// # #[derive(proptest_derive::Arbitrary)]
 /// struct Speed(f32);
 ///
-/// // Pure system using effects.
+/// /// Pure system using effects.
 /// fn accelerate_pure() -> QueryMap<(&'static Acceleration, &'static Speed), ComponentSet<Speed>> {
 ///     query_map(move |(acceleration, speed): (&Acceleration, &Speed)| {
 ///         component_set(Speed(speed.0 + acceleration.0))
 ///     })
 /// }
 ///
-/// // Equivalent impure system.
+/// /// Equivalent impure system.
 /// fn accelerate_impure(mut query: Query<(&Acceleration, &mut Speed)>) {
 ///     for (acceleration, mut speed) in query.iter_mut() {
 ///         speed.0 += acceleration.0
