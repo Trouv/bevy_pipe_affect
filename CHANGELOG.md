@@ -1,5 +1,82 @@
 # Changelog
 
+## [0.3.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.2.0...v0.3.0) (2026-04-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* borrow resource in ResSetWith ([#149](https://github.com/Trouv/bevy_pipe_affect/issues/149))
+* rename asset_server feature to asset ([#145](https://github.com/Trouv/bevy_pipe_affect/issues/145))
+* publicly organize effects into submodules ([#144](https://github.com/Trouv/bevy_pipe_affect/issues/144))
+* remove EntityComponents- effects in light of new QueryEntity- effects ([#139](https://github.com/Trouv/bevy_pipe_affect/issues/139))
+* replace Components- effects with QueryDataEffect-based effects ([#134](https://github.com/Trouv/bevy_pipe_affect/issues/134))
+* box fn generic in AffectOrHandle effect ([#124](https://github.com/Trouv/bevy_pipe_affect/issues/124))
+* box fn generic in AssetServerLoadAnd effect ([#123](https://github.com/Trouv/bevy_pipe_affect/issues/123))
+* box fn generic in CommandSpawnAnd effect ([#122](https://github.com/Trouv/bevy_pipe_affect/issues/122))
+* box fn generics in entity_component effects ([#120](https://github.com/Trouv/bevy_pipe_affect/issues/120))
+* box fn generics in ComponentsSetWithQueryData effects ([#119](https://github.com/Trouv/bevy_pipe_affect/issues/119))
+* box function generics in ComponentsSetWith and -Filtered ([#118](https://github.com/Trouv/bevy_pipe_affect/issues/118))
+* box function generic in ResSetWith ([#117](https://github.com/Trouv/bevy_pipe_affect/issues/117))
+
+### Features
+
+* add AssetAddAnd effect ([#128](https://github.com/Trouv/bevy_pipe_affect/issues/128)) ([fae83bc](https://github.com/Trouv/bevy_pipe_affect/commit/fae83bcf8eefc8d896d0e55a620b70aba568b6ec))
+* add AssetInsert effect ([#142](https://github.com/Trouv/bevy_pipe_affect/issues/142)) ([d1a3928](https://github.com/Trouv/bevy_pipe_affect/commit/d1a39282e72926b6f5041a33375bfc38f7b80933))
+* add Component- query data effects ([#131](https://github.com/Trouv/bevy_pipe_affect/issues/131)) ([5857859](https://github.com/Trouv/bevy_pipe_affect/commit/58578591710f44cea4052c252c810caad87f40df))
+* add LocalSetAnd effect ([#129](https://github.com/Trouv/bevy_pipe_affect/issues/129)) ([cab2fe0](https://github.com/Trouv/bevy_pipe_affect/commit/cab2fe08a8404be2cbc0308c26423650546374ef))
+* add MessagesReadAnd effect ([#125](https://github.com/Trouv/bevy_pipe_affect/issues/125)) ([2206d5e](https://github.com/Trouv/bevy_pipe_affect/commit/2206d5ed111472e4692ade1c7025f82d97cdacca))
+* add QueryDataEffect trait ([#130](https://github.com/Trouv/bevy_pipe_affect/issues/130)) ([969f10c](https://github.com/Trouv/bevy_pipe_affect/commit/969f10cc677c51ab6b18743dd5b362ae7a0efd50))
+* add QueryEntity- effects ([#136](https://github.com/Trouv/bevy_pipe_affect/issues/136)) ([32bd5d9](https://github.com/Trouv/bevy_pipe_affect/commit/32bd5d908857e272d82a7cbc2ba7a359ed4a8e4e))
+* add recursive insert/remove entity command effects ([#127](https://github.com/Trouv/bevy_pipe_affect/issues/127)) ([d7f7810](https://github.com/Trouv/bevy_pipe_affect/commit/d7f7810f0364533af0f620e6ecf3b272e6579957))
+* borrow resource in ResSetWith ([#149](https://github.com/Trouv/bevy_pipe_affect/issues/149)) ([63783bb](https://github.com/Trouv/bevy_pipe_affect/commit/63783bb1394618638a8935c098eb84152b9e56c7))
+* box fn generic in AffectOrHandle effect ([#124](https://github.com/Trouv/bevy_pipe_affect/issues/124)) ([afb5f16](https://github.com/Trouv/bevy_pipe_affect/commit/afb5f16db7abce944c0aecea60f78cb0f434f254))
+* box fn generic in AssetServerLoadAnd effect ([#123](https://github.com/Trouv/bevy_pipe_affect/issues/123)) ([5649c45](https://github.com/Trouv/bevy_pipe_affect/commit/5649c45f58a166448079b8bb8bbdc7366252c8ea))
+* box fn generic in CommandSpawnAnd effect ([#122](https://github.com/Trouv/bevy_pipe_affect/issues/122)) ([0c947c0](https://github.com/Trouv/bevy_pipe_affect/commit/0c947c049f84c73eb274549ee5a4c8d69f139abb))
+* box fn generics in ComponentsSetWithQueryData effects ([#119](https://github.com/Trouv/bevy_pipe_affect/issues/119)) ([56ed630](https://github.com/Trouv/bevy_pipe_affect/commit/56ed6308c521c64a1bf1b4cd6912637ef27d4c58))
+* box fn generics in entity_component effects ([#120](https://github.com/Trouv/bevy_pipe_affect/issues/120)) ([a41b1ca](https://github.com/Trouv/bevy_pipe_affect/commit/a41b1caf5c567afc6b33bb54badf497c95e19f87))
+* box function generic in ResSetWith ([#117](https://github.com/Trouv/bevy_pipe_affect/issues/117)) ([f3a24e1](https://github.com/Trouv/bevy_pipe_affect/commit/f3a24e16929ae838940600fe9583e6275f2fde9f))
+* box function generics in ComponentsSetWith and -Filtered ([#118](https://github.com/Trouv/bevy_pipe_affect/issues/118)) ([feaf937](https://github.com/Trouv/bevy_pipe_affect/commit/feaf937f536bb1f20b0eb4e19673f2d17291ff77))
+* implement QueryDataEffect for common algebraic types ([#132](https://github.com/Trouv/bevy_pipe_affect/issues/132)) ([cfa243a](https://github.com/Trouv/bevy_pipe_affect/commit/cfa243a89b6b7dd0182f6f533016c34997c0941a))
+* publicly organize effects into submodules ([#144](https://github.com/Trouv/bevy_pipe_affect/issues/144)) ([d2c75c3](https://github.com/Trouv/bevy_pipe_affect/commit/d2c75c3c0535bfb2c69ea37d8f0872fb79bba4ec))
+* remove EntityComponents- effects in light of new QueryEntity- effects ([#139](https://github.com/Trouv/bevy_pipe_affect/issues/139)) ([0864f8b](https://github.com/Trouv/bevy_pipe_affect/commit/0864f8b4fbebe2dc569406647cdeedc8a6f8a106))
+* replace Components- effects with QueryDataEffect-based effects ([#134](https://github.com/Trouv/bevy_pipe_affect/issues/134)) ([cace5a7](https://github.com/Trouv/bevy_pipe_affect/commit/cace5a7409faad5120b479532769f20ca3638477))
+
+
+### Bug Fixes
+
+* add missing default implementations for effects ([#143](https://github.com/Trouv/bevy_pipe_affect/issues/143)) ([99cbc77](https://github.com/Trouv/bevy_pipe_affect/commit/99cbc7723eef827ad47bfea1f4fe1dce288dd6bd))
+* avoid type complexity with alias in LocalSetAnd ([#135](https://github.com/Trouv/bevy_pipe_affect/issues/135)) ([fc61ca2](https://github.com/Trouv/bevy_pipe_affect/commit/fc61ca255195fabdc4e96ce9f4e9a7c1b44255ec))
+* reference compose_fn in in_and_then_compose ([#150](https://github.com/Trouv/bevy_pipe_affect/issues/150)) ([c1305ff](https://github.com/Trouv/bevy_pipe_affect/commit/c1305ffa853034a2e8fba90061dc15fdc7f615e2))
+* remove Clone bound on QueryDataEffect of QueryEntityAffect ([#141](https://github.com/Trouv/bevy_pipe_affect/issues/141)) ([ebe7dff](https://github.com/Trouv/bevy_pipe_affect/commit/ebe7dfff2360a38c63ded75dde59c172bcf120a0))
+* rename asset_server feature to asset ([#145](https://github.com/Trouv/bevy_pipe_affect/issues/145)) ([d4e5095](https://github.com/Trouv/bevy_pipe_affect/commit/d4e5095b507a5fea1adbdab1987c97b8d78ae265))
+
+
+### Documentation Changes
+
+* add 0.3 to compatibility chart ([#161](https://github.com/Trouv/bevy_pipe_affect/issues/161)) ([c9f3915](https://github.com/Trouv/bevy_pipe_affect/commit/c9f3915fd0d4283667aa9512422935b6f6a67554))
+* add pure/impure example for LocalSetAnd ([#148](https://github.com/Trouv/bevy_pipe_affect/issues/148)) ([6e3155c](https://github.com/Trouv/bevy_pipe_affect/commit/6e3155c9d38d351f7ad27005238e6417e45f0bb6))
+* add pure/impure example to AffectMany ([#159](https://github.com/Trouv/bevy_pipe_affect/issues/159)) ([c673e02](https://github.com/Trouv/bevy_pipe_affect/commit/c673e0266febf79246dd2ae06d1fffe8220fba38))
+* add pure/impure examples for message effects ([#151](https://github.com/Trouv/bevy_pipe_affect/issues/151)) ([9696b37](https://github.com/Trouv/bevy_pipe_affect/commit/9696b37454a45a7665c861db8e87a8a4bcbf4d22))
+* add pure/impure examples for resource effects ([#146](https://github.com/Trouv/bevy_pipe_affect/issues/146)) ([077de1c](https://github.com/Trouv/bevy_pipe_affect/commit/077de1c1837079f6c45b60880d2571512fba84a8))
+* add pure/impure examples to command effects ([#152](https://github.com/Trouv/bevy_pipe_affect/issues/152)) ([c0e7cac](https://github.com/Trouv/bevy_pipe_affect/commit/c0e7cac36bd142528c43726ac9233666d94e8f64))
+* add pure/impure examples to entity_command effects ([#154](https://github.com/Trouv/bevy_pipe_affect/issues/154)) ([4e60a0b](https://github.com/Trouv/bevy_pipe_affect/commit/4e60a0b58732a3c31b7cf89aead3f14342ce6aa4))
+* add pure/impure examples to remaining asset effects ([#157](https://github.com/Trouv/bevy_pipe_affect/issues/157)) ([af4a93e](https://github.com/Trouv/bevy_pipe_affect/commit/af4a93efb0a660bf64cc61dc4f888386368c0b6e))
+* encourage users to explore the effects module ([#160](https://github.com/Trouv/bevy_pipe_affect/issues/160)) ([d88cb29](https://github.com/Trouv/bevy_pipe_affect/commit/d88cb297ffdd223bcff96cc8b0039c50a5c90330))
+* link to other versions of the book in the book ([#115](https://github.com/Trouv/bevy_pipe_affect/issues/115)) ([da0425b](https://github.com/Trouv/bevy_pipe_affect/commit/da0425b137136be167d37b6fac4e9ea75d2bcabc))
+* make shared command note a full section ([#155](https://github.com/Trouv/bevy_pipe_affect/issues/155)) ([1c705a5](https://github.com/Trouv/bevy_pipe_affect/commit/1c705a5ed54703bc97e01ecc5e67d91010e238ec))
+* standardize pure/impure example system doc comments ([#158](https://github.com/Trouv/bevy_pipe_affect/issues/158)) ([15f5b68](https://github.com/Trouv/bevy_pipe_affect/commit/15f5b685e1c99e24c64c2c2a818318290567325c))
+
+
+### Example Changes
+
+* spawn camera in rainbow-clear-color example ([#156](https://github.com/Trouv/bevy_pipe_affect/issues/156)) ([6166e22](https://github.com/Trouv/bevy_pipe_affect/commit/6166e22525e1208196298d083b37b457c5189cd6))
+* use concrete return type in animate_position system ([#121](https://github.com/Trouv/bevy_pipe_affect/issues/121)) ([cc13316](https://github.com/Trouv/bevy_pipe_affect/commit/cc13316aa272e60cdc0d5badfbdabcc7236a7d12))
+
+
+### Test Changes
+
+* enable Component(s)Set tests ([#133](https://github.com/Trouv/bevy_pipe_affect/issues/133)) ([14c0250](https://github.com/Trouv/bevy_pipe_affect/commit/14c0250b74a42023c5988c477070e052365add25))
+
 ## [0.2.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.1.0...v0.2.0) (2026-01-15)
 
 
