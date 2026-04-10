@@ -194,7 +194,7 @@ All mutability can be <em>piped out</em> of your code.</p>
 <li>how-to guides: recommended solutions to common problems, as well as migration guides</li>
 </ul>
 <p>This book is not an API reference.
-For that, please refer to <code>bevy_pipe_affect</code>'s documentation on <a href="https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect">docs.rs</a>. <!-- x-release-please-version --></p>
+For that, please refer to <code>bevy_pipe_affect</code>'s documentation on <a href="https://docs.rs/bevy_pipe_affect/0.3.0/bevy_pipe_affect">docs.rs</a>. <!-- x-release-please-version --></p>
 <p>While this book aims to be comprehensive, it should also be easy to maintain and up-to-date.
 This is why, in consort with the API reference, documentation for <code>bevy_pipe_affect</code> aims to satisfy <a href="https://documentation.divio.com/">The Grand Unified Theory of Documentation</a>.
 Furthermore, code snippets in this book are automatically tested by <code>bevy_pipe_affect</code>'s CI wherever possible with the help of <a href="https://github.com/tfpk/mdbook-keeper/">mdBook-Keeper</a>.
@@ -205,13 +205,13 @@ Some chapters are intended to be read while working on your own project, while o
 The following are good jumping-off points for beginners:</p>
 <ul>
 <li><a href="explanation/motivations.html"><em>Motivations</em> explanation</a></li>
-<li><a href="https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html"><em>effects</em> module api reference</a> (a list of effects and constructors provided by the library) <!-- x-release-please-version --></li>
+<li><a href="https://docs.rs/bevy_pipe_affect/0.3.0/bevy_pipe_affect/effects/index.html"><em>effects</em> module api reference</a> (discover what effects are available, with examples!) <!-- x-release-please-version --></li>
 </ul>
 <h2 id="other-resources"><a class="header" href="#other-resources">Other resources</a></h2>
 <p>This book is not suitable documentation for Bevy.
 Some resources for learning Bevy include those listed on the <a href="https://bevyengine.org/learn">Bevy website</a>, as well as the unofficial <a href="https://bevy-cheatbook.github.io/">Bevy Cheat Book</a>.</p>
-<p><code>bevy_pipe_affect</code>'s <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.2.0">source code</a> is available on github. <!-- x-release-please-version -->
-This repository also contains <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.2.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --release --all-features --example example-name</code>. <!-- x-release-please-version -->
+<p><code>bevy_pipe_affect</code>'s <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.3.0">source code</a> is available on github. <!-- x-release-please-version -->
+This repository also contains <a href="https://github.com/Trouv/bevy_pipe_affect/tree/v0.3.0/examples">cargo examples</a>, which can be run after cloning the repository using <code>$ cargo run --release --all-features --example example-name</code>. <!-- x-release-please-version -->
 These examples may be difficult to follow on their own, and many of their strategies are described in this book.
 When viewing these examples, be careful to checkout the correct git tag for the version of the library you are using.
 Some changes may have been made to the library or to the examples on the <code>main</code> branch that are not released yet, and trying to apply these to the version of the library you are using can lead to errors.</p>
@@ -703,7 +703,7 @@ fn push_and_weigh(
     positions: &amp;Query&lt;(Entity, &amp;Position, &amp;Weight)&gt;,
     position_pushed: Position,
     direction: IVec2,
-) -&gt; EffectOut&lt;Vec&lt;EntityComponentsSet&lt;(Position,)&gt;&gt;, Weight&gt; {
+) -&gt; EffectOut&lt;Vec&lt;QueryEntityAffect&lt;ComponentSet&lt;Position&gt;&gt;&gt;, Weight&gt; {
     match positions
         .iter()
         .find(|(_, position, _)| **position == position_pushed)
@@ -718,7 +718,7 @@ fn push_and_weigh(
                 // This is monadic EffectOut composition!
                 .and_extend(|acc_weight| {
                     effect_out(
-                        vec![entity_components_set(entity, (new_position,))],
+                        vec![query_entity_affect(entity, component_set(new_position))],
                         Weight(*acc_weight + **weight),
                     )
                 })
@@ -730,7 +730,7 @@ fn push_and_weigh(
 pub fn push(
     push: On&lt;PushEntity&gt;,
     positions: Query&lt;(Entity, &amp;Position, &amp;Weight)&gt;,
-) -&gt; Vec&lt;EntityComponentsSet&lt;(Position,)&gt;&gt; {
+) -&gt; Vec&lt;QueryEntityAffect&lt;ComponentSet&lt;Position&gt;&gt;&gt; {
     let (_first_entity, position_pushed, _weight) = positions.get(push.entity).unwrap();
 
     // We only use `EffectOut` for intermediate computation, and return a normal `Effect` in the system.
@@ -871,10 +871,10 @@ pub struct InflateEvent;
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -901,10 +901,10 @@ pub struct InflateEvent;
 </span>#[derive(Component)]
 pub struct Inflatable;
 
-fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-        (transform.with_scale(transform.scale * 1.1),)
-    })
+fn inflate(
+    _event: On&lt;InflateEvent&gt;,
+) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 }
 <span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -931,10 +931,10 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span>pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -961,10 +961,10 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
 </span><span class="boring">#[derive(Component)]
 </span><span class="boring">pub struct Inflatable;
 </span><span class="boring">
-</span><span class="boring">fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
-</span><span class="boring">    components_set_filtered_with::&lt;_, _, With&lt;Inflatable&gt;&gt;(|(transform,): (Transform,)| {
-</span><span class="boring">        (transform.with_scale(transform.scale * 1.1),)
-</span><span class="boring">    })
+</span><span class="boring">fn inflate(
+</span><span class="boring">    _event: On&lt;InflateEvent&gt;,
+</span><span class="boring">) -&gt; QueryMap&lt;&amp;'static Transform, ComponentSet&lt;Transform&gt;, With&lt;Inflatable&gt;&gt; {
+</span><span class="boring">    query_map(|transform: &amp;Transform| component_set(transform.with_scale(transform.scale * 1.1)))
 </span><span class="boring">}
 </span><span class="boring">
 </span><span class="boring">pub fn spawn_observer() -&gt; CommandSpawn&lt;Observer&gt; {
@@ -979,7 +979,8 @@ fn inflate(_event: On&lt;InflateEvent&gt;) -&gt; impl Effect + use&lt;&gt; {
     }
 }
 <span class="boring">fn main() { bevy::ecs::system::assert_is_system(trigger_observer.pipe(affect)) }</span></code></pre></pre>
-<div style="break-before: page; page-break-before: always;"></div><p><meta http-equiv="Refresh" content="0; url='https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect'" /><!-- x-release-please-version --></p>
+<div style="break-before: page; page-break-before: always;"></div><p><meta http-equiv="Refresh" content="0; url='https://docs.rs/bevy_pipe_affect/0.3.0/bevy_pipe_affect'" /><!-- x-release-please-version --></p>
+<div style="break-before: page; page-break-before: always;"></div><meta http-equiv="Refresh" content="0; url='https://trouv.github.io/bevy_pipe_affect'" />
 
                     </main>
 

@@ -391,7 +391,7 @@ fn push_and_weigh(
     positions: &amp;Query&lt;(Entity, &amp;Position, &amp;Weight)&gt;,
     position_pushed: Position,
     direction: IVec2,
-) -&gt; EffectOut&lt;Vec&lt;EntityComponentsSet&lt;(Position,)&gt;&gt;, Weight&gt; {
+) -&gt; EffectOut&lt;Vec&lt;QueryEntityAffect&lt;ComponentSet&lt;Position&gt;&gt;&gt;, Weight&gt; {
     match positions
         .iter()
         .find(|(_, position, _)| **position == position_pushed)
@@ -406,7 +406,7 @@ fn push_and_weigh(
                 // This is monadic EffectOut composition!
                 .and_extend(|acc_weight| {
                     effect_out(
-                        vec![entity_components_set(entity, (new_position,))],
+                        vec![query_entity_affect(entity, component_set(new_position))],
                         Weight(*acc_weight + **weight),
                     )
                 })
@@ -418,7 +418,7 @@ fn push_and_weigh(
 pub fn push(
     push: On&lt;PushEntity&gt;,
     positions: Query&lt;(Entity, &amp;Position, &amp;Weight)&gt;,
-) -&gt; Vec&lt;EntityComponentsSet&lt;(Position,)&gt;&gt; {
+) -&gt; Vec&lt;QueryEntityAffect&lt;ComponentSet&lt;Position&gt;&gt;&gt; {
     let (_first_entity, position_pushed, _weight) = positions.get(push.entity).unwrap();
 
     // We only use `EffectOut` for intermediate computation, and return a normal `Effect` in the system.
