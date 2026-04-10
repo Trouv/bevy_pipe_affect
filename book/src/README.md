@@ -19,7 +19,7 @@ Splitting the documentation up this way means that docs are not necessarily mean
 Some chapters are intended to be read while working on your own project, while others are meant to be more like studying material.
 The following are good jumping-off points for beginners:
 - [*Motivations* explanation](explanation/motivations.md)
-- [*effects* module api reference](https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html) (a list of effects and constructors provided by the library) <!-- x-release-please-version -->
+- [*effects* module api reference](https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html) (discover what effects are available, with examples!) <!-- x-release-please-version -->
 
 ## Other resources
 This book is not suitable documentation for Bevy.

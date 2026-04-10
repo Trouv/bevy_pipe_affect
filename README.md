@@ -69,7 +69,7 @@ Documentation for this library is available in two main places.
 
 The following are good jumping-off points for beginners:
 - [*Motivations* explanation](https://trouv.github.io/bevy_pipe_affect/v0.2.0/explanation/motivations.html) <!-- x-release-please-version -->
-- [*effects* module api reference](https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html) (a list of effects and constructors provided by the library) <!-- x-release-please-version -->
+- [*effects* module api reference](https://docs.rs/bevy_pipe_affect/0.2.0/bevy_pipe_affect/effects/index.html) (discover what effects are available, with examples!) <!-- x-release-please-version -->
 
 Cargo examples are also available in this repository:
 ```sh

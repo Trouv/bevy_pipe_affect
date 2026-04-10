@@ -1,4 +1,10 @@
-//! [`Effect`] implementors.
+//! [`Effect`] implementors and their constructors.
+//!
+//! Exploring this module is an easy way to discover what effects are available!
+//! The effects are roughly organized by the system parameter they mutate.
+//!
+//! All of the native effect types have code examples, typically comparing a system that uses them
+//! to an equivalent impure system.
 //!
 //! [`Effect`]: crate::Effect
 
