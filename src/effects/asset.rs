@@ -10,6 +10,64 @@ use crate::Effect;
 /// Can be constructed with [`asset_server_load_and`].
 ///
 /// *Requires the `asset` feature to be enabled.*
+///
+/// # Example
+/// In this example, a system is written that spawns a sprite with the "player.png" image.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// fn spawn_player_pure() -> AssetServerLoadAnd<'static, Image, CommandSpawn<Sprite>> {
+///     asset_server_load_and("player.png", |handle| {
+///         command_spawn(Sprite::from_image(handle))
+///     })
+/// }
+///
+/// fn spawn_player_impure(asset_server: Res<AssetServer>, mut commands: Commands) {
+///     let handle = asset_server.load("player.png");
+///     commands.spawn(Sprite::from_image(handle));
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     let mut app = App::new();
+/// #     app.add_plugins((
+/// #         MinimalPlugins,
+/// #         AssetPlugin::default(),
+/// #         ImagePlugin::default_linear(),
+/// #     ));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<Handle<Image>>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Sprite>)>();
+/// #     query
+/// #         .iter(world)
+/// #         .map(|(entity, sprite)| (entity, sprite.map(|sprite| sprite.image.clone())))
+/// #         .collect()
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, spawn_player_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, spawn_player_impure);
+/// #
+/// #     for _ in 0..3 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - In this example, a `CommandSpawn` is used as the additional [`Effect`], but other
+/// [`Effect`]s are available.
 #[derive(derive_more::Debug)]
 pub struct AssetServerLoadAnd<'a, A, E>
 where
