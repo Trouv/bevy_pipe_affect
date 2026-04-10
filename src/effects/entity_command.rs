@@ -29,6 +29,7 @@ use crate::Effect;
 /// #[derive(Copy, Clone, Debug, PartialEq, Eq, Component)]
 /// struct Player;
 ///
+/// /// Pure system using effects.
 /// fn reset_player_pure(
 ///     player: Single<Entity, With<Player>>,
 /// ) -> EntityCommandQueue<
@@ -39,6 +40,7 @@ use crate::Effect;
 ///     entity_command_queue(*player, retain::<Player>())
 /// }
 ///
+/// /// Equivalent impure system.
 /// fn reset_player_impure(player: Single<Entity, With<Player>>, mut commands: Commands) {
 ///     commands.entity(*player).retain::<Player>();
 /// }

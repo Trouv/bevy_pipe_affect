@@ -216,10 +216,12 @@ where
 /// # #[derive(proptest_derive::Arbitrary)]
 /// struct GoToLevel(usize);
 ///
+/// /// Pure system using effects.
 /// fn complete_level_transition_pure() -> CommandRemoveResource<GoToLevel> {
 ///     command_remove_resource::<GoToLevel>()
 /// }
 ///
+/// /// Equivalent impure system.
 /// fn complete_level_transition_impure(mut commands: Commands) {
 ///     commands.remove_resource::<GoToLevel>()
 /// }
