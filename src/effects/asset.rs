@@ -66,8 +66,8 @@ use crate::Effect;
 /// ```
 ///
 /// Not shown...
-/// - In this example, a `CommandSpawn` is used as the additional [`Effect`], but other
-/// [`Effect`]s are available.
+/// - in this example, a `CommandSpawn` is used as the additional [`Effect`], but other
+///   [`Effect`]s are available.
 #[derive(derive_more::Debug)]
 pub struct AssetServerLoadAnd<'a, A, E>
 where
@@ -203,7 +203,7 @@ where
 ///
 /// Not shown...
 /// - in this example, `CommandInsertResource` is used as the additional [`Effect`], but other
-/// [`Effect`]s are available.
+///   [`Effect`]s are available.
 #[derive(derive_more::Debug)]
 pub struct AssetAddAnd<A, E>
 where
