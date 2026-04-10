@@ -8,7 +8,99 @@ use crate::Effect;
 
 /// [`Effect`] that pushes a generic entity command to the command queue.
 ///
+/// This effect is mostly intended to "fill the gaps" of `bevy_pipe_affect`, as not all entity
+/// commands or entity world mutations provided by bevy have an equivalent effect.
+/// Using this typically leads to some excessive generics, and often leads to writing some
+/// impure code anyway, so users should also consider writing their own custom [`Effect`] instead.
+/// (Then, if it's general-purpose enough, consider contributing it upstream!)
+///
 /// Can be constructed with [`entity_command_queue`].
+///
+/// # Example
+/// In this example, a system is written that removes all components from the `Player` entity
+/// except for the `Player` component.
+/// ```rust
+/// use bevy::ecs::error::CommandWithEntity;
+/// use bevy::ecs::system::entity_command::retain;
+/// use bevy::ecs::world::error::EntityMutableFetchError;
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Copy, Clone, Debug, PartialEq, Eq, Component)]
+/// struct Player;
+///
+/// fn reset_player_pure(
+///     player: Single<Entity, With<Player>>,
+/// ) -> EntityCommandQueue<
+///     impl EntityCommand<()> + CommandWithEntity<Result<(), EntityMutableFetchError>> + use<>,
+///     (),
+///     Result<(), EntityMutableFetchError>,
+/// > {
+///     entity_command_queue(*player, retain::<Player>())
+/// }
+///
+/// fn reset_player_impure(player: Single<Entity, With<Player>>, mut commands: Commands) {
+///     commands.entity(*player).retain::<Player>();
+/// }
+/// #
+/// # use proptest::prelude::*;
+/// #
+/// # #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component, proptest_derive::Arbitrary)]
+/// # struct A(u8);
+/// #
+/// # #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Component, proptest_derive::Arbitrary)]
+/// # struct B(u8);
+/// #
+/// # fn app_setup(component_table: Vec<(Option<A>, Option<B>)>, player_index: usize) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     let once_entity = app.world_mut().spawn_empty().id();
+/// #
+/// #     let entities = component_table
+/// #         .into_iter()
+/// #         .map(|(a, b)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #             if let Some(a) = a {
+/// #                 entity.insert(a);
+/// #             }
+/// #
+/// #             if let Some(b) = b {
+/// #                 entity.insert(b);
+/// #             }
+/// #
+/// #             entity.id()
+/// #         })
+/// #         .chain(std::iter::once(once_entity))
+/// #         .collect::<Vec<_>>();
+/// #
+/// #     let player = entities[player_index % entities.len()];
+/// #
+/// #     app.world_mut().entity_mut(player).insert(Player);
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&A>, Option<&B>, Option<&Player>)> {
+/// #     let mut query = world.query::<(Entity, Option<&A>, Option<&B>, Option<&Player>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<A>, Option<B>)>, player_index: usize) {
+/// #         let mut pure_app = app_setup(component_table.clone(), player_index);
+/// #         pure_app.add_systems(Update, reset_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table.clone(), player_index);
+/// #         impure_app.add_systems(Update, reset_player_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandQueue<C, T, M>
@@ -58,6 +150,72 @@ where
 /// [`Effect`] that queues a command for inserting the provided `Bundle` onto the `Entity`.
 ///
 /// Can be constructed with [`entity_command_insert`].
+///
+/// # Example
+/// In this example, a system is written that gives the `TopPlayer` a `Crown`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq, Resource)]
+/// struct TopPlayer(Entity);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// struct Crown;
+///
+/// /// Pure system using effects.
+/// fn crown_top_player_pure(top_player: Res<TopPlayer>) -> EntityCommandInsert<Crown> {
+///     entity_command_insert(top_player.0, Crown)
+/// }
+///
+/// /// Equivalent impure system.
+/// fn crown_top_player_impure(top_player: Res<TopPlayer>, mut commands: Commands) {
+///     commands.entity(top_player.0).insert(Crown);
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(entity_count: u8, top_player_index: usize) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     let once_entity = app.world_mut().spawn_empty().id();
+/// #
+/// #     let entities = (0..entity_count)
+/// #         .map(|_| app.world_mut().spawn_empty().id())
+/// #         .chain(std::iter::once(once_entity))
+/// #         .collect::<Vec<_>>();
+/// #
+/// #     let top_player = entities[top_player_index % entities.len()];
+/// #
+/// #     app.world_mut().insert_resource(TopPlayer(top_player));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Crown>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Crown>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(entity_count: u8, player_index: usize) {
+/// #         let mut pure_app = app_setup(entity_count, player_index);
+/// #         pure_app.add_systems(Update, crown_top_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(entity_count, player_index);
+/// #         impure_app.add_systems(Update, crown_top_player_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - A single component is used in this example, but the inserted value is a `Bundle`, so it can
+/// be a `Bundle` struct or tuple of components.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandInsert<B>
@@ -92,6 +250,81 @@ where
 /// [`Effect`] that queues a command for removing the `Bundle` from the `Entity`.
 ///
 /// Can be constructed with [`entity_command_remove`].
+///
+/// # Example
+/// In this example, a system is written that nerfs the `TopPlayer` by removing her `Shield`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Copy, Clone, PartialEq, Eq, Resource)]
+/// struct TopPlayer(Entity);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Shield;
+///
+/// /// Pure system using effects.
+/// fn nerf_top_player_pure(top_player: Res<TopPlayer>) -> EntityCommandRemove<Shield> {
+///     entity_command_remove::<Shield>(top_player.0)
+/// }
+///
+/// /// Equivalent impure system.
+/// fn nerf_top_player_impure(top_player: Res<TopPlayer>, mut commands: Commands) {
+///     commands.entity(top_player.0).remove::<Shield>();
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<Option<Shield>>, top_player_index: usize) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     let once_entity = app.world_mut().spawn_empty().id();
+/// #
+/// #     let entities = component_table
+/// #         .into_iter()
+/// #         .map(|shield| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #             if let Some(shield) = shield {
+/// #                 entity.insert(shield);
+/// #             }
+/// #
+/// #             entity.id()
+/// #         })
+/// #         .chain(std::iter::once(once_entity))
+/// #         .collect::<Vec<_>>();
+/// #
+/// #     let top_player = entities[top_player_index % entities.len()];
+/// #
+/// #     app.world_mut().insert_resource(TopPlayer(top_player));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Shield>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Shield>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<Option<Shield>>, player_index: usize) {
+/// #         let mut pure_app = app_setup(component_table.clone(), player_index);
+/// #         pure_app.add_systems(Update, nerf_top_player_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table, player_index);
+/// #         impure_app.add_systems(Update, nerf_top_player_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - A single component is used in this example, but the removed type is a `Bundle`, so it can be
+/// a `Bundle` struct or tuple of components.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandRemove<B>
@@ -137,6 +370,76 @@ where
 /// [`Effect`] that queues a command for despawning an `Entity`.
 ///
 /// Can be constructed with [`entity_command_despawn`].
+///
+/// # Example
+/// In this example, a system is written that despawns entites with 0 `Health`.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Health {
+///     # #[proptest(strategy = "0..3 as u32")]
+///     value: u32,
+/// }
+///
+/// /// Pure system using effects.
+/// fn death_pure(query: Query<(Entity, &Health)>) -> Vec<EntityCommandDespawn> {
+///     query
+///         .iter()
+///         .filter(|(_, health)| health.value == 0)
+///         .map(|(entity, _)| entity_command_despawn(entity))
+///         .collect()
+/// }
+///
+/// /// Equivalent impure system.
+/// fn death_impure(query: Query<(Entity, &Health)>, mut commands: Commands) {
+///     for (entity, health) in query.iter() {
+///         if health.value == 0 {
+///             commands.entity(entity).despawn();
+///         }
+///     }
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # fn app_setup(component_table: Vec<Option<Health>>) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     component_table
+/// #         .into_iter()
+/// #         .for_each(|health| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(health) = health {
+/// #                 entity.insert(health);
+/// #             }
+/// #         });
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Health>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Health>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<Option<Health>>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, death_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table);
+/// #         impure_app.add_systems(Update, death_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandDespawn {
@@ -160,6 +463,111 @@ impl Effect for EntityCommandDespawn {
 /// [`Effect`] that inserts a component/bundle recursively on an entity and its relationships.
 ///
 /// Can be constructed with [`entity_command_insert_recursive`].
+///
+/// # Example
+/// In this example, a system is written that marks entities and their childern as `Frozen` if
+/// their `Temperature` is below zero.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Temperature(i8);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Frozen;
+///
+/// /// Pure system using effects.
+/// fn freeze_pure(
+///     query: Query<(Entity, &Temperature)>,
+/// ) -> Vec<EntityCommandInsertRecursive<Children, Frozen>> {
+///     query
+///         .iter()
+///         .filter(|(_, temp)| temp.0 <= 0)
+///         .map(|(entity, _)| entity_command_insert_recursive(entity, Frozen))
+///         .collect()
+/// }
+///
+/// /// Equivalent impure system.
+/// fn freeze_impure(query: Query<(Entity, &Temperature)>, mut commands: Commands) {
+///     for (entity, temp) in query.iter() {
+///         if temp.0 <= 0 {
+///             commands.entity(entity).insert_recursive::<Children>(Frozen);
+///         }
+///     }
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # #[derive(Debug, Copy, Clone, PartialEq, Eq, proptest_derive::Arbitrary)]
+/// # struct ParentIndex(usize);
+/// #
+/// # fn app_setup(component_table: Vec<(Option<Temperature>, Option<ParentIndex>)>) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     let _entities = component_table.into_iter().fold(
+/// #         vec![app.world_mut().spawn_empty().id()],
+/// #         |mut entities, (temp, parent_index)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(temp) = temp {
+/// #                 entity.insert(temp);
+/// #             }
+/// #
+/// #             if let Some(parent_index) = parent_index {
+/// #                 let parent = entities[parent_index.0 % entities.len()];
+/// #                 entity.insert(ChildOf(parent));
+/// #             }
+/// #
+/// #             entities.push(entity.id());
+/// #
+/// #             entities
+/// #         },
+/// #     );
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(
+/// #     world: &mut World,
+/// # ) -> Vec<(
+/// #     Entity,
+/// #     Option<&Temperature>,
+/// #     Option<&ChildOf>,
+/// #     Option<&Frozen>,
+/// # )> {
+/// #     let mut query = world.query::<(
+/// #         Entity,
+/// #         Option<&Temperature>,
+/// #         Option<&ChildOf>,
+/// #         Option<&Frozen>,
+/// #     )>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<Temperature>, Option<ParentIndex>)>) {
+/// #         let mut pure_app = app_setup(component_table.clone());
+/// #         pure_app.add_systems(Update, freeze_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table);
+/// #         impure_app.add_systems(Update, freeze_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - A single component is used in this example, but the inserted value is a `Bundle`, so it can
+/// be a `Bundle` struct or tuple of components.
+/// - A parent/child relationship is used in this example, but any other `RelationshipTarget` would
+/// work.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
 pub struct EntityCommandInsertRecursive<RT, B>
@@ -218,6 +626,97 @@ where
 /// [`Effect`] that removes a component/bundle recursively from an entity and its relationships.
 ///
 /// Can be constructed with [`entity_command_remove_recursive`].
+///
+/// # Example
+/// In this example, a system is written that removes the `Curse` from the `BlessedEntity` and its
+/// children.
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Debug, Copy, Clone, PartialEq, Resource)]
+/// struct BlessedEntity(Entity);
+///
+/// #[derive(Debug, Default, Copy, Clone, PartialEq, Component)]
+/// # #[derive(proptest_derive::Arbitrary)]
+/// struct Curse;
+///
+/// /// Pure system using effects.
+/// fn bless_pure(blessed_entity: Res<BlessedEntity>) -> EntityCommandRemoveRecursive<Children, Curse> {
+///     entity_command_remove_recursive(blessed_entity.0)
+/// }
+///
+/// /// Equivalent impure system.
+/// fn bless_impure(blessed_entity: Res<BlessedEntity>, mut commands: Commands) {
+///     commands
+///         .entity(blessed_entity.0)
+///         .remove_recursive::<Children, Curse>();
+/// }
+/// # use proptest::prelude::*;
+/// #
+/// # #[derive(Debug, Copy, Clone, PartialEq, Eq, proptest_derive::Arbitrary)]
+/// # struct ParentIndex(usize);
+/// #
+/// # fn app_setup(
+/// #     component_table: Vec<(Option<Curse>, Option<ParentIndex>)>,
+/// #     cured_index: usize,
+/// # ) -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     let entities = component_table.into_iter().fold(
+/// #         vec![app.world_mut().spawn_empty().id()],
+/// #         |mut entities, (curse, parent_index)| {
+/// #             let mut entity = app.world_mut().spawn_empty();
+/// #
+/// #             if let Some(curse) = curse {
+/// #                 entity.insert(curse);
+/// #             }
+/// #
+/// #             if let Some(parent_index) = parent_index {
+/// #                 let parent = entities[parent_index.0 % entities.len()];
+/// #                 entity.insert(ChildOf(parent));
+/// #             }
+/// #
+/// #             entities.push(entity.id());
+/// #
+/// #             entities
+/// #         },
+/// #     );
+/// #
+/// #     let cured_entity = entities[cured_index % entities.len()];
+/// #
+/// #     app.insert_resource(BlessedEntity(cured_entity));
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(world: &mut World) -> Vec<(Entity, Option<&Curse>, Option<&ChildOf>)> {
+/// #     let mut query = world.query::<(Entity, Option<&Curse>, Option<&ChildOf>)>();
+/// #     query.iter(world).collect()
+/// # }
+/// #
+/// # proptest! {
+/// #     fn main(component_table: Vec<(Option<Curse>, Option<ParentIndex>)>, cured_index: usize) {
+/// #         let mut pure_app = app_setup(component_table.clone(), cured_index);
+/// #         pure_app.add_systems(Update, bless_pure.pipe(affect));
+/// #
+/// #         let mut impure_app = app_setup(component_table, cured_index);
+/// #         impure_app.add_systems(Update, bless_impure);
+/// #
+/// #         for _ in 0..3 {
+/// #             prop_assert_eq!(test_state(pure_app.world_mut()), test_state(impure_app.world_mut()));
+/// #             pure_app.update();
+/// #             impure_app.update();
+/// #         }
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - A single component is used in this example, but the removed type is a `Bundle`, so it can be
+/// a `Bundle` struct or tuple of components.
+/// - A parent/child relationship is used in this example, but any other `RelationshipTarget` would
+/// work.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
 pub struct EntityCommandRemoveRecursive<RT, B>
