@@ -9,6 +9,11 @@ fn main() -> AppExit {
             pure(rainbow_clear_color) // pure() is optional, just forces the system to be read-only
                 .pipe(affect),
         )
+        .add_systems(
+            Startup,
+            // The `CommandSpawn` effect's `default` function is technically a "system with effect"
+            CommandSpawn::<Camera2d>::default.pipe(affect),
+        )
         .run()
 }
 
