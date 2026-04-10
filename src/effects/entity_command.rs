@@ -215,7 +215,7 @@ where
 ///
 /// Not shown...
 /// - A single component is used in this example, but the inserted value is a `Bundle`, so it can
-/// be a `Bundle` struct or tuple of components
+/// be a `Bundle` struct or tuple of components.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandInsert<B>
@@ -324,7 +324,7 @@ where
 ///
 /// Not shown...
 /// - A single component is used in this example, but the removed type is a `Bundle`, so it can be
-/// a `Bundle` struct or tuple of components
+/// a `Bundle` struct or tuple of components.
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandRemove<B>
