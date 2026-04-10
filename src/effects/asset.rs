@@ -58,6 +58,94 @@ where
 /// Can be constructed with [`asset_add_and`].
 ///
 /// *Requires the `asset` feature to be enabled.*
+///
+/// # Example
+/// In this example, we have a custom `AnimationMap` asset for storing animation indices by name,
+/// and a system is written that adds a player animation map to the asset store and stores it in a
+/// resource.
+/// ```
+/// use std::collections::HashMap;
+/// use std::ops::Range;
+///
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// #[derive(Default, Debug, PartialEq, Eq, Reflect, Asset, Clone)]
+/// struct AnimationMap(HashMap<String, Range<usize>>);
+///
+/// #[derive(Debug, PartialEq, Eq, Resource)]
+/// struct PlayerAnimationsHandle(Handle<AnimationMap>);
+///
+/// fn base_player_animation_map() -> AnimationMap {
+///     AnimationMap(HashMap::from_iter([
+///         ("idle".to_string(), 0..1),
+///         ("running".to_string(), 1..5),
+///     ]))
+/// }
+///
+/// /// Pure system using effects.
+/// fn init_player_animations_pure()
+/// -> AssetAddAnd<AnimationMap, CommandInsertResource<PlayerAnimationsHandle>> {
+///     asset_add_and(base_player_animation_map(), |handle| {
+///         command_insert_resource(PlayerAnimationsHandle(handle))
+///     })
+/// }
+///
+/// /// Equivalent impure system.
+/// fn init_player_animations_impure(
+///     mut assets: ResMut<Assets<AnimationMap>>,
+///     mut commands: Commands,
+/// ) {
+///     let handle = assets.add(base_player_animation_map());
+///     commands.insert_resource(PlayerAnimationsHandle(handle));
+/// }
+/// #
+/// # fn app_setup() -> App {
+/// #     let mut app = App::new();
+/// #
+/// #     app.add_plugins(AssetPlugin::default())
+/// #         .init_asset::<AnimationMap>();
+/// #
+/// #     app
+/// # }
+/// #
+/// # fn test_state(
+/// #     world: &World,
+/// # ) -> (
+/// #     Vec<(AssetId<AnimationMap>, &AnimationMap)>,
+/// #     Option<&PlayerAnimationsHandle>,
+/// # ) {
+/// #     let all_assets = world
+/// #         .get_resource::<Assets<AnimationMap>>()
+/// #         .unwrap()
+/// #         .iter()
+/// #         .collect();
+/// #     let resource = world.get_resource::<PlayerAnimationsHandle>();
+/// #
+/// #     (all_assets, resource)
+/// # }
+/// #
+/// # fn main() {
+/// #     let mut pure_app = app_setup();
+/// #     pure_app.add_systems(Update, init_player_animations_pure.pipe(affect));
+/// #
+/// #     let mut impure_app = app_setup();
+/// #     impure_app.add_systems(Update, init_player_animations_impure);
+/// #
+/// #     for _ in 0..3 {
+/// #         assert_eq!(
+/// #             test_state(pure_app.world_mut()),
+/// #             test_state(impure_app.world_mut())
+/// #         );
+/// #         pure_app.update();
+/// #         impure_app.update();
+/// #     }
+/// # }
+/// ```
+///
+/// Not shown...
+/// - in this example, `CommandInsertResource` is used as the additional [`Effect`], but other
+/// [`Effect`]s are available.
 #[derive(derive_more::Debug)]
 pub struct AssetAddAnd<A, E>
 where
