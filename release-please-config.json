@@ -12,7 +12,8 @@
         "README.md",
         "book/src/README.md",
         "book/src/api-reference.md",
-        "src/lib.rs"
+        "src/lib.rs",
+        "examples/README.md"
       ],
       "changelog-sections": [
         {"type": "feat", "section": "Features"},
