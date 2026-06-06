@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/Trouv/bevy_pipe_affect/compare/v0.3.0...v0.3.1) (2026-06-06)
+
+
+### Documentation Changes
+
+* link cargo examples to effects module ([#166](https://github.com/Trouv/bevy_pipe_affect/issues/166)) ([d2070e6](https://github.com/Trouv/bevy_pipe_affect/commit/d2070e6d34b429b69ddd6b95ff79c6d8c20a1ebd))
+
 ## [0.3.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.2.0...v0.3.0) (2026-04-10)
 
 
