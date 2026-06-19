@@ -3,10 +3,26 @@ use bevy::prelude::*;
 
 use crate::prelude::*;
 
-pub type BoxedSystemEffect<P, E> =
-    Box<dyn SystemParamFunction<fn(P) -> E, In = (), Param = (P,), Out = E>>;
+pub struct RunFnSystem<P, E>
+where
+    P: SystemParam + 'static,
+    E: Effect + 'static,
+{
+    pub system: Box<dyn SystemParamFunction<fn(P) -> E, In = (), Param = (P,), Out = E>>,
+}
 
-impl<P, E> Effect for BoxedSystemEffect<P, E>
+pub fn run_fn_system<S, P, E>(system: S) -> RunFnSystem<P, E>
+where
+    S: SystemParamFunction<fn(P) -> E, In = (), Param = (P,), Out = E>,
+    P: SystemParam + 'static,
+    E: Effect + 'static,
+{
+    RunFnSystem {
+        system: Box::new(system),
+    }
+}
+
+impl<P, E> Effect for RunFnSystem<P, E>
 where
     P: SystemParam + 'static,
     E: Effect + 'static,
@@ -14,7 +30,7 @@ where
     type MutParam = ParamSet<'static, 'static, ((P,), E::MutParam)>;
 
     fn affect(mut self, param: &mut <Self::MutParam as SystemParam>::Item<'_, '_>) {
-        let effect = self.run((), param.p0());
+        let effect = self.system.run((), param.p0());
 
         effect.affect(&mut param.p1());
     }

@@ -56,7 +56,7 @@ pub use crate::effects::query_entity::{
     query_entity_map_and,
 };
 pub use crate::effects::resource::{ResSet, ResSetWith, res_set, res_set_with};
-pub use crate::effects::system::BoxedSystemEffect;
+pub use crate::effects::system::{RunFnSystem, run_fn_system};
 #[cfg(feature = "asset")]
 pub use crate::effects::{
     asset::AssetAddAnd,
