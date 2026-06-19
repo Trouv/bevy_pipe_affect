@@ -3,11 +3,13 @@ use bevy::prelude::*;
 
 use crate::prelude::*;
 
+#[derive(derive_more::Debug)]
 pub struct RunFnSystem<P, E>
 where
     P: SystemParam + 'static,
     E: Effect + 'static,
 {
+    #[debug("{0} -> {1}", std::any::type_name::<P>(), std::any::type_name::<E>())]
     pub system: Box<dyn SystemParamFunction<fn(P) -> E, In = (), Param = (P,), Out = E>>,
 }
 
