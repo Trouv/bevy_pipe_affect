@@ -2,7 +2,7 @@
 //!
 //! On top of the types shown here, this implements [`Effect`] for...
 //! - `Result<T, E>` where `T: Effect` and `E: Into<BevyError>`
-use bevy::ecs::error::{FallbackErrorHandler, ErrorContext};
+use bevy::ecs::error::{ErrorContext, FallbackErrorHandler};
 use bevy::ecs::system::{SystemChangeTick, SystemName};
 use bevy::prelude::*;
 
