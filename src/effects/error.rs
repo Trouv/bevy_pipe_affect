@@ -2,7 +2,7 @@
 //!
 //! On top of the types shown here, this implements [`Effect`] for...
 //! - `Result<T, E>` where `T: Effect` and `E: Into<BevyError>`
-use bevy::ecs::error::{DefaultErrorHandler, ErrorContext};
+use bevy::ecs::error::{FallbackErrorHandler, ErrorContext};
 use bevy::ecs::system::{SystemChangeTick, SystemName};
 use bevy::prelude::*;
 
@@ -33,7 +33,7 @@ use crate::Effect;
 /// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
 /// ```
 ///
-/// Using a plain `Result` as an effect works too, but uses `bevy`'s `DefaultErrorHandler`.
+/// Using a plain `Result` as an effect works too, but uses `bevy`'s `FallbackErrorHandler`.
 ///
 /// Can be constructed with [`affect_or_handle`].
 #[derive(derive_more::Debug)]
@@ -123,7 +123,7 @@ where
     Er: Into<BevyError>,
 {
     type MutParam = (
-        Option<Res<'static, DefaultErrorHandler>>,
+        Option<Res<'static, FallbackErrorHandler>>,
         (Ef::MutParam, SystemName, SystemChangeTick),
     );
 

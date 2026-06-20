@@ -1,6 +1,7 @@
 //! [`Effect`]s that modify resources.
 use std::any::type_name;
 
+use bevy::ecs::component::Mutable;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 
@@ -61,7 +62,7 @@ use crate::effect::Effect;
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct ResSet<R>
 where
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     /// The value that the resource will be set to.
     pub value: R,
@@ -70,14 +71,14 @@ where
 /// Construct a new [`ResSet`] [`Effect`].
 pub fn res_set<R>(value: R) -> ResSet<R>
 where
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     ResSet { value }
 }
 
 impl<R> Effect for ResSet<R>
 where
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     type MutParam = ResMut<'static, R>;
 
@@ -141,7 +142,7 @@ where
 #[derive(derive_more::Debug)]
 pub struct ResSetWith<R>
 where
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     /// The function that maps the resource to its new value.
     #[debug("{} -> {}", type_name::<&R>(), type_name::<R>())]
@@ -152,14 +153,14 @@ where
 pub fn res_set_with<F, R>(f: F) -> ResSetWith<R>
 where
     F: FnOnce(&R) -> R + 'static,
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     ResSetWith { f: Box::new(f) }
 }
 
 impl<R> Default for ResSetWith<R>
 where
-    R: Resource + Clone,
+    R: Resource + Component<Mutability = Mutable> + Clone,
 {
     fn default() -> Self {
         res_set_with(|r: &R| r.clone())
@@ -168,7 +169,7 @@ where
 
 impl<R> Effect for ResSetWith<R>
 where
-    R: Resource,
+    R: Resource + Component<Mutability = Mutable>,
 {
     type MutParam = ResMut<'static, R>;
 

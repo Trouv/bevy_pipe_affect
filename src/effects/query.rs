@@ -136,9 +136,10 @@ where
     type MutParam = Query<'static, 'static, QueryDataE::MutQueryData, Filter>;
 
     fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        param
-            .iter_mut()
-            .for_each(|mut query_data| self.query_data_effect.clone().affect(&mut query_data));
+        let mut iter = param.iter_mut();
+        while let Some(mut query_data) = iter.fetch_next() {
+            self.query_data_effect.clone().affect(&mut query_data);
+        }
     }
 }
 

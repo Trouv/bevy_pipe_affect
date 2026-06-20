@@ -34,6 +34,8 @@ use crate::Effect;
 /// struct InitScores(Vec<Entity>);
 ///
 /// impl Command for InitScores {
+///     type Out = ();
+///
 ///     fn apply(self, world: &mut World) {
 ///         world.insert_batch_if_new(self.0.into_iter().map(|entity| (entity, Score(0))));
 ///     }
