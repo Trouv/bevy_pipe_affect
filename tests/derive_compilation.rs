@@ -110,7 +110,7 @@ fn effect_with_effect_parameter_implements_effect() {
     >());
 }
 
-#[derive(Clone, Component, Resource)]
+#[derive(Clone, Resource)]
 struct MyComponentResource;
 
 #[derive(Effect)]
