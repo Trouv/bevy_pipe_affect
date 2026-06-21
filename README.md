@@ -79,7 +79,7 @@ $ cargo run --release --all-features --example example-name
 ## Compatibility
 | bevy | bevy_pipe_affect |
 | --- | --- |
-| 0.19 | main |
+| 0.19 | 0.4 |
 | 0.18 | 0.3 |
 | 0.18 | 0.2 |
 | 0.17 | 0.1 |
