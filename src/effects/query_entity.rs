@@ -10,7 +10,7 @@ use crate::{Effect, EffectOut};
 
 /// [`Effect`] that applies the given [`QueryDataEffect`] to the given entity.
 ///
-/// Produces an error (handled by `bevy`'s `DefaultErrorHandler`) if the entity does not exist in
+/// Produces an error (handled by `bevy`'s `FallbackErrorHandler`) if the entity does not exist in
 /// the [`QueryDataEffect::Filter`] (and the optional `Filter` generic).
 ///
 /// Can be constructed by [`query_entity_affect`].
@@ -43,13 +43,13 @@ use crate::{Effect, EffectOut};
 ///     query.get_mut(top_player.0)?.0 = 0.5;
 ///     Ok(())
 /// }
-/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use bevy::ecs::error::{ignore, FallbackErrorHandler};
 /// # use proptest::prelude::*;
 /// #
 /// # fn app_setup(entity_table: Vec<Option<Defense>>, top_player_index: usize) -> App {
 /// #     let mut app = App::new();
 /// #
-/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #     app.insert_resource(FallbackErrorHandler(ignore));
 /// #
 /// #     let entities = entity_table.into_iter().fold(
 /// #         vec![app.world_mut().spawn_empty().id()],
@@ -162,7 +162,7 @@ where
 /// [`Effect`] that applies the given mapping of `QueryData` to [`QueryDataEffect`] to the given
 /// entity, and applies the [`QueryDataEffect`].
 ///
-/// Produces an error (handled by `bevy`'s `DefaultErrorHandler`) if the entity isn't selected by
+/// Produces an error (handled by `bevy`'s `FallbackErrorHandler`) if the entity isn't selected by
 /// `QueryDataIn`'s or `QueryDataE`'s filters or the optional `Filter` generic.
 ///
 /// Can be constructed by [`query_entity_map`].
@@ -203,13 +203,13 @@ where
 ///     attack_multiplier.0 = 1.0 + ((100.0 - health.0) / 100.0);
 ///     Ok(())
 /// }
-/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use bevy::ecs::error::{ignore, FallbackErrorHandler};
 /// # use proptest::prelude::*;
 /// #
 /// # fn app_setup(entity_table: Vec<(Option<Health>, Option<AttackMultiplier>)>, bottom_player_index: usize) -> App {
 /// #     let mut app = App::new();
 /// #
-/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #     app.insert_resource(FallbackErrorHandler(ignore));
 /// #
 /// #     let entities = entity_table.into_iter().fold(
 /// #         vec![app.world_mut().spawn_empty().id()],
@@ -345,7 +345,7 @@ where
 /// (as an `EffectOut<Effect, QueryDataEffect>` to the given entity, and applies the
 /// [`QueryDataEffect`] + [`Effect`].
 ///
-/// Produces an error (handled by `bevy`'s `DefaultErrorHandler`) if the entity isn't selected by
+/// Produces an error (handled by `bevy`'s `FallbackErrorHandler`) if the entity isn't selected by
 /// `QueryDataIn`'s or `QueryDataE`'s filters or the optional `Filter` generic.
 ///
 /// Can be constructed by [`query_entity_map_and`].
@@ -395,13 +395,13 @@ where
 ///     }
 ///     Ok(())
 /// }
-/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use bevy::ecs::error::{ignore, FallbackErrorHandler};
 /// # use proptest::prelude::*;
 /// #
 /// # fn app_setup(entity_table: Vec<Option<Health>>, cursed_player_index: usize) -> App {
 /// #     let mut app = App::new();
 /// #
-/// #     app.insert_resource(DefaultErrorHandler(ignore));
+/// #     app.insert_resource(FallbackErrorHandler(ignore));
 /// #
 /// #     let entities = entity_table.into_iter().fold(
 /// #         vec![app.world_mut().spawn_empty().id()],

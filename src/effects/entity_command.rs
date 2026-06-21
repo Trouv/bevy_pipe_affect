@@ -1,7 +1,6 @@
 //! [`Effect`]s that queue entity-specific `Commands`.
 use std::marker::PhantomData;
 
-use bevy::ecs::error::CommandWithEntity;
 use bevy::prelude::*;
 
 use crate::Effect;
@@ -20,7 +19,6 @@ use crate::Effect;
 /// In this example, a system is written that removes all components from the `Player` entity
 /// except for the `Player` component.
 /// ```rust
-/// use bevy::ecs::error::CommandWithEntity;
 /// use bevy::ecs::system::entity_command::retain;
 /// use bevy::ecs::world::error::EntityMutableFetchError;
 /// use bevy::prelude::*;
@@ -32,11 +30,7 @@ use crate::Effect;
 /// /// Pure system using effects.
 /// fn reset_player_pure(
 ///     player: Single<Entity, With<Player>>,
-/// ) -> EntityCommandQueue<
-///     impl EntityCommand<()> + CommandWithEntity<Result<(), EntityMutableFetchError>> + use<>,
-///     (),
-///     Result<(), EntityMutableFetchError>,
-/// > {
+/// ) -> EntityCommandQueue<impl EntityCommand + use<>> {
 ///     entity_command_queue(*player, retain::<Player>())
 /// }
 ///
@@ -105,42 +99,35 @@ use crate::Effect;
 /// ```
 #[doc = include_str!("defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct EntityCommandQueue<C, T, M>
+pub struct EntityCommandQueue<C>
 where
-    C: EntityCommand<T> + CommandWithEntity<M>,
+    C: EntityCommand,
 {
     entity: Entity,
     command: C,
-    entity_command_out: PhantomData<T>,
-    command_with_entity_out: PhantomData<M>,
 }
 
-impl<C, T, M> EntityCommandQueue<C, T, M>
+impl<C> EntityCommandQueue<C>
 where
-    C: EntityCommand<T> + CommandWithEntity<M>,
+    C: EntityCommand,
 {
     /// Construct a new [`EntityCommandQueue`]
     pub fn new(entity: Entity, command: C) -> Self {
-        EntityCommandQueue {
-            entity,
-            command,
-            entity_command_out: PhantomData,
-            command_with_entity_out: PhantomData,
-        }
+        EntityCommandQueue { entity, command }
     }
 }
 
 /// Construct a new [`EntityCommandQueue`] [`Effect`].
-pub fn entity_command_queue<C, T, M>(entity: Entity, command: C) -> EntityCommandQueue<C, T, M>
+pub fn entity_command_queue<C>(entity: Entity, command: C) -> EntityCommandQueue<C>
 where
-    C: EntityCommand<T> + CommandWithEntity<M>,
+    C: EntityCommand,
 {
     EntityCommandQueue::new(entity, command)
 }
 
-impl<C, T, M> Effect for EntityCommandQueue<C, T, M>
+impl<C> Effect for EntityCommandQueue<C>
 where
-    C: EntityCommand<T> + CommandWithEntity<M>,
+    C: EntityCommand,
 {
     type MutParam = Commands<'static, 'static>;
 

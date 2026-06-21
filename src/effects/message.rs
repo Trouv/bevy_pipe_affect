@@ -138,7 +138,7 @@ where
 ///     });
 /// }
 /// #
-/// # use bevy::ecs::error::{ignore, DefaultErrorHandler};
+/// # use bevy::ecs::error::{ignore, FallbackErrorHandler};
 /// # use proptest::prelude::*;
 /// #
 /// # fn app_setup(
@@ -147,7 +147,7 @@ where
 /// # ) -> App {
 /// #     let mut app = App::new();
 /// #     app.add_message::<Winner>()
-/// #         .insert_resource(DefaultErrorHandler(ignore));
+/// #         .insert_resource(FallbackErrorHandler(ignore));
 /// #
 /// #     let entities = component_table
 /// #         .into_iter()
