@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.3.0...v0.4.0) (2026-06-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy 0.19 ([#168](https://github.com/Trouv/bevy_pipe_affect/issues/168))
+
+### Features
+
+* upgrade to bevy 0.19 ([#168](https://github.com/Trouv/bevy_pipe_affect/issues/168)) ([fe0a492](https://github.com/Trouv/bevy_pipe_affect/commit/fe0a492d70c37e513263420ed1d7fb26961b1729))
+
+
+### Documentation Changes
+
+* add 0.4 to compatibility chart ([#169](https://github.com/Trouv/bevy_pipe_affect/issues/169)) ([c33bd35](https://github.com/Trouv/bevy_pipe_affect/commit/c33bd35febf84c513a0ca469b2464779fe73013c))
+* link cargo examples to effects module ([#166](https://github.com/Trouv/bevy_pipe_affect/issues/166)) ([d2070e6](https://github.com/Trouv/bevy_pipe_affect/commit/d2070e6d34b429b69ddd6b95ff79c6d8c20a1ebd))
+
 ## [0.3.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.2.0...v0.3.0) (2026-04-10)
 
 
