@@ -1,4 +1,6 @@
 //! [`Effect`]s that operate on `Assets` stores and the `AssetServer`.
+//!
+//! [`Effect`]: crate::Effect
 
 mod asset_server_load_and;
 pub use asset_server_load_and::{AssetServerLoadAnd, asset_server_load_and};
