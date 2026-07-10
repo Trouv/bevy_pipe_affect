@@ -1,4 +1,4 @@
-use bevy::asset::{AssetPath, InvalidGenerationError};
+use bevy::asset::AssetPath;
 use bevy::prelude::*;
 
 use crate::Effect;
