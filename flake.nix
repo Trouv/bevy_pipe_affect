@@ -30,12 +30,11 @@
               rust-bin.nightly."2026-08-02".rustfmt
             ];
 
-            buildInputs = let
-              rust-bin-stable = rust-bin.stable.latest.default.override {extensions = ["rust-src"];};
-            in
+            buildInputs =
               [
                 # Rust dependencies
-                rust-bin-stable
+                rust-bin.stable.latest.default.override
+                {extensions = ["rust-src"];}
                 pkg-config
 
                 # for building the book
