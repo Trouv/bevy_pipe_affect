@@ -27,14 +27,12 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run cargo test --no-default-features
-        run: cargo test --no-default-features
+        run: nix develop --command cargo test --no-default-features
       - name: Run cargo test --all-features
-        run: cargo test --all-features
+        run: nix develop --command cargo test --all-features
 
   clippy_check:
     name: Clippy
@@ -53,14 +51,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run clippy
-        run: cargo clippy --all-features -- -D warnings
+        run: nix develop --command cargo clippy --all-features -- -D warnings
 
   format:
     name: Format
@@ -69,12 +63,10 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Install nightly toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run cargo fmt
-        run: cargo +nightly fmt --all -- --check
+        run: nix develop --command cargo fmt --all -- --check
 
   doc_check:
     name: Doc
@@ -93,12 +85,10 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-doc-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Run cargo doc
-        run: cargo doc --no-deps --all-features
+        run: nix develop --command cargo doc --no-deps --all-features
 
   # Run mdbook build (tests all code snippets)
   build-test-book:
@@ -117,15 +107,7 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-mdbook-build-${{ hashFiles('**/Cargo.toml') }}
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
-      - name: Install Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
-      - name: Install mdbook
-        uses: peaceiris/actions-mdbook@v2
-        with:
-          mdbook-version: '0.4.52'
-      - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper@0.5.0 --force
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Test mdbook code snippets
-        run: bash ./ci/test-book.sh
+        run: nix develop --command bash ./ci/test-book.sh
