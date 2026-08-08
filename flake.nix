@@ -33,8 +33,7 @@
             buildInputs =
               [
                 # Rust dependencies
-                rust-bin.stable.latest.default.override
-                {extensions = ["rust-src"];}
+                (rust-bin.stable.latest.default.override {extensions = ["rust-src"];})
                 pkg-config
 
                 # for building the book
