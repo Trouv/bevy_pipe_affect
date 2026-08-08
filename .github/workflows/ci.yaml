@@ -109,13 +109,5 @@ jobs:
           key: ${{ runner.os }}-mdbook-build-${{ hashFiles('**/Cargo.toml') }}
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
-      - name: Enter nix env
-        run: nix develop
-      - name: Install mdbook
-        uses: peaceiris/actions-mdbook@v2
-        with:
-          mdbook-version: '0.4.52'
-      - name: Install mdbook-keeper
-        run: cargo install mdbook-keeper@0.5.0 --force
       - name: Test mdbook code snippets
-        run: bash ./ci/test-book.sh
+        run: nix develop --command bash ./ci/test-book.sh
