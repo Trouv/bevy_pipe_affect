@@ -1,4 +1,6 @@
 //! [`Effect`]s that queue `Commands`.
+//!
+//! [`Effect`]: crate::Effect
 
 mod command_queue;
 pub use command_queue::{CommandQueue, command_queue};
