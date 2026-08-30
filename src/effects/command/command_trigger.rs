@@ -108,3 +108,40 @@ where
         param.trigger(self.event);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::command::{command_insert_resource, command_spawn};
+    use crate::effects::number_data::{NumberEvent, NumberResource};
+    use crate::prelude::affect;
+
+    proptest! {
+        #[test]
+        fn command_trigger_correctly_triggers_observers(event in any::<NumberEvent>()) {
+            let mut app = App::new();
+
+            app.add_systems(
+                Startup,
+                (move || command_spawn(Observer::new((|event: On<NumberEvent>| command_insert_resource(NumberResource(event.0))).pipe(affect)))).pipe(affect),
+            );
+
+            app.update();
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            app.update();
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            app.add_systems(
+                Update,
+                (move || command_trigger(event)).pipe(affect)
+            );
+
+            app.update();
+
+            assert_eq!(app.world().get_resource::<NumberResource>(), Some(&NumberResource(event.0)));
+        }
+    }
+}

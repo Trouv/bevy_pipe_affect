@@ -202,3 +202,67 @@ where
         (self.f)(entity).affect(&mut param.1);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::effects::command::command_insert_resource;
+    use crate::prelude::affect;
+
+    #[test]
+    fn command_spawn_effect_can_create_parent_child_relationship() {
+        let mut app = App::new();
+
+        let children_count = app
+            .world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .count();
+
+        assert_eq!(children_count, 0);
+
+        #[derive(Resource)]
+        struct ParentEntity(Entity);
+
+        app.add_systems(
+            Update,
+            (move || {
+                command_spawn_and((), move |parent| {
+                    (
+                        command_spawn(ChildOf(parent)),
+                        command_insert_resource(ParentEntity(parent)),
+                    )
+                })
+            })
+            .pipe(affect),
+        );
+
+        app.update();
+
+        let children_count = app
+            .world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .count();
+
+        assert_eq!(children_count, 1);
+
+        let parent_entity = app.world().resource::<ParentEntity>().0;
+
+        app.world_mut()
+            .query::<&ChildOf>()
+            .iter(app.world())
+            .for_each(|child_of| {
+                assert_eq!(child_of.0, parent_entity);
+            });
+
+        let children_of_parent_count = app
+            .world()
+            .entity(parent_entity)
+            .get::<Children>()
+            .iter()
+            .count();
+
+        assert_eq!(children_of_parent_count, 1);
+    }
+}

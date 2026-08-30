@@ -100,3 +100,44 @@ where
         param.remove_resource::<R>();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::command::command_insert_resource;
+    use crate::effects::number_data::NumberResource;
+    use crate::prelude::affect;
+
+    proptest! {
+
+        #[test]
+        fn resource_commands_correctly_insert_and_remove(resource in any::<NumberResource>()) {
+            let mut app = App::new();
+
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+
+            #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+            struct InsertSystem;
+
+            app.add_systems(
+                Update,
+                (move || command_insert_resource(resource)).pipe(affect).in_set(InsertSystem),
+            );
+
+            app.update();
+
+            assert_eq!(app.world().get_resource::<NumberResource>(), Some(&resource));
+
+            app.add_systems(
+                Update,
+                (move || command_remove_resource::<NumberResource>()).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            assert!(app.world().get_resource::<NumberResource>().is_none());
+        }
+    }
+}
