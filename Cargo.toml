@@ -14,16 +14,16 @@ exclude = ["assets/", "ci/", ".github/"]
 members = ["effect_derive"]
 
 [dependencies]
-bevy = { version = "0.19.0", default-features = false }
+bevy = { version = "0.20.0", default-features = false }
 bevy_pipe_affect_derive = { version = "0.4.0", path = "effect_derive", optional = true }
 
 # bevy with no default features actually depends on all of these, no need to hide them behind flags
 derive_more = { version = "2.1.1", default-features = false, features = ["debug"] }
-variadics_please = "1.1.0"
-either = "1.15.0"
+variadics_please = "2.0.0"
+either = "1.19.0"
 
 [dev-dependencies]
-bevy = { version = "0.19.0" }
+bevy = { version = "0.20.0" }
 proptest = "1.8.0"
 proptest-derive = "0.6.0"
 blake2 = "0.10.6"

@@ -140,7 +140,7 @@ mod tests {
             };
 
 
-            assert!(!IntoSystem::into_system(spawn_component_system.pipe(affect)).is_exclusive());
+            assert!(!IntoSystem::into_system(spawn_component_system.pipe(affect)).initialize(app.world_mut()).is_exclusive());
 
             app.add_systems(
                 Update,
