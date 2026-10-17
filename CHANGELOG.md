@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.5.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.4.0...v0.5.0) (2026-10-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to bevy 0.20 ([#173](https://github.com/Trouv/bevy_pipe_affect/issues/173))
+
+### Features
+
+* upgrade to bevy 0.20 ([#173](https://github.com/Trouv/bevy_pipe_affect/issues/173)) ([684cf59](https://github.com/Trouv/bevy_pipe_affect/commit/684cf59c05a3b42ff3820b03998734185ecb5edd))
+
+
+### Documentation Changes
+
+* add 0.5 to compatibility chart ([#174](https://github.com/Trouv/bevy_pipe_affect/issues/174)) ([22907e2](https://github.com/Trouv/bevy_pipe_affect/commit/22907e296bd458f50f4d2855775bc502742d4c76))
+
 ## [0.4.0](https://github.com/Trouv/bevy_pipe_affect/compare/v0.3.0...v0.4.0) (2026-06-21)
 
 

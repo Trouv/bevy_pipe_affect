@@ -1386,7 +1386,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_pipe_affect"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "bevy",
  "bevy_pipe_affect_derive",
@@ -1400,7 +1400,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_pipe_affect_derive"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "proc-macro2",
  "quote",
