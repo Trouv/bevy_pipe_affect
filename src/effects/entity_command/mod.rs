@@ -97,7 +97,7 @@ use crate::Effect;
 /// #     }
 /// # }
 /// ```
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandQueue<C>
 where
@@ -205,7 +205,7 @@ where
 /// Not shown...
 /// - A single component is used in this example, but the inserted value is a `Bundle`, so it can
 /// be a `Bundle` struct or tuple of components.
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandInsert<B>
 where
@@ -314,7 +314,7 @@ where
 /// Not shown...
 /// - A single component is used in this example, but the removed type is a `Bundle`, so it can be
 /// a `Bundle` struct or tuple of components.
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandRemove<B>
 where
@@ -429,7 +429,7 @@ where
 /// #     }
 /// # }
 /// ```
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct EntityCommandDespawn {
     /// The entity to despawn.
@@ -557,7 +557,7 @@ impl Effect for EntityCommandDespawn {
 /// be a `Bundle` struct or tuple of components.
 /// - A parent/child relationship is used in this example, but any other `RelationshipTarget` would
 /// work.
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
 pub struct EntityCommandInsertRecursive<RT, B>
 where
@@ -706,7 +706,7 @@ where
 /// a `Bundle` struct or tuple of components.
 /// - A parent/child relationship is used in this example, but any other `RelationshipTarget` would
 /// work.
-#[doc = include_str!("defer_command_note.md")]
+#[doc = include_str!("../defer_command_note.md")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Reflect)]
 pub struct EntityCommandRemoveRecursive<RT, B>
 where
