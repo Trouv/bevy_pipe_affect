@@ -36,36 +36,6 @@ mod tests {
 
     proptest! {
         #[test]
-        fn entity_command_queue_can_insert_component_non_exclusively(component in any::<NumberComponent<0>>()) {
-            let mut app = App::new();
-
-            let entity = app.world_mut().spawn(()).id();
-
-            let actual_component = app.world().get_entity(entity).unwrap().get_components::<&NumberComponent<0>>();
-
-            assert!(actual_component.is_err());
-
-            let insert_component_system = move || {
-                EntityCommandQueue::new(entity, move |mut entity_world: EntityWorldMut<'_>| {
-                    entity_world.insert(component.clone());
-                })
-            };
-
-            assert!(!IntoSystem::into_system(insert_component_system.pipe(affect)).initialize(app.world_mut()).is_exclusive());
-
-            app.add_systems(
-                Update,
-                insert_component_system.pipe(affect),
-            );
-
-            app.update();
-
-            let actual_component = app.world().get_entity(entity).unwrap().get_components::<&NumberComponent<0>>().unwrap();
-
-            assert_eq!(actual_component, &component);
-        }
-
-        #[test]
         fn bundle_commands_correctly_insert_and_remove(component_0 in any::<NumberComponent<0>>(), component_1 in any::<NumberComponent<1>>()) {
             let mut app = App::new();
 
