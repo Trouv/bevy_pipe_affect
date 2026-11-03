@@ -123,3 +123,72 @@ where
         param.entity(self.entity).remove::<B>();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::*;
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::entity_command::entity_command_insert;
+    use crate::effects::number_data::NumberComponent;
+    use crate::prelude::affect;
+
+    proptest! {
+        #[test]
+        fn bundle_commands_correctly_insert_and_remove(component_0 in any::<NumberComponent<0>>(), component_1 in any::<NumberComponent<1>>()) {
+            let mut app = App::new();
+
+            let entity = app.world_mut().spawn(()).id();
+
+            let actual_component_0 = app.world().entity(entity).get::<NumberComponent<0>>();
+            let actual_component_1 = app.world().entity(entity).get::<NumberComponent<1>>();
+
+            assert!(actual_component_0.is_none());
+            assert!(actual_component_1.is_none());
+
+            #[derive(Debug, Clone, PartialEq, Eq, Hash, SystemSet)]
+            struct InsertSystem;
+
+            app.add_systems(
+                Update,
+                (move || entity_command_insert(entity,  (component_0, component_1))).pipe(affect).in_set(InsertSystem),
+            );
+
+            app.update();
+
+            let actual_component_0 = app.world().entity(entity).get::<NumberComponent<0>>();
+            let actual_component_1 = app.world().entity(entity).get::<NumberComponent<1>>();
+
+            assert_eq!(actual_component_0, Some(&component_0));
+            assert_eq!(actual_component_1, Some(&component_1));
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove::<(NumberComponent<1>, NumberComponent<2>)>(entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            let actual_component_0 = app.world().entity(entity).get::<NumberComponent<0>>();
+            let actual_component_1 = app.world().entity(entity).get::<NumberComponent<1>>();
+
+            assert_eq!(actual_component_0, Some(&component_0));
+            assert!(actual_component_1.is_none());
+
+            app.add_systems(
+                Update,
+                (move || entity_command_remove::<(NumberComponent<0>, NumberComponent<1>)>(entity)).pipe(affect).after(InsertSystem),
+            );
+
+            app.update();
+
+            let actual_component_0 = app.world().entity(entity).get::<NumberComponent<0>>();
+            let actual_component_1 = app.world().entity(entity).get::<NumberComponent<1>>();
+
+            assert!(actual_component_0.is_none());
+            assert!(actual_component_1.is_none());
+        }
+
+    }
+}

@@ -94,3 +94,43 @@ impl Effect for EntityCommandDespawn {
         param.entity(self.entity).despawn();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::*;
+
+    use super::*;
+    use crate::effects::command::{command_insert_resource, command_spawn_and};
+    use crate::prelude::affect;
+
+    #[test]
+    fn commands_can_spawn_and_despawn_entities() {
+        #[derive(Resource, Clone)]
+        struct EntityHolder(Entity);
+
+        let mut app = App::new();
+
+        app.add_systems(
+            Update,
+            (move || command_spawn_and((), |entity| command_insert_resource(EntityHolder(entity))))
+                .pipe(affect)
+                .run_if(not(resource_exists::<EntityHolder>)),
+        );
+
+        app.update();
+
+        let EntityHolder(entity) = app.world().resource::<EntityHolder>().clone();
+
+        assert!(app.world().get_entity(entity).is_ok());
+
+        app.add_systems(
+            Update,
+            (move |entity_holder: Res<EntityHolder>| entity_command_despawn(entity_holder.0))
+                .pipe(affect),
+        );
+
+        app.update();
+
+        assert!(app.world().get_entity(entity).is_err());
+    }
+}
