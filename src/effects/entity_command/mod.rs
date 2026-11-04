@@ -1,4 +1,6 @@
 //! [`Effect`]s that queue entity-specific `Commands`.
+//!
+//! [`Effect`]: crate::prelude::Effect
 
 mod entity_command_queue;
 pub use entity_command_queue::{EntityCommandQueue, entity_command_queue};
