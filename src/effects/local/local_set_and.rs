@@ -1,4 +1,3 @@
-//! [`Effect`]s that modify `Local` parameters.
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 
