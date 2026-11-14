@@ -96,3 +96,33 @@ where
         **param = (self.f)(param);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::number_data::NumberResource;
+    use crate::effects::one_way_fn::OneWayFn;
+    use crate::system_combinators::affect;
+
+    proptest! {
+        #[test]
+        fn res_set_with_correctly_executes_one_way_function(initial: NumberResource, f: OneWayFn) {
+            let expected = NumberResource(f.call(initial.0));
+
+            let mut app = App::new();
+
+            app.insert_resource(initial.clone()).add_systems(
+                Update,
+                (move || res_set_with(move |&NumberResource(n)| NumberResource(f.call(n)))).pipe(affect),
+            );
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
+
+            app.update();
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &expected);
+        }
+    }
+}

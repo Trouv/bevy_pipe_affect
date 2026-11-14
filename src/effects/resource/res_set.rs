@@ -83,3 +83,30 @@ where
         **param = self.value;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use proptest::prelude::*;
+
+    use super::*;
+    use crate::effects::number_data::NumberResource;
+    use crate::system_combinators::affect;
+
+    proptest! {
+        #[test]
+        fn res_set_overwrites_initial_state(initial: NumberResource, put: NumberResource) {
+            let mut app = App::new();
+
+            prop_assume!(initial != put);
+
+            app.insert_resource(initial)
+                .add_systems(Update, (move || res_set(put)).pipe(affect));
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &initial);
+
+            app.update();
+
+            prop_assert_eq!(app.world().resource::<NumberResource>(), &put);
+        }
+    }
+}
