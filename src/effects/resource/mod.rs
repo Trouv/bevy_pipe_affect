@@ -1,4 +1,6 @@
 //! [`Effect`]s that modify resources.
+//!
+//! [`Effect`]: crate::prelude::Effect
 
 mod res_set;
 pub use res_set::{ResSet, res_set};
