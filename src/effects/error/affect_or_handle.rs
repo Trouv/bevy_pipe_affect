@@ -1,0 +1,114 @@
+use bevy::ecs::error::ErrorContext;
+use bevy::ecs::system::{SystemChangeTick, SystemName};
+use bevy::prelude::*;
+
+use crate::Effect;
+
+/// [`Effect`] that causes the `Ok` effect, or handles the `Err` with a custom handler.
+///
+/// This handler can be parameterized by any of the `bevy`-provided error handlers.
+///
+/// ```
+/// use bevy::prelude::*;
+/// use bevy_pipe_affect::prelude::*;
+///
+/// fn zero_red_clear_color_srgba(clear_color: Res<ClearColor>) -> impl Effect + use<> {
+///     let result = match clear_color.0 {
+///         Color::Srgba(srgba) => {
+///             let color = Color::Srgba(Srgba { red: 0., ..srgba });
+///             Ok(ResSet {
+///                 value: ClearColor(color),
+///             })
+///         }
+///         _ => Err("color is not srgba"),
+///     };
+///
+///     affect_or_handle(result, bevy::ecs::error::warn)
+/// }
+///
+/// bevy::ecs::system::assert_is_system(zero_red_clear_color_srgba.pipe(affect))
+/// ```
+///
+/// Using a plain `Result` as an effect works too, but uses `bevy`'s `FallbackErrorHandler`.
+///
+/// Can be constructed with [`affect_or_handle`].
+#[derive(derive_more::Debug)]
+pub struct AffectOrHandle<Ef, Er>
+where
+    Ef: Effect,
+    Er: Into<BevyError>,
+{
+    /// The result to be affected or handled.
+    pub result: Result<Ef, Er>,
+    /// The handler to use in the `Err` case.
+    #[debug("BevyError, ErrorContext -> ()")]
+    pub handler: Box<dyn FnOnce(BevyError, ErrorContext)>,
+}
+
+impl<Ef, Er> AffectOrHandle<Ef, Er>
+where
+    Ef: Effect,
+    Er: Into<BevyError>,
+{
+    /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, F, H>` by applying a function to
+    /// the `result` value.
+    pub fn map_result<EfO, ErO>(
+        self,
+        f: impl FnOnce(Result<Ef, Er>) -> Result<EfO, ErO>,
+    ) -> AffectOrHandle<EfO, ErO>
+    where
+        EfO: Effect,
+        ErO: Into<BevyError>,
+    {
+        AffectOrHandle {
+            result: f(self.result),
+            handler: self.handler,
+        }
+    }
+
+    /// Maps a `AffectOrHandle<T, E, H>` to a `AffectOrHandle<U, E, H>` by applying a function to
+    /// the contained `Ok` value.
+    pub fn map<EO>(self, f: impl FnOnce(Ef) -> EO) -> AffectOrHandle<EO, Er>
+    where
+        EO: Effect,
+    {
+        self.map_result(|result| result.map(f))
+    }
+}
+
+/// Construct a new [`AffectOrHandle`] [`Effect`].
+pub fn affect_or_handle<Ef, Er, Handler>(
+    result: Result<Ef, Er>,
+    handler: Handler,
+) -> AffectOrHandle<Ef, Er>
+where
+    Ef: Effect,
+    Er: Into<BevyError>,
+    Handler: FnOnce(BevyError, ErrorContext) + 'static,
+{
+    AffectOrHandle {
+        result,
+        handler: Box::new(handler),
+    }
+}
+
+impl<Ef, Er> Effect for AffectOrHandle<Ef, Er>
+where
+    Ef: Effect,
+    Er: Into<BevyError>,
+{
+    type MutParam = (Ef::MutParam, SystemName, SystemChangeTick);
+
+    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
+        match self.result {
+            Ok(ef) => ef.affect(&mut param.0),
+            Err(er) => (self.handler)(
+                er.into(),
+                ErrorContext::System {
+                    name: param.1.name(),
+                    last_run: param.2.last_run(),
+                },
+            ),
+        }
+    }
+}
