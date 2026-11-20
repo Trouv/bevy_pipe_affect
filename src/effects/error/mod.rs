@@ -2,40 +2,11 @@
 //!
 //! On top of the types shown here, this implements [`Effect`] for...
 //! - `Result<T, E>` where `T: Effect` and `E: Into<BevyError>`
-use bevy::ecs::error::FallbackErrorHandler;
-use bevy::ecs::system::{SystemChangeTick, SystemName};
-use bevy::prelude::*;
-
-use crate::Effect;
 
 mod affect_or_handle;
 pub use affect_or_handle::{AffectOrHandle, affect_or_handle};
 
-impl<Ef, Er> Effect for Result<Ef, Er>
-where
-    Ef: Effect,
-    Er: Into<BevyError>,
-{
-    type MutParam = (
-        Option<Res<'static, FallbackErrorHandler>>,
-        (Ef::MutParam, SystemName, SystemChangeTick),
-    );
-
-    fn affect(
-        self,
-        (default_error_handler, param): &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>,
-    ) {
-        affect_or_handle(
-            self,
-            default_error_handler
-                .as_deref()
-                .copied()
-                .unwrap_or_default()
-                .0,
-        )
-        .affect(param);
-    }
-}
+mod result;
 
 #[cfg(test)]
 mod tests {
