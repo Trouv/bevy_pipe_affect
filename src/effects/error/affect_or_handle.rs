@@ -1,8 +1,4 @@
-//! [`Effect`]s for error handling.
-//!
-//! On top of the types shown here, this implements [`Effect`] for...
-//! - `Result<T, E>` where `T: Effect` and `E: Into<BevyError>`
-use bevy::ecs::error::{ErrorContext, FallbackErrorHandler};
+use bevy::ecs::error::ErrorContext;
 use bevy::ecs::system::{SystemChangeTick, SystemName};
 use bevy::prelude::*;
 
@@ -114,32 +110,6 @@ where
                 },
             ),
         }
-    }
-}
-
-impl<Ef, Er> Effect for Result<Ef, Er>
-where
-    Ef: Effect,
-    Er: Into<BevyError>,
-{
-    type MutParam = (
-        Option<Res<'static, FallbackErrorHandler>>,
-        (Ef::MutParam, SystemName, SystemChangeTick),
-    );
-
-    fn affect(
-        self,
-        (default_error_handler, param): &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>,
-    ) {
-        affect_or_handle(
-            self,
-            default_error_handler
-                .as_deref()
-                .copied()
-                .unwrap_or_default()
-                .0,
-        )
-        .affect(param);
     }
 }
 
