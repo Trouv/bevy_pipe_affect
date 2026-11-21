@@ -9,16 +9,7 @@ use crate::Effect;
 mod affect_many;
 pub use affect_many::{AffectMany, affect_many};
 
-impl<E> Effect for Vec<E>
-where
-    E: Effect,
-{
-    type MutParam = E::MutParam;
-
-    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        AffectMany { iter: self }.affect(param);
-    }
-}
+mod vec;
 
 impl<E> Effect for Option<E>
 where
