@@ -3,6 +3,7 @@
 //! On top of the types shown here, this implements [`Effect`] for...
 //! - `Vec<T>` where `T: Effect`
 //! - `Option<T>` where `T: Effect`
+
 use crate::Effect;
 
 /// [`Effect`] that causes all effects in the provided iterator.
