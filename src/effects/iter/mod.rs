@@ -3,24 +3,15 @@
 //! On top of the types shown here, this implements [`Effect`] for...
 //! - `Vec<T>` where `T: Effect`
 //! - `Option<T>` where `T: Effect`
-
-use crate::Effect;
+//!
+//! [`Effect`]: crate::prelude::Effect
 
 mod affect_many;
 pub use affect_many::{AffectMany, affect_many};
 
 mod vec;
 
-impl<E> Effect for Option<E>
-where
-    E: Effect,
-{
-    type MutParam = E::MutParam;
-
-    fn affect(self, param: &mut <Self::MutParam as bevy::ecs::system::SystemParam>::Item<'_, '_>) {
-        AffectMany { iter: self }.affect(param);
-    }
-}
+mod option;
 
 #[cfg(test)]
 mod tests {
